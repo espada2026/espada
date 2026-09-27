@@ -3,7 +3,7 @@
 import { createElement as h } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
-import { CekDokumen, Hero, Kaki, KabarAgenda, Kontak, NavBeranda, Perjalanan, Program, Tentang, TanyaJawab } from '../src/landing/bagian.jsx';
+import { Berita, CekDokumen, Galeri, Hero, Kaki, KabarAgenda, Kontak, MediaSosial, NavBeranda, Perjalanan, Prestasi, Program, Tentang, TanyaJawab } from '../src/landing/bagian.jsx';
 import Landing from '../src/landing/Landing.jsx';
 import { DASA_DARMA, MENU, PERJALANAN, PROGRAM, TANYA_JAWAB, TRI_SATYA } from '../src/landing/landingData.js';
 import { renderBeranda } from '../src/landing/prarender.jsx';
@@ -78,6 +78,46 @@ console.log('\n--- Agenda dan hero ---');
   ok(teks(h(Kaki, { G })).includes('Cek keaslian dokumen') && teks(h(CekDokumen, {})).includes('Periksa'), 'kaki dan cek dokumen tampil');
   ok([Program, Perjalanan, TanyaJawab].every((K) => teks(h(K, {})).length > 500), 'Program, Perjalanan, dan Tanya Jawab dirender');
   ok(renderToStaticMarkup(h(Landing, { panggil: async () => ({ ok: false }) })).length === utuh.length, 'Landing dan renderBeranda menghasilkan HTML yang sama');
+}
+
+console.log('\n--- Berita, Prestasi, Galeri, Media Sosial, dan Tanya Jawab dinamis (Fase 2) ---');
+{
+  ok(utuh.includes('id="prestasi"'), 'bagian Prestasi ada di HTML prarender (tanpa menu navigasi tersendiri)');
+  ok(!utuh.includes('id="sosial"'), 'tanpa data server: bagian Media Sosial tidak dirender sama sekali (kosong = disembunyikan, bukan status memuat)');
+
+  const b1 = teks(h(Berita, { berita: [], memuat: true }));
+  const b2 = teks(h(Berita, { berita: [], memuat: false }));
+  ok(b1.includes('Memuat berita...') && b2.includes('Belum ada berita'), 'berita kosong: status memuat lalu keterangan kosong');
+  const berita = [
+    { kategori: 'kegiatan', judul: 'Perkemahan Jumat', ringkasan: 'Ringkas <b>satu</b>.', sampulUrl: 'https://foto.test/a.jpg', terbitPada: '2026-09-20' },
+    { kategori: 'pengumuman', judul: 'Pengumuman Ulang Tahun', ringkasan: '', sampulUrl: '', terbitPada: '2026-09-01' },
+  ];
+  const b3 = teks(h(Berita, { berita }));
+  ok(b3.includes('Perkemahan Jumat') && b3.includes('Pengumuman Ulang Tahun') && b3.includes('Kegiatan') && b3.includes('Pengumuman'), 'berita terbit tampil dengan label kategori');
+  ok(b3.includes('&lt;b&gt;satu&lt;/b&gt;') && !b3.includes('<b>satu'), 'ringkasan berita di-escape (bukan HTML)');
+  ok(b3.includes('Minggu, 20 September 2026'), 'tanggal terbit berita ditampilkan dalam format Indonesia');
+  ok(b3.includes('img src="https://foto.test/a.jpg"'), 'sampul berita tampil bila diisi; tanpa sampul memakai ikon bawaan');
+
+  const p1 = teks(h(Prestasi, { prestasi: [], memuat: true }));
+  const p2 = teks(h(Prestasi, { prestasi: [], memuat: false }));
+  ok(p1.includes('Memuat prestasi...') && p2.includes('Belum ada prestasi'), 'prestasi kosong: status memuat lalu keterangan kosong');
+  const p3 = teks(h(Prestasi, { prestasi: [{ judul: 'Lomba Tegak', tingkat: 'cabang', peringkat: 'Juara 1', tahun: 2026, diraihOleh: 'Sangga Garuda' }] }));
+  ok(p3.includes('Lomba Tegak') && p3.includes('Juara 1') && p3.includes('Cabang') && p3.includes('Sangga Garuda') && p3.includes('2026'), 'prestasi tampil: judul, peringkat, label tingkat, tahun, dan yang meraih');
+
+  const g1 = teks(h(Galeri, { galeri: [], memuat: true }));
+  const g2 = teks(h(Galeri, { galeri: [], memuat: false }));
+  ok(g1.includes('Memuat galeri...') && g2.includes('Belum ada album'), 'galeri kosong: status memuat lalu keterangan kosong');
+  const g3 = teks(h(Galeri, { galeri: [{ judul: 'Perkemahan 2026', tautan: 'https://drive.test/x', sampulUrl: '', kelompok: 'perkemahan' }] }));
+  ok(g3.includes('Perkemahan 2026') && g3.includes('href="https://drive.test/x"') && g3.includes('Perkemahan') && /target="_blank"/.test(g3), 'album galeri tampil sebagai tautan keluar dengan label kelompok');
+
+  ok(teks(h(MediaSosial, { sosial: [] })) === '', 'media sosial kosong: bagian tidak dirender sama sekali (bukan hanya kosong secara visual)');
+  const s1 = teks(h(MediaSosial, { sosial: [{ platform: 'instagram', tautan: 'https://instagram.com/gudep', keterangan: 'Ikuti kami', gambarUrl: '' }] }));
+  ok(s1.includes('id="sosial"') && s1.includes('Instagram') && s1.includes('href="https://instagram.com/gudep"') && s1.includes('Ikuti kami'), 'media sosial terisi: bagian tampil dengan label platform dan keterangan');
+
+  const t1 = teks(h(TanyaJawab, { faq: [] }));
+  ok(TANYA_JAWAB.every((q) => t1.includes(q.t)), 'faq belum diisi pengurus: memakai daftar bawaan (landingData.js)');
+  const t2 = teks(h(TanyaJawab, { faq: [{ pertanyaan: 'Apakah ada iuran khusus Fase 2?', jawaban: 'Ada, diatur Pembina lewat Kelola Beranda.' }] }));
+  ok(t2.includes('Apakah ada iuran khusus Fase 2?') && t2.includes('diatur Pembina lewat Kelola Beranda') && !TANYA_JAWAB.some((q) => t2.includes(q.t)), 'faq diisi pengurus: menggantikan seluruh daftar bawaan, bukan menambahkannya');
 }
 
 console.log('\n--- Klien publik (tanpa login) ---');

@@ -75,7 +75,8 @@ declare
   -- Tabel opsional (dikosongkan menurut pilihan di atas) dan yang dipertahankan; dipakai pula oleh Pengaman 5.
   v_tabel_kegiatan text[] := array['kegiatan_usulan', 'agenda', 'sesi_ujian', 'sesi_ujian_butir', 'absensi_sesi', 'iuran_kas', 'sidang_dk', 'sidang_urut',
     'dokumen_terbit', 'dokumen_urut', 'penugasan_log', 'kepengurusan_log', 'naik_kelas_log', 'naik_kelas_batch',
-    'tim_penilai', 'tim_penilai_anggota', 'garuda_tahap', 'pengukuhan_dewan'];
+    'tim_penilai', 'tim_penilai_anggota', 'garuda_tahap', 'pengukuhan_dewan',
+    'beranda_berita', 'beranda_prestasi', 'beranda_galeri', 'beranda_sosial', 'beranda_faq'];
   v_tabel_pengaturan text[] := array['pengaturan', 'dokumen_templat'];
   v_tabel_materi text[] := array['materi'];
   v_tabel_instrumen text[] := array['instrumen', 'instrumen_kriteria', 'instrumen_penguji', 'instrumen_panduan'];
@@ -125,7 +126,7 @@ begin
     delete from public.kepengurusan_log where true;
     delete from public.naik_kelas_log where true;
     delete from public.naik_kelas_batch where true;
-    foreach v_t in array array['tim_penilai', 'garuda_tahap', 'pengukuhan_dewan'] loop   -- anggota tim ikut terhapus; tabel yang belum ada dilewati
+    foreach v_t in array array['tim_penilai', 'garuda_tahap', 'pengukuhan_dewan', 'beranda_berita', 'beranda_prestasi', 'beranda_galeri', 'beranda_sosial', 'beranda_faq'] loop   -- anggota tim ikut terhapus; tabel yang belum ada dilewati
       if to_regclass('public.' || quote_ident(v_t)) is not null then execute format('delete from public.%I where true', v_t); end if;
     end loop;
   end if;

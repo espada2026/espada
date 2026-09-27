@@ -541,3 +541,44 @@ export const susunBinaDamping = (d) => ({
   penugasan: (d.penugasan ?? []).map((p) => ({ rombel: p.rombel, id: p.penegak_id, nama: p.nama, kelas: p.kelas ?? null, jabatanDewan: p.jabatan_dewan ?? null, tingkat: p.tingkat })),
   calon: (d.calon ?? []).map((c) => ({ id: c.id, nama: c.nama, kelas: c.kelas ?? null, jabatanDewan: c.jabatan_dewan ?? null, tingkat: c.tingkat, rombel: c.rombel ?? null })),
 });
+
+/* ------------------- Kelola Beranda: konten (Fase 2 landing page) ------------------- */
+
+/** Baris beranda_berita -> [{ id, kategori, judul, ringkasan, isi, sampulUrl, status, terbitPada, catatanTinjauan, dibuatOleh, dibuatOlehNama, dibuatPada, ditinjauOlehNama, ditinjauPada }], terbaru dulu. */
+export const susunBerita = (baris = []) =>
+  baris.map((r) => ({
+    id: Number(r.id), kategori: r.kategori, judul: r.judul, ringkasan: r.ringkasan ?? '', isi: r.isi, sampulUrl: r.sampul_url ?? '',
+    status: r.status, terbitPada: r.terbit_pada ?? null, catatanTinjauan: r.catatan_tinjauan ?? '',
+    dibuatOleh: r.dibuat_oleh ?? null, dibuatOlehNama: r.dibuat_oleh_nama ?? '', dibuatPada: r.dibuat_pada,
+    ditinjauOlehNama: r.ditinjau_oleh_nama ?? '', ditinjauPada: r.ditinjau_pada ?? null,
+  })).sort((a, b) => b.dibuatPada.localeCompare(a.dibuatPada));
+
+/** Baris beranda_prestasi -> bentuk serupa susunBerita (tanpa isi/sampul berjenjang; tahun angka), terbaru dulu. */
+export const susunPrestasi = (baris = []) =>
+  baris.map((r) => ({
+    id: Number(r.id), judul: r.judul, tingkat: r.tingkat, peringkat: r.peringkat, tahun: Number(r.tahun), diraihOleh: r.diraih_oleh, fotoUrl: r.foto_url ?? '',
+    status: r.status, catatanTinjauan: r.catatan_tinjauan ?? '',
+    dibuatOleh: r.dibuat_oleh ?? null, dibuatOlehNama: r.dibuat_oleh_nama ?? '', dibuatPada: r.dibuat_pada,
+    ditinjauOlehNama: r.ditinjau_oleh_nama ?? '', ditinjauPada: r.ditinjau_pada ?? null,
+  })).sort((a, b) => b.tahun - a.tahun || b.dibuatPada.localeCompare(a.dibuatPada));
+
+/** Baris beranda_galeri -> album, terbaru dulu. */
+export const susunGaleri = (baris = []) =>
+  baris.map((r) => ({
+    id: Number(r.id), judul: r.judul, tautan: r.tautan, sampulUrl: r.sampul_url ?? '', kelompok: r.kelompok,
+    status: r.status, catatanTinjauan: r.catatan_tinjauan ?? '',
+    dibuatOleh: r.dibuat_oleh ?? null, dibuatOlehNama: r.dibuat_oleh_nama ?? '', dibuatPada: r.dibuat_pada,
+    ditinjauOlehNama: r.ditinjau_oleh_nama ?? '', ditinjauPada: r.ditinjau_pada ?? null,
+  })).sort((a, b) => b.dibuatPada.localeCompare(a.dibuatPada));
+
+/** Baris beranda_sosial -> kiriman media sosial, terbaru dulu. */
+export const susunSosial = (baris = []) =>
+  baris.map((r) => ({
+    id: Number(r.id), platform: r.platform, tautan: r.tautan, keterangan: r.keterangan ?? '', gambarUrl: r.gambar_url ?? '', tampil: !!r.tampil,
+    dibuatOleh: r.dibuat_oleh ?? null, dibuatOlehNama: r.dibuat_oleh_nama ?? '', dibuatPada: r.dibuat_pada,
+  })).sort((a, b) => b.dibuatPada.localeCompare(a.dibuatPada));
+
+/** Baris beranda_faq -> pertanyaan umum, urut sesuai `urutan`. */
+export const susunFaq = (baris = []) =>
+  baris.map((r) => ({ id: Number(r.id), pertanyaan: r.pertanyaan, jawaban: r.jawaban, urutan: Number(r.urutan) }))
+    .sort((a, b) => a.urutan - b.urutan || a.id - b.id);

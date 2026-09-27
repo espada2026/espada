@@ -63,7 +63,8 @@ from (
     ('Riwayat penugasan dan kepengurusan', (select count(*) from public.penugasan_log) + (select count(*) from public.kepengurusan_log)),
     ('Riwayat naik kelas',              (select count(*) from public.naik_kelas_batch) + (select count(*) from public.naik_kelas_log)),
     ('Tim penilai Garuda dan kalender Kwarcab', (select count(*) from public.tim_penilai) + (select count(*) from public.garuda_tahap)),
-    ('Pengukuhan Dewan Ambalan',       (select count(*) from public.pengukuhan_dewan))
+    ('Pengukuhan Dewan Ambalan',       (select count(*) from public.pengukuhan_dewan)),
+    ('Isi Kelola Beranda (berita, prestasi, galeri, media sosial, FAQ)', (select count(*) from public.beranda_berita) + (select count(*) from public.beranda_prestasi) + (select count(*) from public.beranda_galeri) + (select count(*) from public.beranda_sosial) + (select count(*) from public.beranda_faq))
   ) as x(keterangan, jumlah)
 
   union all

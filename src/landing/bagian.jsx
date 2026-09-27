@@ -8,6 +8,7 @@ import SumberPeraturan from '../components/SumberPeraturan';
 import { labelJenisAgenda } from '../lib/agendaLogic';
 import { namaAmbalan } from '../lib/gudepLogic';
 import { jaringanSosial, pecahParagraf, pecahTanggal, tautanPencarianPeta, tautanPeta, tautanWhatsapp } from '../lib/berandaLogic';
+import { LABEL_KATEGORI_BERITA, LABEL_KELOMPOK_GALERI, LABEL_PLATFORM, LABEL_TINGKAT_PRESTASI } from '../lib/berandaKontenLogic';
 import { DASA_DARMA, MENU, PERJALANAN, PROGRAM, TANYA_JAWAB, TRI_SATYA } from './landingData';
 import { IkonBeranda, LanskapPerkemahan, PetaBergaya } from './ilustrasi';
 
@@ -205,12 +206,110 @@ export function Perjalanan() {
   );
 }
 
+/** Kartu berita: sampul (bila ada), kategori, judul, ringkasan, dan tanggal terbit. Belum ada halaman detail (menyusul), jadi bukan tautan. */
+function KartuBerita({ b, besar = false }) {
+  const t = pecahTanggal(String(b.terbitPada ?? '').slice(0, 10));
+  return (
+    <article className={`flex flex-col overflow-hidden rounded-2xl border border-pramuka-200 bg-white ${besar ? 'sm:col-span-2 sm:flex-row' : ''}`}>
+      {b.sampulUrl ? (
+        <img src={b.sampulUrl} alt="" loading="lazy" className={`w-full object-cover ${besar ? 'sm:w-2/5' : 'aspect-[16/10]'}`} />
+      ) : (
+        <div aria-hidden="true" className={`flex items-center justify-center bg-pramuka-800 text-emas-light ${besar ? 'aspect-[16/10] sm:aspect-auto sm:w-2/5' : 'aspect-[16/10]'}`}>
+          <IkonBeranda nama="tenda" ukuran={besar ? 44 : 32} />
+        </div>
+      )}
+      <div className="flex flex-1 flex-col gap-2 p-5">
+        <span className="inline-block w-fit rounded-full bg-emas/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-emas-dark">{LABEL_KATEGORI_BERITA[b.kategori] ?? b.kategori}</span>
+        <h3 className={`font-display font-bold text-pramuka-900 ${besar ? 'text-2xl' : 'text-lg'}`}>{b.judul}</h3>
+        {b.ringkasan && <p className="text-[15px] leading-relaxed text-pramuka-700">{b.ringkasan}</p>}
+        {t && <p className="mt-auto pt-1 text-xs text-pramuka-500">{t.namaHari}, {t.hari} {t.bulan} {t.tahun}</p>}
+      </div>
+    </article>
+  );
+}
+
+/** Berita terbit dari Kelola Beranda (Fase 2). */
+export function Berita({ berita = [], memuat = false }) {
+  return (
+    <section id="berita" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#45291a]">
+      <div className={wrap}>
+        <KepalaBagian label="Kabar gudep" judul="Yang sedang terjadi di gudep" isi="Ditulis oleh Dewan Ambalan, Pembina, dan Admin Gudep lewat Kelola Beranda." />
+        {berita.length === 0 ? (
+          <p role="status" className="rounded-2xl border border-pramuka-200 bg-white p-6 text-pramuka-600">{memuat ? 'Memuat berita...' : 'Belum ada berita. Tengok lagi nanti.'}</p>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2">
+            {berita.map((b, i) => <KartuBerita key={`${b.judul}|${i}`} b={b} besar={i === 0} />)}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/** Prestasi terbit dari Kelola Beranda. Nama regu/tim/gudep saja (bukan nama perorangan tanpa izin). */
+export function Prestasi({ prestasi = [], memuat = false }) {
+  return (
+    <section id="prestasi" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:#f8f2e4]">
+      <div className={wrap}>
+        <KepalaBagian gelap label="Prestasi" judul="Kerja keras yang membawa pulang penghargaan" />
+        {prestasi.length === 0 ? (
+          <p role="status" className="rounded-2xl bg-pramuka-50/10 p-6 text-pramuka-200">{memuat ? 'Memuat prestasi...' : 'Belum ada prestasi yang dicatat. Tengok lagi nanti.'}</p>
+        ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {prestasi.map((p, i) => (
+            <article key={`${p.judul}|${i}`} className="flex gap-4 rounded-2xl bg-pramuka-50/10 p-5">
+              <span aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emas-light to-emas text-pramuka-900"><IkonBeranda nama="bintang" ukuran={26} /></span>
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-emas-light">{LABEL_TINGKAT_PRESTASI[p.tingkat] ?? p.tingkat} · {p.tahun}</span>
+                <h3 className="font-display text-lg font-bold">{p.peringkat} — {p.judul}</h3>
+                <p className="text-sm text-pramuka-200">{p.diraihOleh}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/** Album galeri (tautan Google Drive atau Photos) dari Kelola Beranda. */
+export function Galeri({ galeri = [], memuat = false }) {
+  return (
+    <section id="galeri" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:#45291a]">
+      <div className={wrap}>
+        <KepalaBagian label="Galeri" judul="Momen dari lapangan" isi="Album lengkap ada di Google Drive atau Google Photos gudep." />
+        {galeri.length === 0 ? (
+          <p role="status" className="rounded-2xl border border-pramuka-200 bg-white p-6 text-pramuka-600">{memuat ? 'Memuat galeri...' : 'Belum ada album. Tengok lagi nanti.'}</p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {galeri.map((g, i) => (
+              <a key={`${g.judul}|${i}`} href={g.tautan} target="_blank" rel="noopener noreferrer" className="group overflow-hidden rounded-2xl border border-pramuka-200 bg-white no-underline">
+                {g.sampulUrl ? (
+                  <img src={g.sampulUrl} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover transition group-hover:scale-105" />
+                ) : (
+                  <div aria-hidden="true" className="flex aspect-[4/3] items-center justify-center bg-pramuka-800 text-emas-light"><IkonBeranda nama="tenda" ukuran={36} /></div>
+                )}
+                <div className="p-4">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-emas-dark">{LABEL_KELOMPOK_GALERI[g.kelompok] ?? g.kelompok}</span>
+                  <h3 className="font-display text-base font-bold text-pramuka-900">{g.judul}</h3>
+                  <span className="text-xs font-semibold text-pramuka-600">Buka album ↗</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 /** Agenda mendatang dari menu Agenda (hanya judul, jenis, dan tanggal). `memuat` = jawaban server belum datang. */
 export function KabarAgenda({ agenda = [], memuat = false }) {
   return (
-    <section id="kabar" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#45291a]">
+    <section id="kabar" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#f0e5cc]">
       <div className={`${wrap} grid gap-12 lg:grid-cols-[1fr_1.2fr]`}>
-        <KepalaBagian label="Agenda" judul="Yang akan datang di gudep" isi="Diambil otomatis dari agenda gudep. Berita dan kabar kegiatan menyusul di halaman ini." />
+        <KepalaBagian label="Agenda" judul="Yang akan datang di gudep" isi="Diambil otomatis dari agenda gudep." />
         <div>
           {agenda.length === 0 ? (
             <p role="status" className="rounded-2xl border border-pramuka-200 bg-white p-6 text-pramuka-600">{memuat ? 'Memuat agenda...' : 'Belum ada agenda mendatang. Tengok lagi nanti.'}</p>
@@ -240,13 +339,43 @@ export function KabarAgenda({ agenda = [], memuat = false }) {
   );
 }
 
-export function TanyaJawab() {
+/** Kartu tautan media sosial (bukan sematan resmi): pratinjau gambar bila ada, keterangan, dan tautan keluar. Kosong = bagian tidak tampil. */
+export function MediaSosial({ sosial = [] }) {
+  if (sosial.length === 0) return null;
   return (
-    <section id="tanya" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:#f8f2e4]">
+    <section id="sosial" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:#f8f2e4]">
+      <div className={wrap}>
+        <KepalaBagian gelap label="Media sosial" judul="Ikuti kabar terbaru kami" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {sosial.map((s, i) => (
+            <a key={`${s.tautan}|${i}`} href={s.tautan} target="_blank" rel="noopener noreferrer" className="flex flex-col overflow-hidden rounded-2xl bg-pramuka-50 text-pramuka-900 no-underline">
+              {s.gambarUrl ? (
+                <img src={s.gambarUrl} alt="" loading="lazy" className="aspect-square w-full object-cover" />
+              ) : (
+                <div aria-hidden="true" className="flex aspect-square items-center justify-center bg-pramuka-700 text-emas-light"><IkonBeranda nama="kompas" ukuran={36} /></div>
+              )}
+              <div className="p-4">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emas-dark">{LABEL_PLATFORM[s.platform] ?? s.platform}</span>
+                {s.keterangan && <p className="text-sm text-pramuka-700">{s.keterangan}</p>}
+                <span className="mt-1 inline-block text-xs font-semibold text-pramuka-600">Buka tautan ↗</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Pertanyaan umum: `faq` dari Kelola Beranda (Pembina/Admin), atau daftar bawaan (landingData.js) bila belum diisi. */
+export function TanyaJawab({ faq = [] }) {
+  const daftar = faq.length ? faq.map((f) => ({ t: f.pertanyaan, j: f.jawaban })) : TANYA_JAWAB;
+  return (
+    <section id="tanya" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:#45291a]">
       <div className={`${wrap} grid gap-12 lg:grid-cols-[1fr_1.4fr]`}>
         <KepalaBagian label="Tanya jawab" judul="Sebelum Anda bergabung" isi="Jawaban singkat untuk calon Penegak dan orang tua. Tidak menemukan jawabannya? Hubungi kami lewat bagian Kontak." />
         <div className="border-t border-pramuka-200">
-          {TANYA_JAWAB.map((q, i) => (
+          {daftar.map((q, i) => (
             <details key={q.t} open={i === 0} className="group border-b border-pramuka-200">
               <summary className="relative cursor-pointer list-none py-5 pr-9 font-display text-[17px] font-bold text-pramuka-900 [&::-webkit-details-marker]:hidden">
                 {q.t}

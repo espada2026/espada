@@ -9,7 +9,7 @@
  *
  * `klien` = klien supabase-js (atau klien lokal yang bentuknya sama, lihat src/lokal).
  */
-import { petaPengaturan, petaPraUji, susunAntrianPraUji, petaProfil, petaSidang, susunPengukuhanDewan, susunAgenda, susunBatchNaikKelas, susunBerkasGaruda, susunLogNaikKelas, susunDokumen, susunGuruAgama, susunHadir, susunAsisten, susunInstrumen, susunIuran, susunKas, susunLembarIuran, susunLogKepengurusan, susunLogPenugasan, susunMateri, susunNotifikasi, susunPenilaian, susunPendampingan, susunBinaDamping, susunSanggaRombel, susunCalonPinsa, susunPenugasan, susunPenugasanPeserta, susunPelantikan, susunSaka, susunTkkCapaian, susunTkkKrida, susunTkkPengajuan, susunAmbangTkk, susunSpg, susunTanggalLahir, susunIsian, susunTemplatDokumen, susunSnapshot, susunSfh, susunGerbang, susunTimPenilai, susunGarudaTahap, susunSesiUjian, susunPortofolio, susunProgress, susunRaport, susunSesi, susunUsulanKegiatan } from './mapDb';
+import { petaPengaturan, petaPraUji, susunAntrianPraUji, petaProfil, petaSidang, susunPengukuhanDewan, susunAgenda, susunBatchNaikKelas, susunBerkasGaruda, susunLogNaikKelas, susunDokumen, susunGuruAgama, susunHadir, susunAsisten, susunInstrumen, susunIuran, susunKas, susunLembarIuran, susunLogKepengurusan, susunLogPenugasan, susunMateri, susunNotifikasi, susunPenilaian, susunPendampingan, susunBinaDamping, susunSanggaRombel, susunCalonPinsa, susunPenugasan, susunPenugasanPeserta, susunPelantikan, susunSaka, susunTkkCapaian, susunTkkKrida, susunTkkPengajuan, susunAmbangTkk, susunSpg, susunTanggalLahir, susunIsian, susunTemplatDokumen, susunSnapshot, susunSfh, susunGerbang, susunTimPenilai, susunGarudaTahap, susunSesiUjian, susunPortofolio, susunProgress, susunRaport, susunSesi, susunUsulanKegiatan, susunBerita, susunPrestasi, susunGaleri, susunSosial, susunFaq } from './mapDb';
 
 import { untukForm as untukFormBeranda, untukKirim as untukKirimBeranda } from './berandaLogic';
 
@@ -235,6 +235,40 @@ export function buatApi(klien) {
     muatBerandaKontak: () => muat(async () => untukFormBeranda((await ambilSemua('pengaturan', { filter: [['kunci', 'beranda.kontak']] }))[0]?.nilai)),
     /** Menyimpan seluruh isian beranda (pengurus: Pembina, Admin Gudep, Dewan Ambalan). Kolom yang kosong tidak ditampilkan di beranda. */
     simpanBerandaKontak: (nilai) => rpc('sg_beranda_kontak_simpan', { p_nilai: untukKirimBeranda(nilai) }),
+
+    /* ------------------- Kelola Beranda: konten (Fase 2 landing page) ------------------- */
+    /** Semua berita (pengurus: semua status; RLS membatasi ke pengurus), terbaru dulu. */
+    muatBerita: () => muat(async () => susunBerita(await ambilSemua('beranda_berita'))),
+    /** id null = tulis baru. status: 'draf' | 'menunggu' | 'terbit' (terbit hanya Pembina dan Admin Gudep). terbitPada opsional (menjadwalkan). */
+    simpanBerita: (b, status, terbitPada = null) =>
+      rpc('sg_berita_simpan', { p_id: b.id ?? null, p_kategori: b.kategori, p_judul: b.judul, p_ringkasan: b.ringkasan, p_isi: b.isi, p_sampul_url: b.sampulUrl, p_status: status, p_terbit_pada: terbitPada }),
+    hapusBerita: (id) => rpc('sg_berita_hapus', { p_id: id }),
+    /** keputusan: 'terbit' atau 'ditolak' (catatan wajib bila ditolak). */
+    tinjauBerita: (id, keputusan, catatan = '') => rpc('sg_berita_tinjau', { p_id: id, p_keputusan: keputusan, p_catatan: catatan }),
+
+    muatPrestasi: () => muat(async () => susunPrestasi(await ambilSemua('beranda_prestasi'))),
+    simpanPrestasi: (p, status) =>
+      rpc('sg_prestasi_simpan', { p_id: p.id ?? null, p_judul: p.judul, p_tingkat: p.tingkat, p_peringkat: p.peringkat, p_tahun: Number(p.tahun), p_diraih_oleh: p.diraihOleh, p_foto_url: p.fotoUrl, p_status: status }),
+    hapusPrestasi: (id) => rpc('sg_prestasi_hapus', { p_id: id }),
+    tinjauPrestasi: (id, keputusan, catatan = '') => rpc('sg_prestasi_tinjau', { p_id: id, p_keputusan: keputusan, p_catatan: catatan }),
+
+    muatGaleri: () => muat(async () => susunGaleri(await ambilSemua('beranda_galeri'))),
+    simpanGaleri: (g, status) =>
+      rpc('sg_galeri_simpan', { p_id: g.id ?? null, p_judul: g.judul, p_tautan: g.tautan, p_sampul_url: g.sampulUrl, p_kelompok: g.kelompok, p_status: status }),
+    hapusGaleri: (id) => rpc('sg_galeri_hapus', { p_id: id }),
+    tinjauGaleri: (id, keputusan, catatan = '') => rpc('sg_galeri_tinjau', { p_id: id, p_keputusan: keputusan, p_catatan: catatan }),
+
+    /** Media sosial: tanpa alur tinjauan, langsung tampil (tampil boleh dimatikan untuk menyembunyikan tanpa menghapus). */
+    muatSosial: () => muat(async () => susunSosial(await ambilSemua('beranda_sosial'))),
+    simpanSosial: (s) => rpc('sg_sosial_simpan', { p_id: s.id ?? null, p_platform: s.platform, p_tautan: s.tautan, p_keterangan: s.keterangan, p_gambar_url: s.gambarUrl, p_tampil: s.tampil !== false }),
+    hapusSosial: (id) => rpc('sg_sosial_hapus', { p_id: id }),
+
+    /** Pertanyaan umum (FAQ): hanya Pembina dan Admin Gudep. */
+    muatFaq: () => muat(async () => susunFaq(await ambilSemua('beranda_faq'))),
+    simpanFaq: (f) => rpc('sg_faq_simpan', { p_id: f.id ?? null, p_pertanyaan: f.pertanyaan, p_jawaban: f.jawaban }),
+    hapusFaq: (id) => rpc('sg_faq_hapus', { p_id: id }),
+    /** arah < 0 = naik, > 0 = turun. */
+    geserFaq: (id, arah) => rpc('sg_faq_geser', { p_id: id, p_arah: arah }),
 
     /* ------------------- Isian data diri Penegak dan templat dokumen (Tahap 3, H1) ------------------- */
     /** Isian data diri dan tanggal lahir satu Penegak: { isian: { kunci: nilai }, lahir }. Tanpa id = milik sendiri (RLS: Penegak hanya melihat miliknya; Pembina dan Admin semua). */

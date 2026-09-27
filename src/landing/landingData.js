@@ -6,7 +6,8 @@
 export const MENU = [
   { href: '#tentang', label: 'Tentang' },
   { href: '#program', label: 'Program' },
-  { href: '#perjalanan', label: 'Perjalanan' },
+  { href: '#berita', label: 'Berita' },
+  { href: '#galeri', label: 'Galeri' },
   { href: '#kabar', label: 'Agenda' },
   { href: '#tanya', label: 'Tanya Jawab' },
   { href: '#kontak', label: 'Kontak' },

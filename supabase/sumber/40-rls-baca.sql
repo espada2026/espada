@@ -47,6 +47,11 @@ alter table public.penegak_isian enable row level security;   -- baca: pemilik, 
 alter table public.dokumen_templat enable row level security;   -- baca: Pembina dan Admin; tulis: hanya fungsi sg_dokumen_templat_*
 alter table public.portofolio_snapshot enable row level security;   -- baca: Pembina dan Admin; tulis: hanya fungsi sg_portofolio_snapshot_*
 alter table public.sfh_catatan enable row level security;   -- baca: pemilik, Pembina, dan Admin; tulis: hanya fungsi sg_sfh_*
+alter table public.beranda_berita enable row level security;   -- baca: pengurus (publik lewat sg_beranda_publik); tulis: hanya fungsi sg_berita_*
+alter table public.beranda_prestasi enable row level security;   -- baca: pengurus; tulis: hanya fungsi sg_prestasi_*
+alter table public.beranda_galeri enable row level security;   -- baca: pengurus; tulis: hanya fungsi sg_galeri_*
+alter table public.beranda_sosial enable row level security;   -- baca: pengurus; tulis: hanya fungsi sg_sosial_*
+alter table public.beranda_faq enable row level security;   -- baca: pengurus; tulis: hanya fungsi sg_faq_*
 alter table public.tanggal_lahir enable row level security;   -- baca: pemilik dan pengurus; tulis: hanya fungsi sg_tanggal_lahir_atur
 alter table public.spg_penetapan enable row level security;   -- baca: pemilik dan pengurus; tulis: hanya fungsi sg_spg_*
 alter table public.tkk_krida enable row level security;   -- baca: pemilik dan pengurus; tulis: hanya fungsi sg_tkk_krida_*
@@ -207,6 +212,15 @@ create policy baca_tim_penilai on public.tim_penilai for select to authenticated
 create policy baca_tim_penilai_anggota on public.tim_penilai_anggota for select to authenticated using ((select sigarda.aktif()) and (select sigarda.pengurus()));
 create policy baca_garuda_tahap on public.garuda_tahap for select to authenticated using ((select sigarda.aktif()) and (select sigarda.pengurus()));
 -- ===== akhir kebijakan tim kalender =====
+
+-- ===== Kelola Beranda (Fase 2 landing page): kebijakan =====
+-- Isi lengkap (semua status) hanya dibaca pengurus (menu Kelola Beranda); publik membaca lewat sg_beranda_publik (hanya berstatus terbit).
+create policy baca_beranda_berita on public.beranda_berita for select to authenticated using ((select sigarda.pengurus()));
+create policy baca_beranda_prestasi on public.beranda_prestasi for select to authenticated using ((select sigarda.pengurus()));
+create policy baca_beranda_galeri on public.beranda_galeri for select to authenticated using ((select sigarda.pengurus()));
+create policy baca_beranda_sosial on public.beranda_sosial for select to authenticated using ((select sigarda.pengurus()));
+create policy baca_beranda_faq on public.beranda_faq for select to authenticated using ((select sigarda.pengurus()));
+-- ===== akhir kebijakan beranda konten =====
 
 -- Sesi ujian: pengurus melihat semua; Penegak hanya sesi yang mencantumkan dirinya.
 create policy baca_sesi_ujian on public.sesi_ujian for select to authenticated

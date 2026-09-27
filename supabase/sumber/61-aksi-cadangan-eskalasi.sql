@@ -71,7 +71,12 @@ begin
       'penegak_isian', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.penegak_isian t),
       'dokumen_templat', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.dokumen_templat t),
       'portofolio_snapshot', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.portofolio_snapshot t),
-      'sfh_catatan', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.sfh_catatan t)
+      'sfh_catatan', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.sfh_catatan t),
+      'beranda_berita', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.beranda_berita t),
+      'beranda_prestasi', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.beranda_prestasi t),
+      'beranda_galeri', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.beranda_galeri t),
+      'beranda_sosial', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.beranda_sosial t),
+      'beranda_faq', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.beranda_faq t)
     )
   ) into v_hasil;
   insert into public.pengaturan (kunci, nilai, diubah_oleh, diubah_pada)
