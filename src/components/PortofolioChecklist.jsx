@@ -3,7 +3,7 @@ import { ITEM_PORTOFOLIO, STATUS_PF } from '../data/portofolioData';
 import { useApp } from '../context/AppContext';
 import { getItem } from '../lib/portofolioLogic';
 import { fmtWaktu } from '../lib/format';
-import GridProgres, { NomorButir, TombolKeAtas, gulirDanSorot } from './ProgresKotak';
+import { NomorButir } from './ProgresKotak';
 import { BadgePortofolio, Icon } from './ui';
 
 const FILTER = [
@@ -15,14 +15,20 @@ const FILTER = [
 
 const PILIHAN_STATUS = ['belum', 'proses', 'siap'];
 
+const STATUS_KOTAK = { siap: 'selesai', proses: 'proses', belum: 'belum' };
+
 /**
  * Cek list 26 lampiran portofolio Garuda.
  *   mode 'peserta' : Calon Garuda mengisi status, catatan, dan tautan berkasnya sendiri
  *   mode 'tinjau'  : Pembina/Dewan Ambalan meninjau dan memberi catatan, admin hanya melihat
+ * `filter`/`setFilter`: biasanya dikontrol induk (bersama RekapKesiapan) supaya kotak peta dokumen di sana dapat
+ * mereset filter ke "semua" sebelum menyorot dokumen yang diklik; state lokal dipakai bila induk tidak mengirimnya.
  */
-export default function PortofolioChecklist({ pesertaId, mode }) {
+export default function PortofolioChecklist({ pesertaId, mode, filter: filterLuar, setFilter: setFilterLuar }) {
   const { portofolio, user, users, ubahPortofolio, catatPortofolioPenguji, hanyaLihatSaya } = useApp();
-  const [filter, setFilter] = useState('semua');
+  const [filterDalam, setFilterDalam] = useState('semua');
+  const filter = filterLuar ?? filterDalam;
+  const setFilter = setFilterLuar ?? setFilterDalam;
   const [form, setForm] = useState(null); // { id, catatan, tautan } atau { id, catatanPenguji }
   const [jurnalId, setJurnalId] = useState(null);
 
@@ -55,25 +61,8 @@ export default function PortofolioChecklist({ pesertaId, mode }) {
   const semuaBaris = ITEM_PORTOFOLIO.map((it) => [it, getItem(portofolio, pesertaId, it.id)]);
   const baris = semuaBaris.filter(([, e]) => syarat(e.status));
 
-  const STATUS_KOTAK = { siap: 'selesai', proses: 'proses', belum: 'belum' };
-  const ringkasan = {
-    selesai: semuaBaris.filter(([, e]) => e.status === 'siap').length,
-    proses: semuaBaris.filter(([, e]) => e.status === 'proses').length,
-    belum: semuaBaris.filter(([, e]) => (e.status ?? 'belum') !== 'siap' && e.status !== 'proses').length,
-  };
-  const kotak = semuaBaris.map(([it, e]) => ({
-    key: it.id,
-    no: it.no,
-    status: STATUS_KOTAK[e.status] ?? 'belum',
-    judul: `${it.no}. ${it.jenis}`,
-    onKlik: () => { setFilter('semua'); gulirDanSorot(`portofolio-item-${it.id}`); },
-  }));
-
   return (
     <div>
-      <GridProgres id="portofolio-progres-kotak" judul={`Peta ${semuaBaris.length} dokumen (nomor sesuai tabel cek list)`} labelSelesai="Siap" kotak={kotak} ringkasan={ringkasan} />
-      <TombolKeAtas targetId="portofolio-progres-kotak" />
-
       <div className="no-print mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter status dokumen">
         {FILTER.map((f) => (
           <button

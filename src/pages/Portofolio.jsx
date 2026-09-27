@@ -21,6 +21,9 @@ function Detail({ pesertaId, onKembali, onBukaSku }) {
   const peserta = daftarPeserta.find((u) => u.id === pesertaId);
   const [tampilBerkas, setTampilBerkas] = useState(false);
   const [tampilKwarcab, setTampilKwarcab] = useState(false);
+  // Dikontrol di sini (bukan di dalam PortofolioChecklist) supaya kotak peta dokumen pada RekapKesiapan dapat
+  // mereset filter ke "semua" sebelum menyorot dokumen yang diklik.
+  const [filter, setFilter] = useState('semua');
   if (!peserta || peserta.peran !== 'calon-garuda') {
     return (
       <div className="animasi-naik">
@@ -59,12 +62,12 @@ function Detail({ pesertaId, onKembali, onBukaSku }) {
       </section>
 
       <div className="mb-5 grid gap-5 lg:grid-cols-[1.1fr_1fr]">
-        <RekapKesiapan pesertaId={peserta.id} />
+        <RekapKesiapan pesertaId={peserta.id} setFilter={setFilter} />
         <JurnalTerbaru pesertaId={peserta.id} />
       </div>
 
       <h2 className="mb-3 text-xl font-bold">Cek list dokumen portofolio</h2>
-      <PortofolioChecklist pesertaId={peserta.id} mode="tinjau" />
+      <PortofolioChecklist pesertaId={peserta.id} mode="tinjau" filter={filter} setFilter={setFilter} />
     </div>
   );
 }
