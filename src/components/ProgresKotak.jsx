@@ -34,29 +34,30 @@ const WARNA_KOTAK = {
   belum: 'bg-pramuka-100 text-pramuka-600 ring-1 ring-inset ring-pramuka-300 hover:bg-pramuka-200',
 };
 
-/**
- * Ringkasan progres berbentuk kotak-kotak bernomor (gaya peta dokumen portofolio Garuda), dengan jumlah
- * selesai/proses/belum di atasnya. Tiap kotak dapat diklik untuk menyorot butir terkait di daftar bawahnya.
- * `id` = target tombol "kembali ke atas"; beri `scroll-mt-20` pada elemen ini bila ditempatkan di bawah header sticky.
- */
-export default function GridProgres({ id, judul, labelSelesai = 'Lulus', ringkasan, kotak }) {
+/** Kartu ringkas jumlah selesai/proses/belum. Dipisah dari kotak-kotaknya supaya halaman yang sudah punya kartu serupa (mis. RekapKesiapan) tidak menampilkannya dua kali. */
+export function RingkasanKotak({ ringkasan, labelSelesai = 'Lulus' }) {
   return (
-    <section id={id} className="panel scroll-mt-20 mb-4 p-4" aria-label={judul}>
-      <dl className="grid grid-cols-3 gap-2 text-center">
-        <div className="rounded-lg bg-emerald-50 px-2 py-2.5">
-          <dt className="text-xs font-semibold text-emerald-800">{labelSelesai}</dt>
-          <dd className="font-display text-2xl font-bold text-emerald-800">{ringkasan.selesai}</dd>
-        </div>
-        <div className="rounded-lg bg-amber-50 px-2 py-2.5">
-          <dt className="text-xs font-semibold text-amber-900">Proses</dt>
-          <dd className="font-display text-2xl font-bold text-amber-900">{ringkasan.proses}</dd>
-        </div>
-        <div className="rounded-lg bg-pramuka-100 px-2 py-2.5">
-          <dt className="text-xs font-semibold text-pramuka-700">Belum</dt>
-          <dd className="font-display text-2xl font-bold text-pramuka-800">{ringkasan.belum}</dd>
-        </div>
-      </dl>
+    <dl className="grid grid-cols-3 gap-2 text-center">
+      <div className="rounded-lg bg-emerald-50 px-2 py-2.5">
+        <dt className="text-xs font-semibold text-emerald-800">{labelSelesai}</dt>
+        <dd className="font-display text-2xl font-bold text-emerald-800">{ringkasan.selesai}</dd>
+      </div>
+      <div className="rounded-lg bg-amber-50 px-2 py-2.5">
+        <dt className="text-xs font-semibold text-amber-900">Proses</dt>
+        <dd className="font-display text-2xl font-bold text-amber-900">{ringkasan.proses}</dd>
+      </div>
+      <div className="rounded-lg bg-pramuka-100 px-2 py-2.5">
+        <dt className="text-xs font-semibold text-pramuka-700">Belum</dt>
+        <dd className="font-display text-2xl font-bold text-pramuka-800">{ringkasan.belum}</dd>
+      </div>
+    </dl>
+  );
+}
 
+/** Kotak-kotak bernomor saja (tanpa kartu ringkasan): judul, grid tombol berwarna, dan legenda. */
+export function KotakBar({ judul, labelSelesai = 'Lulus', labelProses = 'Proses', labelBelum = 'Belum', kotak }) {
+  return (
+    <div>
       <p className="mb-1.5 mt-4 text-xs font-semibold text-pramuka-600">{judul}</p>
       <ul className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(2.25rem, 1fr))' }}>
         {kotak.map((k) => (
@@ -74,9 +75,25 @@ export default function GridProgres({ id, judul, labelSelesai = 'Lulus', ringkas
       </ul>
       <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-pramuka-600">
         <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-emerald-600" />{labelSelesai}</span>
-        <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-amber-400" />Proses</span>
-        <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-pramuka-200" />Belum</span>
+        <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-amber-400" />{labelProses}</span>
+        <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-pramuka-200" />{labelBelum}</span>
       </p>
+    </div>
+  );
+}
+
+/**
+ * Ringkasan progres berbentuk kotak-kotak bernomor (gaya peta dokumen portofolio Garuda), dengan jumlah
+ * selesai/proses/belum di atasnya. Tiap kotak dapat diklik untuk menyorot butir terkait di daftar bawahnya.
+ * `id` = target tombol "kembali ke atas"; beri `scroll-mt-20` pada elemen ini bila ditempatkan di bawah header sticky.
+ * Dipakai berdiri sendiri (SKU, SPG). Halaman yang sudah punya kartu ringkasan sendiri (Portofolio Garuda)
+ * memakai `RingkasanKotak` dan `KotakBar` langsung agar tidak dobel.
+ */
+export default function GridProgres({ id, judul, labelSelesai = 'Lulus', ringkasan, kotak }) {
+  return (
+    <section id={id} className="panel scroll-mt-20 mb-4 p-4" aria-label={judul}>
+      <RingkasanKotak ringkasan={ringkasan} labelSelesai={labelSelesai} />
+      <KotakBar judul={judul} labelSelesai={labelSelesai} kotak={kotak} />
     </section>
   );
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { PERAN } from '../lib/skuLogic';
 import { hitungPortofolio } from '../lib/portofolioLogic';
@@ -12,6 +13,9 @@ import KartuIuran from '../components/KartuIuran';
 export default function GarudaDashboard({ setTab }) {
   const { user, portofolio, peranUser } = useApp();
   const h = hitungPortofolio(portofolio, user.id);
+  // Dikontrol di sini (bukan di dalam PortofolioChecklist) supaya kotak peta dokumen pada RekapKesiapan dapat
+  // mereset filter ke "semua" sebelum menyorot dokumen yang diklik.
+  const [filter, setFilter] = useState('semua');
 
   return (
     <div className="space-y-5 animasi-naik">
@@ -36,7 +40,7 @@ export default function GarudaDashboard({ setTab }) {
       <JadwalUjianBersama />
 
       <div className="grid gap-5 lg:grid-cols-[1.1fr_1fr]">
-        <RekapKesiapan pesertaId={user.id} />
+        <RekapKesiapan pesertaId={user.id} setFilter={setFilter} />
         <JurnalTerbaru pesertaId={user.id} />
       </div>
 
@@ -52,7 +56,7 @@ export default function GarudaDashboard({ setTab }) {
             <Icon nama="absensi" className="h-4 w-4" /> Lihat daftar hadir (dokumen no. 4)
           </button>
         </div>
-        <PortofolioChecklist pesertaId={user.id} mode="peserta" />
+        <PortofolioChecklist pesertaId={user.id} mode="peserta" filter={filter} setFilter={setFilter} />
       </section>
     </div>
   );
