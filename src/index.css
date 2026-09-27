@@ -186,3 +186,35 @@
     print-color-adjust: exact;
   }
 }
+
+/* Halaman muka (landing page, src/landing): tepi bergerigi seperti kain tenda antarbagian (warna bagian di atasnya lewat --atas) dan api unggun berkedip pelan. */
+.tepi-tenda {
+  position: relative;
+}
+.tepi-tenda::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 14px;
+  pointer-events: none;
+  background: var(--atas);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='14'%3E%3Cpath d='M0 0h28L14 14z'/%3E%3C/svg%3E") repeat-x top / 28px 14px;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='14'%3E%3Cpath d='M0 0h28L14 14z'/%3E%3C/svg%3E") repeat-x top / 28px 14px;
+}
+@keyframes api-unggun {
+  to {
+    transform: scale(1.08, 0.94);
+  }
+}
+.ln-api {
+  transform-origin: 50% 100%;
+  transform-box: fill-box;
+  animation: api-unggun 1.6s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ln-api {
+    animation: none;
+  }
+}

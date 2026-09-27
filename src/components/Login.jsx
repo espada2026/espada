@@ -67,6 +67,7 @@ export default function Login() {
 
         <section className="flex items-center justify-center bg-pramuka-50 px-5 py-10">
           <form onSubmit={kirim} className="panel animasi-naik w-full max-w-sm p-6" noValidate>
+            <a href="#beranda" className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-pramuka-700 underline">← Kembali ke beranda gudep</a>
             <h2 className="text-xl font-bold text-pramuka-900">Masuk</h2>
 
             <div className="mt-5">

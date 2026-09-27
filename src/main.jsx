@@ -1,12 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
+import Akar from './Akar.jsx';
 import './index.css';
 import { daftarkanSW } from './lib/pushClient';
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+// index.html memuat halaman muka hasil prarender di dalam #root (data-pra): dipakai sebagai tampilan sementara selagi halaman muka dimuat (lihat src/Akar.jsx).
+const akar = document.getElementById('root');
+const prarender = akar.querySelector('[data-pra]')?.innerHTML ?? '';
+
+ReactDOM.createRoot(akar).render(
   <React.StrictMode>
-    <App />
+    <Akar prarender={prarender} />
   </React.StrictMode>
 );
 

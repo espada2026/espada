@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
+import { renderBerandaKeHtml, sisipkanPrarender } from './scripts/prarender.mjs';
 
 const BOOT_LOKAL = fileURLToPath(new URL('./src/lokal/bootLokal.js', import.meta.url));
 
@@ -37,6 +38,18 @@ const versiTerbit = (aktif) => ({
   },
 });
 
+/**
+ * Prarender halaman muka: HTML landing page disisipkan ke index.html saat build (bukan saat dev), supaya isinya terbaca mesin pencari dan tampil seketika
+ * sebelum JavaScript dimuat. Lihat scripts/prarender.mjs dan src/Akar.jsx.
+ */
+const prarenderBeranda = () => ({
+  name: 'sigarda-prarender',
+  apply: 'build',
+  async transformIndexHtml(html) {
+    return sisipkanPrarender(html, await renderBerandaKeHtml());
+  },
+});
+
 // VITE_BASE dipakai saat deploy ke GitHub Pages, mis. VITE_BASE=/sigarda/
 export default defineConfig(({ mode, command }) => {
   // Hanya mode "lokal" yang memakai backend lokal. Variabel lingkungan VITE_BACKEND=lokal yang tersisa di shell (mis. sesi pengembangan) membuat
@@ -46,7 +59,7 @@ export default defineConfig(({ mode, command }) => {
   if (mode !== 'lokal') delete process.env.VITE_BACKEND;
   return {
     base: process.env.VITE_BASE || '/',
-    plugins: [backendLokal(mode === 'lokal'), versiTerbit(command === 'build' && mode !== 'lokal'), react()],
+    plugins: [backendLokal(mode === 'lokal'), versiTerbit(command === 'build' && mode !== 'lokal'), prarenderBeranda(), react()],
     define: { __BUILD_ID__: JSON.stringify(command === 'build' && mode !== 'lokal' ? ID_BUILD : '') },
     // Edge Function memakai alamat gaya Deno ("npm:..."); di sini dialihkan ke paket yang terpasang (mode lokal).
     resolve: { alias: { 'npm:@supabase/supabase-js@2': '@supabase/supabase-js' } },

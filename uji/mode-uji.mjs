@@ -131,6 +131,15 @@ console.log('\n--- Build produksi: tanpa mode uji, dengan klien Supabase, dan ha
   const malas = [['Layak dan lulus untuk dilantik', 'halaman verifikasi QR'], ['Tautan tidak berlaku', 'halaman tautan berbagi Berkas Garuda'], ['Antrian pengujian SKU', 'dasbor Pembina/Dewan'], ['Dashboard Admin Gudep', 'dasbor Admin']];
   for (const [teks, nama] of malas) ok(!awal.includes(teks) && semua.includes(teks), `${nama} dimuat malas: tidak ada di JS awal, ada di potongan lain`);
   ok(!/\baddData\b/.test(awal) && /\baddData\b/.test(semua), 'pembuat kode QR dimuat malas: tidak ada di JS awal, ada di potongan lain');
+  // Halaman muka (Fase 1): potongan malas di JS, tetapi isinya sudah ada sebagai HTML prarender di index.html (terbaca mesin pencari dan tampil seketika)
+  const kalimatBeranda = 'Berlatih setiap Jumat, bertumbuh sepanjang tahun';
+  const htmlAkhir = readFileSync(`${P}/${keluar}/index.html`, 'utf8');
+  ok(!awal.includes(kalimatBeranda) && semua.includes(kalimatBeranda), 'halaman muka dimuat malas: tidak ada di JS awal, ada di potongan lain');
+  ok(htmlAkhir.includes('<div id="root"><div data-pra>') && htmlAkhir.includes(kalimatBeranda) && /<h1[^>]*>\s*Gugus Depan/.test(htmlAkhir), 'index.html memuat halaman muka hasil prarender (di dalam #root, data-pra) dengan satu <h1>');
+  ok(!/<script(?![^>]*(type="module"|type="application\/ld\+json"|id="pilih-rute"))[^>]*>/.test(htmlAkhir.replace(/<div id="root">[\s\S]*<\/div><\/div>/, '')) && !/<script[^>]*>[^<]*(supabase|VITE_)/.test(htmlAkhir.replace(/<script id="pilih-rute">[\s\S]*?<\/script>/, '')), 'index.html tidak memuat skrip tak dikenal dan tidak membocorkan konfigurasi');
+  ok(htmlAkhir.includes('rel="canonical"') && htmlAkhir.includes('og:image') && htmlAkhir.includes('application/ld+json'), 'kepala index.html memuat canonical, Open Graph, dan data terstruktur');
+  for (const b of ['robots.txt', 'sitemap.xml', 'og-gudep.png']) ok(readdirSync(`${P}/${keluar}`).includes(b), `${b} ikut terbit`);
+  ok(!htmlAkhir.includes('Diana Udhi') && !htmlAkhir.includes('11.03.10.701'), 'index.html tidak memuat nama Pembina maupun NTA');
   rmSync(`${P}/${keluar}`, { recursive: true, force: true });
 }
 

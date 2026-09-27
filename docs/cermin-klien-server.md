@@ -9,8 +9,8 @@ dan mencatat bukti kesamaannya. Diperbarui setiap ada cermin baru.
    semua penulisan lewat fungsi `sg_*` yang memeriksa peran. Dicek pada audit ini: **89 fungsi `sg_*`**, tiap fungsi aksi memanggil
    `sigarda.wajib_aktif()` lalu penjaga peran (`pembina_atau_admin`, `pembina_saja`, `pengurus`, `dewan`, `wajib_admin`,
    `pradana_atau_pradani`, `bisa_menguji`, `pencatat_iuran`, `kelola_materi`) atau memeriksa kepemilikan (`auth.uid()`).
-   Fungsi tanpa penjaga peran sengaja dan dibaca-saja: `sg_verifikasi_*`, `sg_garuda_token_baca`, `sg_gudep_publik` (publik menurut
-   rancangan, hanya ringkasan), `sg_push_kunci` (kunci VAPID publik), `sg_iuran_pengaturan` dan `sg_iuran_agregat` (rekap total gudep/sangga/kelas
+   Fungsi tanpa penjaga peran sengaja dan dibaca-saja: `sg_verifikasi_*`, `sg_garuda_token_baca`, `sg_gudep_publik` dan `sg_beranda_publik` (publik menurut
+   rancangan, hanya ringkasan; yang kedua tidak pernah mengeluarkan NTA, NIP, keterangan agenda, atau data anggota), `sg_push_kunci` (kunci VAPID publik), `sg_iuran_pengaturan` dan `sg_iuran_agregat` (rekap total gudep/sangga/kelas
    sengaja terbuka bagi semua pengguna aktif; baris iuran per orang tetap dijaga RLS).
 2. **Klien tidak boleh memberi hak lebih dari server.** Kelebihan di sisi klien hanya menampilkan tombol yang akan ditolak server;
    kekurangan di sisi klien hanya menyembunyikan fitur yang sebenarnya boleh. Kedua-duanya perlu dijaga, tetapi yang pertama lebih
@@ -45,6 +45,8 @@ dan mencatat bukti kesamaannya. Diperbarui setiap ada cermin baru.
 | Skor instrumen | `instrumenLogic.hitungSkorInstrumen` | `sigarda.instrumen_hitung` | tampilan (server menghitung ulang) | `instrumen` (JS = SQL) |
 | Iuran (rekap, saran nilai butir SKU) | `iuranLogic` (hanya merekap dan menampilkan) | `sg_iuran_ringkas`, `sigarda.iuran_*` (server yang menghitung) | tampilan | `iuran-sku` (server), `iuran-klien` (rekap klien pada data tetap) |
 | Aturan isian Data Gudep | `gudepLogic.periksaGudep` | `sg_gudep_simpan` | validasi | `gudep` |
+| Isian beranda publik (12 kolom: kontak, tautan https, jadwal, sambutan, cerita; perapian satu baris dan paragraf, panjang dalam karakter sesungguhnya) | `berandaLogic.periksaKontak/rapikan/rapikanParagraf` | `sg_beranda_kontak_simpan`, `sigarda.rapikan_baris/rapikan_paragraf` | tampilan (server menegakkan; tautan hanya https mencegah `javascript:`) | `beranda-klien` (kisi masukan dibandingkan langsung dengan SQL, termasuk emoji dan batas panjang) |
+| Pilihan tampilan awal: halaman muka atau aplikasi (alamat, hash, sesi tersimpan) | `ruteLogic.pilihRute/ruteSesudahHash` dan skrip `pilih-rute` di `index.html` | (klien saja) | tampilan | `rute` (skrip index.html dan pilihRute memilih sama pada seluruh kombinasi) |
 | Isian catatan Safe From Harm (jenis, sasaran Pembina/Admin aktif, tanggal 2015 sampai hari ini, tautan bukti, catatan) | `perlindunganLogic.periksaCatatSfh` | `sg_sfh_catat` | tampilan (server menegakkan) | `perlindungan` (kisi masukan dibandingkan langsung dengan SQL) |
 | Isian penerima laporan gugus depan Safe From Harm (penerima, kontak, tautan prosedur, keterangan) | `perlindunganLogic.periksaGudepSfh` | `sg_sfh_gudep_simpan` | tampilan (server menegakkan) | `perlindungan` (kisi masukan dibandingkan langsung dengan SQL) |
 | Jabatan tunggal Dewan (Pradana, Pradani, Pemangku Adat) dan pembakuan jabatan | `dewanLogic.JABATAN_TUNGGAL`, `normalisasiJabatanDewan` | `sigarda.jabatan_tunggal`, `sigarda.jabatan_baku`, indeks `profil_pradana_pradani_unik` | tampilan (server menegakkan lewat indeks unik) | `jabatan-dewan` (dibandingkan langsung dengan SQL), `migrasi-pengukuhan-dewan` |
