@@ -11,6 +11,8 @@
  */
 import { petaPengaturan, petaPraUji, susunAntrianPraUji, petaProfil, petaSidang, susunPengukuhanDewan, susunAgenda, susunBatchNaikKelas, susunBerkasGaruda, susunLogNaikKelas, susunDokumen, susunGuruAgama, susunHadir, susunAsisten, susunInstrumen, susunIuran, susunKas, susunLembarIuran, susunLogKepengurusan, susunLogPenugasan, susunMateri, susunNotifikasi, susunPenilaian, susunPendampingan, susunBinaDamping, susunSanggaRombel, susunCalonPinsa, susunPenugasan, susunPenugasanPeserta, susunPelantikan, susunSaka, susunTkkCapaian, susunTkkKrida, susunTkkPengajuan, susunAmbangTkk, susunSpg, susunTanggalLahir, susunIsian, susunTemplatDokumen, susunSnapshot, susunSfh, susunGerbang, susunTimPenilai, susunGarudaTahap, susunSesiUjian, susunPortofolio, susunProgress, susunRaport, susunSesi, susunUsulanKegiatan } from './mapDb';
 
+import { untukForm as untukFormBeranda, untukKirim as untukKirimBeranda } from './berandaLogic';
+
 export const UKURAN_HALAMAN = 1000;
 /** Halaman ke-2 dan seterusnya diminta serempak per gelombang sebesar ini (halaman pertama sendirian, agar tabel kecil tetap satu permintaan). */
 export const HALAMAN_SEREMPAK = 4;
@@ -227,6 +229,12 @@ export function buatApi(klien) {
     simpanGerbang: (nilai) => rpc('sg_gerbang_simpan', { p_nilai: nilai }),
     /** Mengisi tanggal lahir banyak Penegak sesudah impor (Pembina dan Admin). `daftar` = [{ username, tanggal 'YYYY-MM-DD' }]; semua atau tidak sama sekali. Mengembalikan jumlah yang diperbarui. */
     imporTanggalLahir: (daftar) => rpc('sg_tanggal_lahir_impor', { p_data: daftar }),
+
+    /* ------------------- Isi beranda publik (Fase 1 landing page) ------------------- */
+    /** Isian beranda yang tersimpan (kontak, tautan sosial, jadwal, sambutan, cerita), selalu lengkap berupa teks; kosong bila belum pernah disimpan. */
+    muatBerandaKontak: () => muat(async () => untukFormBeranda((await ambilSemua('pengaturan', { filter: [['kunci', 'beranda.kontak']] }))[0]?.nilai)),
+    /** Menyimpan seluruh isian beranda (pengurus: Pembina, Admin Gudep, Dewan Ambalan). Kolom yang kosong tidak ditampilkan di beranda. */
+    simpanBerandaKontak: (nilai) => rpc('sg_beranda_kontak_simpan', { p_nilai: untukKirimBeranda(nilai) }),
 
     /* ------------------- Isian data diri Penegak dan templat dokumen (Tahap 3, H1) ------------------- */
     /** Isian data diri dan tanggal lahir satu Penegak: { isian: { kunci: nilai }, lahir }. Tanpa id = milik sendiri (RLS: Penegak hanya melihat miliknya; Pembina dan Admin semua). */

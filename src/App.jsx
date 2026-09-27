@@ -8,8 +8,6 @@ import BannerVersi from './components/BannerVersi';
 import BatasHalaman from './components/BatasHalaman';
 import FormWhatsapp from './components/FormWhatsapp';
 import { Modal } from './components/ui';
-import { parameterVerifikasi } from './lib/verifikasiLogic';
-import { parameterBerkasGaruda } from './lib/garudaLogic';
 import { pembinaAtauAdmin } from './lib/hakLogic';
 import { menuSanggaTampil } from './lib/sanggaLogic';
 import { menuPraUjiTampil, ujiResmiTampil } from './lib/praUjiLogic';
@@ -19,15 +17,13 @@ import LogoMark from './components/LogoMark';
 // Halaman selain beranda dimuat malas (berkasnya diunduh saat pertama dibuka); lihat BatasHalaman.
 // Dasbor dimuat malas per peran: Penegak (mayoritas) tidak mengunduh dasbor Pembina dan Admin. Berkasnya diminta lebih awal begitu peran
 // diketahui (lihat useEffect di Shell), sehingga tidak menambah satu putaran unduhan setelah data siap. Halaman publik (verifikasi QR dan
-// tautan berbagi) juga malas: keduanya menarik pembuat kode QR dan komponen dokumen yang tidak dibutuhkan halaman lain.
+// tautan berbagi) juga malas, dipilih di src/Akar.jsx: keduanya menarik pembuat kode QR dan komponen dokumen yang tidak dibutuhkan halaman lain.
 const muatGarudaDashboard = () => import('./pages/GarudaDashboard');
 const muatPengujiDashboard = () => import('./pages/PengujiDashboard');
 const muatAdminDashboard = () => import('./pages/AdminDashboard');
 const GarudaDashboard = lazy(muatGarudaDashboard);
 const PengujiDashboard = lazy(muatPengujiDashboard);
 const AdminDashboard = lazy(muatAdminDashboard);
-const HalamanVerifikasi = lazy(() => import('./components/HalamanVerifikasi'));
-const HalamanBerkasGaruda = lazy(() => import('./components/HalamanBerkasGaruda'));
 const PesertaSku = lazy(() => import('./pages/PesertaSku'));
 const PraUji = lazy(() => import('./pages/PraUji'));
 const Pelantikan = lazy(() => import('./pages/Pelantikan'));
@@ -62,6 +58,7 @@ const Agenda = lazy(() => import('./pages/Agenda'));
 const Sangga = lazy(() => import('./pages/Sangga'));
 const Laporan = lazy(() => import('./pages/Laporan'));
 const Bantuan = lazy(() => import('./pages/Bantuan'));
+const KelolaBeranda = lazy(() => import('./pages/KelolaBeranda')); // isi halaman muka publik (Fase 1 landing page)
 
 /**
  * Menu per peran, dikelompokkan menurut fungsinya (tampil sebagai kelompok di menu samping, dan berurutan di menu bawah ponsel).
@@ -91,6 +88,7 @@ function buatNav(user, peran, belumDibaca = 0, pendampingan = null, praUjiAktif 
   const pemeriksaan = { id: 'pemeriksaan', label: 'Periksa Data', ikon: 'cari' };
   const tindakLanjut = { id: 'tindaklanjut', label: 'Tindak Lanjut', ikon: 'lonceng' };
   const agenda = { id: 'agenda', label: 'Agenda', ikon: 'kalender' };
+  const kelolaBeranda = { id: 'kelolaberanda', label: 'Kelola Beranda', ikon: 'beranda' }; // pengurus: Pembina, Admin, Dewan Ambalan (tampilan Dewan)
   const sangga = { id: 'sangga', label: 'Sangga', ikon: 'anggota' };
   const adaSangga = menuSanggaTampil(user, pendampingan);
   const praUji = { id: 'pra-uji', label: 'Pra-uji', ikon: 'cek' };
@@ -117,7 +115,7 @@ function buatNav(user, peran, belumDibaca = 0, pendampingan = null, praUjiAktif 
     return [
       { judul: 'Utama', item: [{ id: 'dashboard', label: 'Dashboard', ikon: 'dashboard' }, notifikasi, bantuan] },
       { judul: 'Pengujian SKU', item: [...(ujiResmi ? [{ id: 'antrian', label: 'Antrian', ikon: 'jam' }] : []), ...(adaPraUji ? [praUji] : []), { id: 'peserta', label: 'Peserta', ikon: 'anggota' }, ...(ujiResmi ? [sesi] : []), ...(kelolaBoleh ? [instrumen, penugasan, kepengurusan, pelantikan, perlindungan] : []), tkk, spg, kelayakan, pemeriksaan, sidang, cetak] },
-      { judul: 'Kegiatan Ambalan', item: [absensi, iuran, portofolio, tindakLanjut, agenda, sangga, ...(kelolaBoleh ? [raport, laporan] : [])] },
+      { judul: 'Kegiatan Ambalan', item: [absensi, iuran, portofolio, tindakLanjut, agenda, sangga, ...(kelolaBoleh ? [raport, laporan] : []), kelolaBeranda] },
       { judul: 'Materi', item: [materi, ...(kelolaBoleh ? [kelola] : [])] },
     ];
   }
@@ -126,7 +124,7 @@ function buatNav(user, peran, belumDibaca = 0, pendampingan = null, praUjiAktif 
     { judul: 'Pengujian SKU', item: [praUji, sesi, instrumen, pelantikan, tkk, spg, kelayakan, sidang, cetak] },
     { judul: 'Kegiatan Ambalan', item: [absensi, iuran, portofolio, tindakLanjut, agenda, sangga, raport, laporan] },
     { judul: 'Materi', item: [materi, kelola] },
-    { judul: 'Pengelolaan', item: [{ id: 'anggota', label: 'Anggota', ikon: 'anggota' }, kepengurusan, { id: 'naikkelas', label: 'Naik Kelas', ikon: 'naikkelas' }, { id: 'gudep', label: 'Data Gudep', ikon: 'perisai' }, perlindungan, pemeriksaan] },
+    { judul: 'Pengelolaan', item: [{ id: 'anggota', label: 'Anggota', ikon: 'anggota' }, kepengurusan, { id: 'naikkelas', label: 'Naik Kelas', ikon: 'naikkelas' }, { id: 'gudep', label: 'Data Gudep', ikon: 'perisai' }, kelolaBeranda, perlindungan, pemeriksaan] },
   ];
 }
 function Toast() {
@@ -302,6 +300,8 @@ function Shell() {
     isi = <KelolaInstrumen />;
   } else if (tabAktif === 'gudep' && user.role === 'admin') {
     isi = <DataGudep />;
+  } else if (tabAktif === 'kelolaberanda' && user.role !== 'peserta') {
+    isi = <KelolaBeranda />;
   } else if (tabAktif === 'naikkelas' && user.role === 'admin') {
     isi = <NaikKelas />;
   } else if (tabAktif === 'penugasan' && user.role === 'penguji' && user.jabatan === 'Pembina') {
@@ -394,13 +394,8 @@ function Shell() {
   );
 }
 
+/** Aplikasi (masuk, dasbor, semua menu). Halaman muka dan halaman publik dipilih lebih dulu di src/Akar.jsx dan tidak memuat data aplikasi. */
 export default function App() {
-  // Alamat dari QR dokumen (/?v=...) membuka halaman verifikasi publik: tanpa login dan tanpa memuat data aplikasi.
-  const verifikasi = parameterVerifikasi(window.location.search);
-  if (verifikasi !== null) return <BatasHalaman><HalamanVerifikasi awal={verifikasi} /></BatasHalaman>;
-  // Tautan berbagi Berkas Calon Garuda (/?berkas=...): tanpa login, baca-saja (tahap L7).
-  const berkas = parameterBerkasGaruda(window.location.search);
-  if (berkas !== null) return <BatasHalaman><HalamanBerkasGaruda token={berkas} /></BatasHalaman>;
   return (
     <AppProvider>
       <Shell />

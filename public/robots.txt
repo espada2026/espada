@@ -1,0 +1,7 @@
+# Halaman muka gudep boleh diindeks. Halaman verifikasi dokumen dan tautan berbagi berkas tidak (juga bertanda noindex di halamannya).
+User-agent: *
+Allow: /
+Disallow: /*?v=
+Disallow: /*?berkas=
+
+Sitemap: https://sigarda.smabukateja.sch.id/sitemap.xml

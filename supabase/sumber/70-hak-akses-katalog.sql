@@ -41,7 +41,7 @@ grant execute on function
   public.sg_guru_agama_simpan(bigint, text, text, text), public.sg_guru_agama_hapus(bigint),
   public.sg_penguji_pilihan(text, uuid), public.sg_sku_alihkan(uuid, text, uuid, text),
   public.sg_dokumen_surat_agama_terbit(uuid, text[], bigint, text, date, text, text, text, text, text), public.sg_dokumen_cabut(bigint, text),
-  public.sg_gudep_simpan(jsonb),
+  public.sg_gudep_simpan(jsonb), public.sg_beranda_kontak_simpan(jsonb),
   public.sg_naik_kelas(text, jsonb, boolean), public.sg_naik_kelas_batalkan(bigint), public.sg_anggota_status_atur(uuid, text, text, text),
   public.sg_notifikasi_tandai(bigint[]), public.sg_push_kunci(), public.sg_push_simpan(text, text, text, text), public.sg_push_hapus(text), public.sg_push_ringkasan(), public.sg_notifikasi_tes(),
   public.sg_penugasan_peserta_atur(text, uuid, uuid[], text), public.sg_kepengurusan_terapkan(jsonb, boolean, boolean), public.sg_pengukuhan_dewan_simpan(text, text, date, text, date, text), public.sg_pengukuhan_dewan_hapus(text), public.sg_dewan_lama_arsipkan(uuid[], boolean),
@@ -68,8 +68,8 @@ grant execute on function
   public.sg_sfh_catat(uuid, text, date, text, text), public.sg_sfh_hapus(bigint), public.sg_sfh_gudep_simpan(jsonb)
   to authenticated;
 -- Fungsi yang boleh dipanggil tanpa login (hanya membaca): verifikasi keaslian dokumen, identitas gudep di halaman masuk, dan
--- tautan berbagi baca-saja Berkas Calon Garuda (tahap L7)
-grant execute on function public.sg_verifikasi_token(text), public.sg_verifikasi_kode(text), public.sg_gudep_publik(), public.sg_garuda_token_baca(text) to anon, authenticated;
+-- tautan berbagi baca-saja Berkas Calon Garuda (tahap L7), dan isi beranda publik (Fase 1 landing page: hanya membaca)
+grant execute on function public.sg_verifikasi_token(text), public.sg_verifikasi_kode(text), public.sg_gudep_publik(), public.sg_garuda_token_baca(text), public.sg_beranda_publik() to anon, authenticated;
 grant execute on function
   public.sg_sku_catat_internal(uuid, uuid, text, text, date, text, text),
   public.sg_sku_catat_rubrik_internal(uuid, uuid, text, date, jsonb, text, text),
