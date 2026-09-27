@@ -88,7 +88,7 @@ console.log('\n--- Penyimpanan dan perapian ---');
 
 console.log('\n--- Fungsi publik: tanpa login ---');
 {
-  ok(JSON.stringify(await publik()).length > 0 && Object.keys(await publik()).sort().join() === 'agenda,gudep,kamabigus,kontak,pembina', 'anon dapat memanggil sg_beranda_publik; bentuk: agenda, gudep, kamabigus, kontak, pembina');
+  ok(JSON.stringify(await publik()).length > 0 && Object.keys(await publik()).sort().join() === 'agenda,berita,faq,galeri,gudep,kamabigus,kontak,pembina,prestasi,sosial', 'anon dapat memanggil sg_beranda_publik; bentuk: agenda, berita, faq, galeri, gudep, kamabigus, kontak, pembina, prestasi, sosial (Fase 2: uji/beranda-konten.mjs menjaga isi kelima kunci baru)');
   const r = await sebagai(null, `select public.sg_beranda_kontak_simpan('{}'::jsonb)`);
   ok(!r.ok, 'anon tidak dapat memanggil sg_beranda_kontak_simpan');
   let d = await publik();

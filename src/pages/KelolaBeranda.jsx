@@ -1,120 +1,63 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Field } from '../components/ui';
-import { BATAS, LABEL, KOLOM_PARAGRAF, periksaKontak, samaKontak, untukForm } from '../lib/berandaLogic';
-
-/** Satu isian: teks satu baris atau paragraf (textarea). */
-function Isian({ kolom, form, ubah, galat, bantuan, placeholder, jenis = 'text', baris = 0 }) {
-  const id = `beranda-${kolom}`;
-  const nilai = form[kolom];
-  const umum = {
-    id,
-    value: nilai,
-    maxLength: BATAS[kolom] + 200, // sedikit longgar: pesan galat yang menuntun, bukan pemotongan diam-diam
-    placeholder,
-    onChange: (e) => ubah(kolom, e.target.value),
-    'aria-invalid': galat ? 'true' : undefined,
-    'aria-describedby': galat ? `${id}-galat` : undefined,
-    className: `input ${galat ? 'border-red-500' : ''}`,
-  };
-  return (
-    <Field label={LABEL[kolom]} htmlFor={id} bantuan={bantuan}>
-      {baris ? <textarea rows={baris} {...umum} /> : <input type={jenis} {...umum} />}
-      {KOLOM_PARAGRAF.includes(kolom) && <p className="mt-1 text-right text-xs text-pramuka-500">{nilai.length} / {BATAS[kolom]}</p>}
-      {galat && <p id={`${id}-galat`} role="alert" className="mt-1 text-xs font-medium text-red-700">{galat}</p>}
-    </Field>
-  );
-}
+import { pembinaAtauAdmin } from '../lib/hakLogic';
+import { SKEMA_BERITA, SKEMA_PRESTASI, SKEMA_GALERI } from '../lib/berandaKontenSkema';
+import PanelKontakBeranda from '../components/PanelKontakBeranda';
+import PanelKontenTinjau from '../components/PanelKontenTinjau';
+import PanelSosial from '../components/PanelSosial';
+import PanelFaq from '../components/PanelFaq';
 
 /**
- * Kelola Beranda (Pembina, Admin Gudep, dan Dewan Ambalan): isi halaman muka publik yang diatur pengurus. Fase 1: kontak, tautan media sosial, jadwal latihan,
- * sambutan, dan cerita gudep (disimpan pada pengaturan beranda.kontak). Berita, prestasi, galeri, dan pertanyaan umum menyusul di fase berikutnya.
- * Hak ditegakkan server (sg_beranda_kontak_simpan); halaman ini hanya tampil bagi pengurus.
+ * Kelola Beranda (Pembina, Admin Gudep, dan Dewan Ambalan): isi halaman muka publik yang dapat dilihat siapa saja tanpa masuk. Berita,
+ * Prestasi, dan Galeri berbagi alur yang sama (Dewan mengajukan, Pembina/Admin meninjau atau menerbitkan langsung; lihat PanelKontenTinjau).
+ * Media sosial tanpa alur (langsung tampil); Pertanyaan umum (FAQ) hanya untuk Pembina dan Admin Gudep. Hak ditegakkan server; tampilan ini
+ * hanya menyembunyikan tombol dan tab yang akan ditolak.
  */
 export default function KelolaBeranda() {
-  const { api, notify } = useApp();
-  const [awal, setAwal] = useState(null); // tersimpan di server (null = belum dimuat)
-  const [form, setForm] = useState(() => untukForm(null));
-  const [galatMuat, setGalatMuat] = useState('');
-  const [sibuk, setSibuk] = useState(false);
-  const [dicoba, setDicoba] = useState(false);
-
-  const muat = useCallback(async () => {
-    const r = await api().muatBerandaKontak();
-    if (r.ok) { setAwal(r.data); setForm(r.data); setGalatMuat(''); } else setGalatMuat(r.pesan ?? 'Isi beranda tidak dapat dimuat.');
-  }, [api]);
-  useEffect(() => { muat(); }, [muat]);
-
-  const galat = periksaKontak(form);
-  const berubah = awal !== null && !samaKontak(form, awal);
-  const ubah = (kolom, nilai) => setForm((f) => ({ ...f, [kolom]: nilai }));
-  const tampil = (kolom) => (dicoba ? galat[kolom] : undefined);
-  const bagi = { form, ubah };
-
-  const simpan = async (e) => {
-    e.preventDefault();
-    setDicoba(true);
-    if (Object.keys(galat).length || sibuk) return;
-    setSibuk(true);
-    const r = await api().simpanBerandaKontak(form);
-    setSibuk(false);
-    if (!r.ok) { notify(r.pesan, 'err'); return; }
-    notify('Isi beranda tersimpan.');
-    setDicoba(false);
-    await muat();
-  };
+  const { user } = useApp();
+  const bolehTerbit = pembinaAtauAdmin(user);
+  const TAB = [
+    { id: 'kontak', label: 'Kontak' },
+    { id: 'berita', label: 'Berita' },
+    { id: 'prestasi', label: 'Prestasi' },
+    { id: 'galeri', label: 'Galeri' },
+    { id: 'sosial', label: 'Media Sosial' },
+    ...(bolehTerbit ? [{ id: 'faq', label: 'Pertanyaan Umum' }] : []),
+  ];
+  const [tab, setTab] = useState('kontak');
+  const tabAktif = TAB.some((t) => t.id === tab) ? tab : 'kontak';
 
   return (
     <div className="animasi-naik space-y-5">
       <div>
         <h1 className="text-2xl font-bold">Kelola Beranda</h1>
-        <p className="mt-1 max-w-2xl text-sm text-pramuka-600">
-          Isi di sini tampil di halaman muka gudep yang dapat dilihat siapa saja tanpa masuk. Kolom yang dikosongkan tidak ditampilkan. Berita, prestasi, galeri, dan
-          pertanyaan umum akan menyusul di menu ini.
-        </p>
+        <p className="mt-1 max-w-2xl text-sm text-pramuka-600">Isi di sini tampil di halaman muka gudep yang dapat dilihat siapa saja tanpa masuk.</p>
         <p className="mt-2 text-sm"><a className="font-semibold text-pramuka-800 underline" href="#beranda">Lihat beranda publik</a></p>
       </div>
 
-      {galatMuat && <p role="alert" className="panel border-red-300 bg-red-50 p-3 text-sm font-medium text-red-800">{galatMuat}</p>}
+      <div role="tablist" aria-label="Bagian Kelola Beranda" className="flex flex-wrap gap-1 border-b border-pramuka-200 pb-px">
+        {TAB.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={tabAktif === t.id}
+            className={`rounded-t-lg px-3.5 py-2 text-sm font-semibold ${tabAktif === t.id ? 'border border-b-white bg-white text-pramuka-900' : 'text-pramuka-600 hover:bg-pramuka-100'}`}
+            onClick={() => setTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-      <form onSubmit={simpan} className="space-y-5" noValidate>
-        <section className="panel p-4" aria-labelledby="beranda-kontak">
-          <h2 id="beranda-kontak" className="text-base font-bold text-pramuka-900">Kontak dan jadwal</h2>
-          <p className="mb-3 text-xs text-pramuka-600">Email dan telepon yang dikosongkan memakai yang tertera di Data Gudep.</p>
-          <div className="grid gap-x-4 sm:grid-cols-2">
-            <Isian kolom="whatsapp" galat={tampil('whatsapp')} placeholder="08xxxxxxxxxx" bantuan="Dipakai tombol WhatsApp di beranda." {...bagi} />
-            <Isian kolom="telepon" galat={tampil('telepon')} {...bagi} />
-            <Isian kolom="email" galat={tampil('email')} jenis="email" {...bagi} />
-            <Isian kolom="jadwal" galat={tampil('jadwal')} placeholder="Setiap Jumat sore di sekolah" {...bagi} />
-          </div>
-        </section>
-
-        <section className="panel p-4" aria-labelledby="beranda-sosial">
-          <h2 id="beranda-sosial" className="text-base font-bold text-pramuka-900">Media sosial dan peta</h2>
-          <p className="mb-3 text-xs text-pramuka-600">Tempel alamat lengkap yang diawali https://. Alamat lain (mis. javascript:) ditolak.</p>
-          <div className="grid gap-x-4 sm:grid-cols-2">
-            <Isian kolom="instagram" galat={tampil('instagram')} placeholder="https://instagram.com/..." {...bagi} />
-            <Isian kolom="youtube" galat={tampil('youtube')} placeholder="https://youtube.com/..." {...bagi} />
-            <Isian kolom="facebook" galat={tampil('facebook')} placeholder="https://facebook.com/..." {...bagi} />
-            <Isian kolom="tiktok" galat={tampil('tiktok')} placeholder="https://tiktok.com/@..." {...bagi} />
-            <Isian kolom="peta" galat={tampil('peta')} placeholder="https://maps.app.goo.gl/..." bantuan="Kosong = tombol peta membuka pencarian nama sekolah di Google Maps." {...bagi} />
-          </div>
-        </section>
-
-        <section className="panel p-4" aria-labelledby="beranda-teks">
-          <h2 id="beranda-teks" className="text-base font-bold text-pramuka-900">Sambutan dan cerita gudep</h2>
-          <p className="mb-3 text-xs text-pramuka-600">Pisahkan paragraf dengan satu baris kosong. Nama dan jabatan penyampai sambutan diambil dari Data Gudep.</p>
-          <Isian kolom="sambutanPembina" galat={tampil('sambutanPembina')} baris={5} {...bagi} />
-          <Isian kolom="sambutanKepsek" galat={tampil('sambutanKepsek')} baris={5} {...bagi} />
-          <Isian kolom="cerita" galat={tampil('cerita')} baris={6} bantuan="Kosong = beranda memakai kalimat bawaan." {...bagi} />
-        </section>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <button type="submit" className="btn btn-gold" disabled={sibuk || !berubah}>{sibuk ? 'Menyimpan...' : 'Simpan'}</button>
-          {berubah && <span className="text-sm text-pramuka-600">Ada perubahan yang belum disimpan.</span>}
-          {dicoba && Object.keys(galat).length > 0 && <span role="alert" className="text-sm font-medium text-red-700">Perbaiki isian yang bertanda merah.</span>}
-        </div>
-      </form>
+      <div className="panel p-4">
+        {tabAktif === 'kontak' && <PanelKontakBeranda />}
+        {tabAktif === 'berita' && <PanelKontenTinjau skema={SKEMA_BERITA} />}
+        {tabAktif === 'prestasi' && <PanelKontenTinjau skema={SKEMA_PRESTASI} />}
+        {tabAktif === 'galeri' && <PanelKontenTinjau skema={SKEMA_GALERI} />}
+        {tabAktif === 'sosial' && <PanelSosial />}
+        {tabAktif === 'faq' && bolehTerbit && <PanelFaq />}
+      </div>
     </div>
   );
 }

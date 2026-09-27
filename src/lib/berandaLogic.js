@@ -29,6 +29,9 @@ const POLA_TELEPON = /^[0-9 +()./-]*$/;
 const POLA_EMAIL = /^[^@ ]+@[^@ ]+\.[^@ ]+$/;
 const POLA_TAUTAN = /^https:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}([/?#][^ ]*)?$/;
 
+/** Tautan https sah (dipakai juga oleh berandaKontenLogic.js untuk berita/prestasi/galeri/media sosial): kosong TIDAK dianggap sah di sini. */
+export const tautanSah = (s) => POLA_TAUTAN.test(String(s ?? ''));
+
 /** Spasi ganda dan tepi dirapikan, sama dengan sigarda.rapikan di SQL. */
 export const rapikan = (s) => String(s ?? '').replace(/\s+/g, ' ').trim();
 
@@ -110,7 +113,23 @@ export function susunBerandaPublik(mentah) {
     .map((a) => ({ jenis: teks(obj(a).jenis), judul: teks(obj(a).judul), tanggal: teks(obj(a).tanggal) }))
     .filter((a) => a.judul && /^\d{4}-\d{2}-\d{2}$/.test(a.tanggal))
     .slice(0, 6);
-  return { gudep, pembina: orang(m.pembina), kamabigus: orang(m.kamabigus), kontak: untukForm(m.kontak), agenda };
+  const larik = (x) => (Array.isArray(x) ? x : []);
+  const berita = larik(m.berita)
+    .map((b) => ({ kategori: teks(obj(b).kategori), judul: teks(obj(b).judul), ringkasan: teks(obj(b).ringkasan), sampulUrl: teks(obj(b).sampulUrl), terbitPada: teks(obj(b).terbitPada) }))
+    .filter((b) => b.judul).slice(0, 6);
+  const prestasi = larik(m.prestasi)
+    .map((p) => ({ judul: teks(obj(p).judul), tingkat: teks(obj(p).tingkat), peringkat: teks(obj(p).peringkat), tahun: Number(obj(p).tahun) || 0, diraihOleh: teks(obj(p).diraihOleh), fotoUrl: teks(obj(p).fotoUrl) }))
+    .filter((p) => p.judul);
+  const galeri = larik(m.galeri)
+    .map((g) => ({ judul: teks(obj(g).judul), tautan: teks(obj(g).tautan), sampulUrl: teks(obj(g).sampulUrl), kelompok: teks(obj(g).kelompok) }))
+    .filter((g) => g.judul && tautanSah(g.tautan));
+  const sosial = larik(m.sosial)
+    .map((s) => ({ platform: teks(obj(s).platform), tautan: teks(obj(s).tautan), keterangan: teks(obj(s).keterangan), gambarUrl: teks(obj(s).gambarUrl) }))
+    .filter((s) => s.platform && tautanSah(s.tautan)).slice(0, 6);
+  const faq = larik(m.faq)
+    .map((f) => ({ pertanyaan: teks(obj(f).pertanyaan), jawaban: teks(obj(f).jawaban) }))
+    .filter((f) => f.pertanyaan && f.jawaban);
+  return { gudep, pembina: orang(m.pembina), kamabigus: orang(m.kamabigus), kontak: untukForm(m.kontak), agenda, berita, prestasi, galeri, sosial, faq };
 }
 
 const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];

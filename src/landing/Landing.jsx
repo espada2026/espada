@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGudep } from '../lib/gudepStore';
 import { sesiTersimpan } from '../lib/ruteLogic';
-import { CekDokumen, Hero, Kaki, KabarAgenda, Kontak, NavBeranda, Perjalanan, Program, Tentang, TanyaJawab } from './bagian';
+import { Berita, CekDokumen, Galeri, Hero, Kaki, KabarAgenda, Kontak, MediaSosial, NavBeranda, Perjalanan, Prestasi, Program, Tentang, TanyaJawab } from './bagian';
 import useBerandaPublik from './useBerandaPublik';
 
 /**
@@ -21,8 +21,12 @@ export default function Landing({ panggil }) {
         <Tentang G={G} kontak={beranda.kontak} pembina={beranda.pembina} kamabigus={beranda.kamabigus} />
         <Program />
         <Perjalanan />
+        <Berita berita={beranda.berita} memuat={beranda.memuat} />
+        <Prestasi prestasi={beranda.prestasi} memuat={beranda.memuat} />
+        <Galeri galeri={beranda.galeri} memuat={beranda.memuat} />
         <KabarAgenda agenda={beranda.agenda} memuat={beranda.memuat} />
-        <TanyaJawab />
+        <MediaSosial sosial={beranda.sosial} />
+        <TanyaJawab faq={beranda.faq} />
         <Kontak G={G} kontak={beranda.kontak} />
         <CekDokumen />
       </main>
