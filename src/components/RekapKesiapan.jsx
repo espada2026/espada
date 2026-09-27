@@ -1,16 +1,9 @@
-import { ITEM_PORTOFOLIO } from '../data/portofolioData';
 import { useApp } from '../context/AppContext';
-import { getItem, hitungPortofolio, jurnalTerbaru } from '../lib/portofolioLogic';
+import { hitungPortofolio, jurnalTerbaru } from '../lib/portofolioLogic';
 import { fmtWaktu } from '../lib/format';
 import { ProgressBar } from './ui';
 
-const WARNA = {
-  siap: 'bg-emerald-600 text-white',
-  proses: 'bg-amber-400 text-pramuka-900',
-  belum: 'bg-pramuka-100 text-pramuka-600 ring-1 ring-inset ring-pramuka-300',
-};
-
-/** Ringkasan kesiapan: progress bar, jumlah siap dan belum siap, persentase, dan peta 26 dokumen. */
+/** Ringkasan kesiapan: progress bar, jumlah siap dan belum siap, persentase. Peta 26 dokumen (kotak-kotak yang dapat diklik) ada di PortofolioChecklist. */
 export default function RekapKesiapan({ pesertaId }) {
   const { portofolio } = useApp();
   const h = hitungPortofolio(portofolio, pesertaId);
@@ -42,29 +35,6 @@ export default function RekapKesiapan({ pesertaId }) {
       <p className="mt-2 text-center text-xs text-pramuka-500">
         Belum siap seluruhnya: {h.belumSiap} dokumen ({100 - h.persen}%)
       </p>
-
-      <div className="mt-4">
-        <p className="mb-1.5 text-xs font-semibold text-pramuka-600">Peta 26 dokumen (nomor sesuai tabel cek list)</p>
-        <ul className="grid gap-1" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(2rem, 1fr))' }}>
-          {ITEM_PORTOFOLIO.map((it) => {
-            const s = getItem(portofolio, pesertaId, it.id).status;
-            return (
-              <li
-                key={it.id}
-                title={`${it.no}. ${it.jenis}`}
-                className={`flex h-8 items-center justify-center rounded text-xs font-bold ${WARNA[s]}`}
-              >
-                {it.no}
-              </li>
-            );
-          })}
-        </ul>
-        <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-pramuka-600">
-          <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-emerald-600" />Siap</span>
-          <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-amber-400" />Sedang disiapkan</span>
-          <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-pramuka-200" />Belum ada</span>
-        </p>
-      </div>
     </section>
   );
 }

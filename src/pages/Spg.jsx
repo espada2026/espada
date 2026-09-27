@@ -7,7 +7,10 @@ import { fmtTanggal, hariIni } from '../lib/format';
 import { pembinaAtauAdmin } from '../lib/hakLogic';
 import { STATUS_SPG, hitungSpg, menimpaSaran, periksaSpg, pesertaSpg, ringkasSpg } from '../lib/spgLogic';
 import SumberPeraturan from '../components/SumberPeraturan';
+import GridProgres, { NomorButir, TombolKeAtas, gulirDanSorot } from '../components/ProgresKotak';
 import { Avatar, Field, Kosong, Modal, ProgressBar } from '../components/ui';
+
+const STATUS_KOTAK_SPG = { terpenuhi: 'selesai', menunggu: 'proses', belum: 'belum' };
 
 const Chip = ({ status }) => (
   <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${STATUS_SPG[status].kelas}`}>{STATUS_SPG[status].label}</span>
@@ -75,6 +78,15 @@ function PanelSpg({ peserta, baris, boleh, data }) {
     notify(`Penetapan butir ${b.no} dihapus.`);
     data.muat();
   };
+  const idGrid = `spg-progres-${peserta.id}`;
+  const kotak = baris.map((b) => ({
+    key: b.no,
+    no: b.no,
+    status: STATUS_KOTAK_SPG[b.status] ?? 'belum',
+    judul: `${b.no}. ${b.judul}`,
+    onKlik: () => gulirDanSorot(`spg-item-${peserta.id}-${b.no}`),
+  }));
+
   return (
     <section aria-label={`SPG ${peserta.nama}`}>
       <div className="panel mb-4 p-4">
@@ -84,11 +96,15 @@ function PanelSpg({ peserta, baris, boleh, data }) {
         {r.menunggu > 0 && <p className="mt-2 text-xs text-amber-900">{r.menunggu} butir dokumennya sudah lengkap dan menunggu ditetapkan Pembina.</p>}
         {r.penuh && <p className="mt-2 text-sm font-semibold text-emerald-800">Seluruh butir SPG terpenuhi.</p>}
       </div>
+
+      <GridProgres id={idGrid} judul={`Peta ${r.total} butir SPG`} labelSelesai="Terpenuhi" kotak={kotak} ringkasan={{ selesai: r.terpenuhi, proses: r.menunggu, belum: r.belum }} />
+      <TombolKeAtas targetId={idGrid} />
+
       <ol className="panel divide-y divide-pramuka-100">
         {baris.map((b) => (
-          <li key={b.no} className="px-4 py-3">
+          <li id={`spg-item-${peserta.id}-${b.no}`} key={b.no} className="scroll-mt-20 px-4 py-3">
             <div className="flex flex-wrap items-start gap-x-3 gap-y-1">
-              <span className="w-6 shrink-0 font-bold text-pramuka-700">{b.no}</span>
+              <NomorButir no={b.no} status={STATUS_KOTAK_SPG[b.status] ?? 'belum'} />
               <div className="min-w-0 flex-1">
                 <p className="font-semibold">{b.judul}</p>
                 <p className="text-xs text-pramuka-600">{b.uraian}</p>

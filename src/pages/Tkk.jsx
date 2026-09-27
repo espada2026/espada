@@ -255,6 +255,34 @@ function PanelPenegak({ peserta, data, boleh, bisaAjukan = false }) {
     <div>
       <KartuKemajuan k={kemajuan} ambang={data.ambang} />
 
+      {bisaAjukan && <PengajuanSaya peserta={peserta} data={data} capaianSaya={milik} />}
+
+      <section className="mb-4" aria-label="TKK Krida">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-bold">TKK Krida ({krida.length})</h2>
+          {boleh && <button className="btn btn-outline btn-sm" onClick={() => setModal({ jenis: 'krida', awal: null })}>Catat Krida</button>}
+        </div>
+        {krida.length === 0 ? (
+          <p className="text-sm text-pramuka-600">Belum ada. Portofolio Garuda Kwarcab meminta piagam TKK Krida (minimal 2).</p>
+        ) : (
+          <ul className="panel divide-y divide-pramuka-100 text-sm">
+            {krida.map((x) => (
+              <li key={x.id} className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-4 py-2">
+                <span className="min-w-0"><b>{x.nama}</b>{x.saka ? `, ${x.saka}` : ''}, {fmtTanggal(x.tanggal)}
+                  {x.buktiUrl && <> <a href={x.buktiUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-pramuka-700 underline underline-offset-2">piagam</a></>}
+                </span>
+                {boleh && (
+                  <span className="shrink-0 whitespace-nowrap text-xs">
+                    <button className="font-semibold text-pramuka-700 underline underline-offset-2" onClick={() => setModal({ jenis: 'krida', awal: x })}>Ubah</button>
+                    <button className="ml-3 font-semibold text-red-700 underline underline-offset-2" onClick={() => { setGalat(''); setHapus({ jenis: 'krida', id: x.id, teks: x.nama }); }}>Hapus</button>
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <section className="mb-4" aria-label="Capaian TKK">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-bold">TKK ({perTkk.length})</h2>
@@ -296,34 +324,6 @@ function PanelPenegak({ peserta, data, boleh, bisaAjukan = false }) {
                 </li>
               );
             })}
-          </ul>
-        )}
-      </section>
-
-      {bisaAjukan && <PengajuanSaya peserta={peserta} data={data} capaianSaya={milik} />}
-
-      <section className="mb-4" aria-label="TKK Krida">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-bold">TKK Krida ({krida.length})</h2>
-          {boleh && <button className="btn btn-outline btn-sm" onClick={() => setModal({ jenis: 'krida', awal: null })}>Catat Krida</button>}
-        </div>
-        {krida.length === 0 ? (
-          <p className="text-sm text-pramuka-600">Belum ada. Portofolio Garuda Kwarcab meminta piagam TKK Krida (minimal 2).</p>
-        ) : (
-          <ul className="panel divide-y divide-pramuka-100 text-sm">
-            {krida.map((x) => (
-              <li key={x.id} className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-4 py-2">
-                <span className="min-w-0"><b>{x.nama}</b>{x.saka ? `, ${x.saka}` : ''}, {fmtTanggal(x.tanggal)}
-                  {x.buktiUrl && <> <a href={x.buktiUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-pramuka-700 underline underline-offset-2">piagam</a></>}
-                </span>
-                {boleh && (
-                  <span className="shrink-0 whitespace-nowrap text-xs">
-                    <button className="font-semibold text-pramuka-700 underline underline-offset-2" onClick={() => setModal({ jenis: 'krida', awal: x })}>Ubah</button>
-                    <button className="ml-3 font-semibold text-red-700 underline underline-offset-2" onClick={() => { setGalat(''); setHapus({ jenis: 'krida', id: x.id, teks: x.nama }); }}>Hapus</button>
-                  </span>
-                )}
-              </li>
-            ))}
           </ul>
         )}
       </section>

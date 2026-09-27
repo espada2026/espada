@@ -9,6 +9,7 @@ import useInstrumen from '../hooks/useInstrumen';
 import { LencanaKriteria } from './InstrumenNilai';
 import RincianPenilaian from './RincianPenilaian';
 import JalurPraUji from './JalurPraUji';
+import GridProgres, { NomorButir, TombolKeAtas, gulirDanSorot } from './ProgresKotak';
 import { Badge, Icon } from './ui';
 
 const FILTER = [
@@ -160,20 +161,35 @@ export default function SkuChecklist({ tingkat, peserta, renderAksi, onBukaMater
   };
 
   const daftar = butirPeserta(tingkat, peserta.agama);
-  const tampilan = daftar
-    .map((b) => {
-      const semua = b.unit.map((u) => [u, getEntry(progress, peserta.id, u.id)]);
-      return {
-        b,
-        semua,
-        baris: semua.filter(([, e]) => !syarat || syarat.includes(e.status)),
-        lulusUnit: semua.filter(([, e]) => e.status === 'lulus').length,
-      };
-    })
+  const semuaButir = daftar.map((b) => {
+    const semua = b.unit.map((u) => [u, getEntry(progress, peserta.id, u.id)]);
+    const lulusUnit = semua.filter(([, e]) => e.status === 'lulus').length;
+    const status = lulusUnit === semua.length ? 'selesai' : semua.some(([, e]) => e.status === 'diajukan' || e.status === 'proses') ? 'proses' : 'belum';
+    return { b, semua, lulusUnit, status };
+  });
+  const tampilan = semuaButir
+    .map((x) => ({ ...x, baris: x.semua.filter(([, e]) => !syarat || syarat.includes(e.status)) }))
     .filter((x) => x.baris.length);
+
+  const idGrid = `sku-progres-${tingkat}`;
+  const ringkasan = {
+    selesai: semuaButir.filter((x) => x.status === 'selesai').length,
+    proses: semuaButir.filter((x) => x.status === 'proses').length,
+    belum: semuaButir.filter((x) => x.status === 'belum').length,
+  };
+  const kotak = semuaButir.map((x) => ({
+    key: x.b.id,
+    no: x.b.no,
+    status: x.status,
+    judul: `Butir ${x.b.no}${x.b.agama ? ` (${peserta.agama})` : ''}`,
+    onKlik: () => { setFilter('semua'); gulirDanSorot(`butir-${x.b.id}`); },
+  }));
 
   return (
     <div>
+      <GridProgres id={idGrid} judul={`Peta ${semuaButir.length} butir SKU ${tingkat}`} kotak={kotak} ringkasan={ringkasan} />
+      <TombolKeAtas targetId={idGrid} />
+
       <div className="no-print mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter status poin">
         {FILTER.map((f) => (
           <button
@@ -198,21 +214,13 @@ export default function SkuChecklist({ tingkat, peserta, renderAksi, onBukaMater
       )}
 
       <ol className="space-y-3">
-        {tampilan.map(({ b, semua, baris, lulusUnit }) => {
-          const butirLulus = lulusUnit === semua.length;
+        {tampilan.map(({ b, semua, baris, lulusUnit, status }) => {
           const bersub = !!b.agama;
 
           return (
-            <li key={b.id} className="overflow-hidden rounded-lg border border-pramuka-200 bg-white">
+            <li id={`butir-${b.id}`} key={b.id} className="scroll-mt-20 overflow-hidden rounded-lg border border-pramuka-200 bg-white">
               <div className="flex gap-3 px-3 py-3 sm:px-4">
-                <span
-                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                    butirLulus ? 'bg-emerald-600 text-white' : 'bg-pramuka-100 text-pramuka-700'
-                  }`}
-                  title={`Butir ${b.no}`}
-                >
-                  {butirLulus ? <Icon nama="cek" className="h-4 w-4" /> : b.no}
-                </span>
+                <NomorButir no={b.no} status={status} title={`Butir ${b.no}`} />
 
                 <div className="min-w-0 flex-1">
                   {!bersub ? (
@@ -243,14 +251,13 @@ export default function SkuChecklist({ tingkat, peserta, renderAksi, onBukaMater
                 <ol className="divide-y divide-pramuka-100 border-t border-pramuka-100 bg-pramuka-50/50">
                   {baris.map(([poin, entry]) => (
                     <li key={poin.id} className="flex gap-3 py-3 pl-6 pr-3 sm:pl-14 sm:pr-4">
-                      <span
-                        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded text-xs font-bold ${
-                          entry.status === 'lulus' ? 'bg-emerald-600 text-white' : 'bg-white text-pramuka-700 ring-1 ring-inset ring-pramuka-300'
-                        }`}
+                      <NomorButir
+                        no={hurufSub(poin.sub)}
+                        status={entry.status === 'lulus' ? 'selesai' : 'belum'}
+                        className="h-6 w-6 text-xs"
+                        bulat={false}
                         title={`Sub-butir ${b.no}${hurufSub(poin.sub)}`}
-                      >
-                        {hurufSub(poin.sub)}
-                      </span>
+                      />
                       <div className="min-w-0 flex-1">
                         <p className="text-sm leading-relaxed">{poin.teks}</p>
                         {detailUnit(poin, entry)}
