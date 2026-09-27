@@ -4,9 +4,10 @@
 -- Cara: Supabase > SQL Editor > New query > tempel seluruh isi berkas ini > Run.
 --
 -- Yang dihapus HANYA akun Penegak dengan NIS 990001 sampai 990099 DAN nama berawalan "Demo ".
--- Seluruh data milik akun itu ikut terhapus (progres SKU, riwayat, kehadiran, portofolio, catatan sidang) karena
--- semuanya terhubung ke akun. Anggota asli tidak tersentuh.
--- Nomor berita acara sidang yang pernah terpakai oleh akun demo tidak dipakai ulang.
+-- Seluruh data milik akun itu ikut terhapus karena semuanya terhubung ke akun: progres SKU dan riwayat, pra-uji, Bina Damping dan Pinsa
+-- tertugas, pelantikan, Saka, TKK (capaian, pengajuan, Krida), SPG, tanggal lahir dan data diri, portofolio, raport, kehadiran dan iuran,
+-- notifikasi, catatan sidang, dan Surat Tanda Lulus bertoken. Anggota asli dan data gugus depan (pengaturan, agenda, tim penilai, dsb.)
+-- tidak tersentuh. Nomor berita acara sidang yang pernah terpakai oleh akun demo tidak dipakai ulang.
 -- ============================================================================
 begin;
 
