@@ -107,7 +107,7 @@ punya uji yang membandingkannya LANGSUNG dengan SQL pada kisi masukan**, bukan s
 5. Aturan yang dicerminkan: uji perbandingan langsung ke SQL dan catat di `docs/cermin-klien-server.md`.
 6. Peraturan kepramukaan: tampilkan judul dan tautan lewat `SumberPeraturan` dari registri `src/data/peraturanData.js`.
 7. Perbarui panduan pengguna `src/data/panduanData.js` (tidak ada uji yang menangkap panduan yang ketinggalan).
-8. `npm run build` dan `npm run uji` harus lulus; JS awal tidak melebihi 150 kB gzip (`npm run profil`).
+8. `npm run build` dan `npm run uji` harus lulus; JS awal tidak melebihi 150 kB gzip (`npm run profil`; ukurlah dengan `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` terisi, tanpa itu klien Supabase terbuang dan angkanya menyesatkan; `npm run profil` mengurus ini sendiri).
 
 ## 8. Rilis dan operasional
 

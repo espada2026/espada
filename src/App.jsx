@@ -3,14 +3,9 @@ import { AppProvider, useApp } from './context/AppContext';
 import Layout from './components/Layout';
 import Login from './components/Login';
 import PesertaBeranda from './pages/PesertaBeranda';
-import GarudaDashboard from './pages/GarudaDashboard';
-import PengujiDashboard from './pages/PengujiDashboard';
-import AdminDashboard from './pages/AdminDashboard';
 import GantiPinWajib from './pages/GantiPinWajib';
 import BannerVersi from './components/BannerVersi';
 import BatasHalaman from './components/BatasHalaman';
-import HalamanVerifikasi from './components/HalamanVerifikasi';
-import HalamanBerkasGaruda from './components/HalamanBerkasGaruda';
 import FormWhatsapp from './components/FormWhatsapp';
 import { Modal } from './components/ui';
 import { parameterVerifikasi } from './lib/verifikasiLogic';
@@ -22,6 +17,17 @@ import { bolehKelolaMateri } from './lib/materiLogic';
 import LogoMark from './components/LogoMark';
 
 // Halaman selain beranda dimuat malas (berkasnya diunduh saat pertama dibuka); lihat BatasHalaman.
+// Dasbor dimuat malas per peran: Penegak (mayoritas) tidak mengunduh dasbor Pembina dan Admin. Berkasnya diminta lebih awal begitu peran
+// diketahui (lihat useEffect di Shell), sehingga tidak menambah satu putaran unduhan setelah data siap. Halaman publik (verifikasi QR dan
+// tautan berbagi) juga malas: keduanya menarik pembuat kode QR dan komponen dokumen yang tidak dibutuhkan halaman lain.
+const muatGarudaDashboard = () => import('./pages/GarudaDashboard');
+const muatPengujiDashboard = () => import('./pages/PengujiDashboard');
+const muatAdminDashboard = () => import('./pages/AdminDashboard');
+const GarudaDashboard = lazy(muatGarudaDashboard);
+const PengujiDashboard = lazy(muatPengujiDashboard);
+const AdminDashboard = lazy(muatAdminDashboard);
+const HalamanVerifikasi = lazy(() => import('./components/HalamanVerifikasi'));
+const HalamanBerkasGaruda = lazy(() => import('./components/HalamanBerkasGaruda'));
 const PesertaSku = lazy(() => import('./pages/PesertaSku'));
 const PraUji = lazy(() => import('./pages/PraUji'));
 const Pelantikan = lazy(() => import('./pages/Pelantikan'));
@@ -195,6 +201,14 @@ function Shell() {
     setKelolaId(null);
     setWaTutup(false); // setiap masuk baru (termasuk akun yang sama masuk lagi) ajakan tampil lagi bila nomor belum diisi
   }, [user?.id, user?.role]);
+
+  // Minta berkas dasbor peran ini lebih awal (data aplikasi masih dimuat), agar dasbor siap begitu data siap.
+  useEffect(() => {
+    if (!user) return;
+    if (user.role === 'peserta') { if (peranUser === 'calon-garuda') muatGarudaDashboard(); }
+    else if (user.role === 'penguji') muatPengujiDashboard();
+    else muatAdminDashboard();
+  }, [user?.role, peranUser]);
 
   // Klik notifikasi push membuka aplikasi di Kotak Notifikasi: lewat alamat ?buka=notifikasi (aplikasi tertutup) atau pesan service worker (sudah terbuka).
   useEffect(() => {
@@ -383,10 +397,10 @@ function Shell() {
 export default function App() {
   // Alamat dari QR dokumen (/?v=...) membuka halaman verifikasi publik: tanpa login dan tanpa memuat data aplikasi.
   const verifikasi = parameterVerifikasi(window.location.search);
-  if (verifikasi !== null) return <HalamanVerifikasi awal={verifikasi} />;
+  if (verifikasi !== null) return <BatasHalaman><HalamanVerifikasi awal={verifikasi} /></BatasHalaman>;
   // Tautan berbagi Berkas Calon Garuda (/?berkas=...): tanpa login, baca-saja (tahap L7).
   const berkas = parameterBerkasGaruda(window.location.search);
-  if (berkas !== null) return <HalamanBerkasGaruda token={berkas} />;
+  if (berkas !== null) return <BatasHalaman><HalamanBerkasGaruda token={berkas} /></BatasHalaman>;
   return (
     <AppProvider>
       <Shell />

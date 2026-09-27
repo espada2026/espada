@@ -18,6 +18,9 @@
     "simulasi:beban": "node scripts/jalankan-simulasi.mjs scripts/simulasi-beban-tahap3-4.mjs"
   },
   "dependencies": {
+    "@supabase/auth-js": "^2.109.0",
+    "@supabase/functions-js": "^2.109.0",
+    "@supabase/postgrest-js": "^2.109.0",
     "@supabase/supabase-js": "^2.109.0",
     "exceljs": "^4.4.0",
     "qrcode-generator": "^1.4.4",

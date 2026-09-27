@@ -1,5 +1,6 @@
 // Tahap L2-A: alat pemodelan kinerja (scripts/profil/jaringan.mjs) — hanya model murni, tanpa PGlite, jadi cepat dan tak menyentuh Supabase.
 import { simulasi, perkirakanSiap, ringkasRantai, PROFIL_JARINGAN, RTT_SERVER_MS } from '../scripts/profil/jaringan.mjs';
+import { berkasAwalDariHtml, memuatKlienProduksi } from '../scripts/profil/berkasAwal.mjs';
 
 let gagal = 0, lulus = 0;
 const ok = (c, m) => { if (c) { lulus++; console.log('ok   :', m); } else { gagal++; console.log('GAGAL:', m); } };
@@ -44,6 +45,25 @@ console.log('\n--- perkirakanSiap ---');
   const banyakData = perkirakanSiap({ rantai: [[{ byte: 20000 }]], aplikasi: null, jaringan: PROFIL_JARINGAN.find((j) => j.kunci === 'slow3g'), rawByte: 20_000_000 });
   const sedikitData = perkirakanSiap({ rantai: [[{ byte: 20000 }]], aplikasi: null, jaringan: PROFIL_JARINGAN.find((j) => j.kunci === 'slow3g'), rawByte: 200_000 });
   ok(banyakData.prosesMs > sedikitData.prosesMs, `mengolah JSON mentah yang besar (mis. Pembina) lebih lambat daripada yang kecil (${banyakData.prosesMs.toFixed(0)} vs ${sedikitData.prosesMs.toFixed(0)} md)`);
+}
+
+console.log('\n--- berkas awal (dibaca dari index.html) ---');
+{
+  const html = '<head><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Bitter" rel="stylesheet">' +
+    '<script type="module" crossorigin src="/assets/index-AAA.js"></script><link rel="modulepreload" crossorigin href="/assets/vendor-BBB.js"><link rel="stylesheet" crossorigin href="/assets/index-CCC.css"></head>';
+  const h = berkasAwalDariHtml(html);
+  ok(h.js.join() === 'assets/index-AAA.js,assets/vendor-BBB.js', `skrip modul + modulepreload dihitung sebagai JS awal (${h.js.join()})`);
+  ok(h.css.join() === 'assets/index-CCC.css', `hanya stylesheet di assets (font Google tidak dihitung): ${h.css.join()}`);
+  ok(berkasAwalDariHtml(html.replace('/assets/', '/sigarda/assets/'), '/sigarda/').js.length === 2, 'alamat dengan base (/sigarda/) dibaca benar');
+  ok(berkasAwalDariHtml('<html></html>').js.length === 0, 'index.html tanpa skrip = tidak ada berkas awal');
+  ok(!berkasAwalDariHtml(html).js.includes('assets/index-lazy.js'), 'potongan malas yang kebetulan bernama index-* tidak ikut terhitung (tidak ada di index.html)');
+}
+
+console.log('\n--- pagar ukuran: hanya build produksi yang sah ---');
+{
+  ok(memuatKlienProduksi('a("rest/v1");b("auth/v1");c("functions/v1")'), 'build dengan klien Supabase dianggap produksi');
+  ok(!memuatKlienProduksi('const LOKAL=true;render()'), 'build tanpa klien Supabase (mis. VITE_BACKEND=lokal) DITOLAK sebagai dasar ukuran');
+  ok(!memuatKlienProduksi('rest/v1 saja'), 'klien setengah (hanya REST) ditolak');
 }
 
 ok(RTT_SERVER_MS > 0 && RTT_SERVER_MS < 500, `RTT_SERVER_MS masuk akal untuk Tokyo (${RTT_SERVER_MS} md; perbarui bila wilayah proyek Supabase berubah)`);

@@ -38,12 +38,19 @@ const versiTerbit = (aktif) => ({
 });
 
 // VITE_BASE dipakai saat deploy ke GitHub Pages, mis. VITE_BASE=/sigarda/
-export default defineConfig(({ mode, command }) => ({
-  base: process.env.VITE_BASE || '/',
-  plugins: [backendLokal(mode === 'lokal'), versiTerbit(command === 'build' && mode !== 'lokal'), react()],
-  define: { __BUILD_ID__: JSON.stringify(command === 'build' && mode !== 'lokal' ? ID_BUILD : '') },
-  // Edge Function memakai alamat gaya Deno ("npm:..."); di sini dialihkan ke paket yang terpasang (mode lokal).
-  resolve: { alias: { 'npm:@supabase/supabase-js@2': '@supabase/supabase-js' } },
-  // PGlite memuat berkas .wasm sendiri; jangan diproses ulang oleh pra-bundel Vite.
-  optimizeDeps: { exclude: ['@electric-sql/pglite'] },
-}));
+export default defineConfig(({ mode, command }) => {
+  // Hanya mode "lokal" yang memakai backend lokal. Variabel lingkungan VITE_BACKEND=lokal yang tersisa di shell (mis. sesi pengembangan) membuat
+  // build produksi membuang klien Supabase (`import.meta.env.VITE_BACKEND` selalu menang atas `define`), sehingga ukuran JS awal terukur
+  // jauh lebih kecil dari yang terbit (penyebab lain: VITE_SUPABASE_URL/ANON_KEY kosong; itu dijaga scripts/profil). Dibuang di sini, sebelum Vite
+  // membaca lingkungan (dijaga uji/mode-uji.mjs).
+  if (mode !== 'lokal') delete process.env.VITE_BACKEND;
+  return {
+    base: process.env.VITE_BASE || '/',
+    plugins: [backendLokal(mode === 'lokal'), versiTerbit(command === 'build' && mode !== 'lokal'), react()],
+    define: { __BUILD_ID__: JSON.stringify(command === 'build' && mode !== 'lokal' ? ID_BUILD : '') },
+    // Edge Function memakai alamat gaya Deno ("npm:..."); di sini dialihkan ke paket yang terpasang (mode lokal).
+    resolve: { alias: { 'npm:@supabase/supabase-js@2': '@supabase/supabase-js' } },
+    // PGlite memuat berkas .wasm sendiri; jangan diproses ulang oleh pra-bundel Vite.
+    optimizeDeps: { exclude: ['@electric-sql/pglite'] },
+  };
+});
