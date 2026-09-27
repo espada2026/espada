@@ -114,6 +114,17 @@ export default function PesertaBeranda({ setTab, setTingkat }) {
         ))}
       </section>
 
+      {bantaraSelesai && (
+        <section className="jahitan flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white p-4">
+          <p className="text-sm font-semibold text-pramuka-800">
+            Selamat, seluruh butir Bantara lulus. Surat Tanda Lulus siap dicetak.
+          </p>
+          <button className="btn btn-gold btn-sm" onClick={() => setTab('cetak')}>
+            <Icon nama="cetak" className="h-4 w-4" /> Buka dokumen cetak
+          </button>
+        </section>
+      )}
+
       <section className="panel p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -206,17 +217,6 @@ export default function PesertaBeranda({ setTab, setTingkat }) {
               </li>
             ))}
           </ul>
-        </section>
-      )}
-
-      {bantaraSelesai && (
-        <section className="jahitan flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white p-4">
-          <p className="text-sm font-semibold text-pramuka-800">
-            Selamat, seluruh butir Bantara lulus. Surat Tanda Lulus siap dicetak.
-          </p>
-          <button className="btn btn-gold btn-sm" onClick={() => setTab('cetak')}>
-            <Icon nama="cetak" className="h-4 w-4" /> Buka dokumen cetak
-          </button>
         </section>
       )}
     </div>

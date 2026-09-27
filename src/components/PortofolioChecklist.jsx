@@ -3,6 +3,7 @@ import { ITEM_PORTOFOLIO, STATUS_PF } from '../data/portofolioData';
 import { useApp } from '../context/AppContext';
 import { getItem } from '../lib/portofolioLogic';
 import { fmtWaktu } from '../lib/format';
+import GridProgres, { NomorButir, TombolKeAtas, gulirDanSorot } from './ProgresKotak';
 import { BadgePortofolio, Icon } from './ui';
 
 const FILTER = [
@@ -51,10 +52,28 @@ export default function PortofolioChecklist({ pesertaId, mode }) {
     if (r.ok) setForm(null);
   };
 
-  const baris = ITEM_PORTOFOLIO.map((it) => [it, getItem(portofolio, pesertaId, it.id)]).filter(([, e]) => syarat(e.status));
+  const semuaBaris = ITEM_PORTOFOLIO.map((it) => [it, getItem(portofolio, pesertaId, it.id)]);
+  const baris = semuaBaris.filter(([, e]) => syarat(e.status));
+
+  const STATUS_KOTAK = { siap: 'selesai', proses: 'proses', belum: 'belum' };
+  const ringkasan = {
+    selesai: semuaBaris.filter(([, e]) => e.status === 'siap').length,
+    proses: semuaBaris.filter(([, e]) => e.status === 'proses').length,
+    belum: semuaBaris.filter(([, e]) => (e.status ?? 'belum') !== 'siap' && e.status !== 'proses').length,
+  };
+  const kotak = semuaBaris.map(([it, e]) => ({
+    key: it.id,
+    no: it.no,
+    status: STATUS_KOTAK[e.status] ?? 'belum',
+    judul: `${it.no}. ${it.jenis}`,
+    onKlik: () => { setFilter('semua'); gulirDanSorot(`portofolio-item-${it.id}`); },
+  }));
 
   return (
     <div>
+      <GridProgres id="portofolio-progres-kotak" judul={`Peta ${semuaBaris.length} dokumen (nomor sesuai tabel cek list)`} labelSelesai="Siap" kotak={kotak} ringkasan={ringkasan} />
+      <TombolKeAtas targetId="portofolio-progres-kotak" />
+
       <div className="no-print mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter status dokumen">
         {FILTER.map((f) => (
           <button
@@ -80,19 +99,12 @@ export default function PortofolioChecklist({ pesertaId, mode }) {
 
       <ol className="divide-y divide-pramuka-100 overflow-hidden rounded-lg border border-pramuka-200 bg-white">
         {baris.map(([it, item]) => {
-          const siap = item.status === 'siap';
           const terbuka = form?.id === it.id;
           const riwayat = item.riwayat ?? [];
           return (
-            <li key={it.id} className="px-3 py-3 sm:px-4">
+            <li id={`portofolio-item-${it.id}`} key={it.id} className="scroll-mt-20 px-3 py-3 sm:px-4">
               <div className="flex gap-3">
-                <span
-                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                    siap ? 'bg-emerald-600 text-white' : item.status === 'proses' ? 'bg-amber-100 text-amber-900' : 'bg-pramuka-100 text-pramuka-700'
-                  }`}
-                >
-                  {siap ? <Icon nama="cek" className="h-4 w-4" /> : it.no}
-                </span>
+                <NomorButir no={it.no} status={STATUS_KOTAK[item.status] ?? 'belum'} />
 
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold leading-snug text-pramuka-900">{it.jenis}</p>
