@@ -21,6 +21,7 @@ import { buatApi, HALAMAN_SEREMPAK, UKURAN_HALAMAN } from '../../src/lib/api.js'
 import { semesterDari, rentangKunci } from '../../src/lib/absensiLogic.js';
 import { hariIni } from '../../src/lib/format.js';
 import { PROFIL_JARINGAN, RTT_SERVER_MS, ringkasRantai, perkirakanSiap, simulasi } from './jaringan.mjs';
+import { berkasAwalDariHtml, memuatKlienProduksi } from './berkasAwal.mjs';
 
 const P = process.cwd().replace(/\\/g, '/');
 const arg = (nama, bawaan) => { const a = process.argv.find((x) => x.startsWith(`--${nama}=`)); return a ? a.slice(nama.length + 3) : bawaan; };
@@ -90,19 +91,28 @@ function bangunAplikasi() {
   if (!dir) {
     dir = '.uji/dist-ukur';
     console.log('Membangun aplikasi (npx vite build) untuk mengukur ukuran berkas awal...');
-    const b = spawnSync(`npx vite build --outDir ${dir} --emptyOutDir`, { cwd: P, shell: true, encoding: 'utf8', timeout: 300000 });
+    // Bundel produksi hanya memuat klien Supabase bila VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY terisi (tanpa keduanya cabang produksi dibuang
+    // sebagai kode mati); nilainya tidak memengaruhi ukuran, jadi nilai contoh cukup. VITE_BACKEND dibuang oleh vite.config.js.
+    const env = { ...process.env, VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || 'https://contoh.supabase.co', VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || 'contoh' };
+    const b = spawnSync(`npx vite build --outDir ${dir} --emptyOutDir`, { cwd: P, shell: true, encoding: 'utf8', timeout: 300000, env });
     if (b.status !== 0) throw new Error('build gagal: ' + (b.stdout + b.stderr).slice(-400));
   }
   const gz = (f) => gzipSync(readFileSync(`${P}/${dir}/${f}`)).length;
-  const berkas = readdirSync(`${P}/${dir}/assets`);
-  const cari = (re) => berkas.filter((f) => re.test(f));
-  const js = cari(/^index-.*\.js$/), css = cari(/^index-.*\.css$/), lain = cari(/\.js$/).filter((f) => !js.includes(f));
+  const semuaJs = readdirSync(`${P}/${dir}/assets`).filter((f) => f.endsWith('.js')).map((f) => `assets/${f}`);
+  // Berkas awal dibaca dari index.html (skrip modul + modulepreload), bukan dari nama berkas.
+  const awal = berkasAwalDariHtml(readFileSync(`${P}/${dir}/index.html`, 'utf8'));
+  if (!awal.js.length) throw new Error(`index.html di ${dir} tidak memuat skrip modul: bukan hasil build aplikasi.`);
+  // Ukuran hanya sah untuk build PRODUKSI: build tanpa klien Supabase (variabel VITE_SUPABASE_* kosong, atau VITE_BACKEND=lokal) tampak jauh lebih kecil dari yang terbit.
+  if (!semuaJs.some((f) => memuatKlienProduksi(readFileSync(`${P}/${dir}/${f}`, 'utf8')))) {
+    throw new Error(`Build di ${dir} tidak memuat klien Supabase produksi, jadi ukuran JS awalnya menyesatkan. Bangun ulang dengan VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY terisi dan tanpa VITE_BACKEND=lokal (mode produksi).`);
+  }
+  const lain = semuaJs.filter((f) => !awal.js.includes(f));
   return {
     html: gz('index.html'),
-    js: js.reduce((a, f) => a + gz(`assets/${f}`), 0),
-    css: css.reduce((a, f) => a + gz(`assets/${f}`), 0),
-    jsRaw: js.reduce((a, f) => a + readFileSync(`${P}/${dir}/assets/${f}`).length, 0),
-    malas: lain.map((f) => ({ berkas: f, gz: gz(`assets/${f}`) })),
+    js: awal.js.reduce((a, f) => a + gz(f), 0),
+    css: awal.css.reduce((a, f) => a + gz(f), 0),
+    jsRaw: awal.js.reduce((a, f) => a + readFileSync(`${P}/${dir}/${f}`).length, 0),
+    malas: lain.map((f) => ({ berkas: f.replace(/^assets\//, ''), gz: gz(f) })),
   };
 }
 

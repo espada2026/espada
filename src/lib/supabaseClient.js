@@ -5,7 +5,7 @@
  *  - `npm run dev:lokal`           : Postgres di dalam browser (PGlite) dengan skema dan Edge Function yang sama,
  *                                    tanpa akun Supabase. Kode lokal tidak ikut ke build produksi.
  */
-import { createClient } from '@supabase/supabase-js';
+import { buatKlienRingan } from './klienRingan';
 
 export const LOKAL = import.meta.env.VITE_BACKEND === 'lokal';
 export const GALAT_KONFIGURASI = 'KONFIGURASI_SUPABASE_KOSONG';
@@ -24,7 +24,7 @@ export function ambilKlien() {
     const kunci = import.meta.env.VITE_SUPABASE_ANON_KEY;
     if (!url || !kunci) throw new Error(GALAT_KONFIGURASI);
     return {
-      klien: createClient(url, kunci, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } }),
+      klien: buatKlienRingan(url, kunci, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } }), // bukan supabase-js: lihat klienRingan.js
       lokal: null,
     };
   })();

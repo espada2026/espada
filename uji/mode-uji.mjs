@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { siapkanPg, buatKlienFake } from '../src/lokal/klienFake.js';
 import { isiDataContoh, isiStatusContoh } from '../src/lokal/seedLokal.js';
 import { AKUN_CEPAT, alamatMasukCepat, bacaParameterUji } from '../src/lokal/parameterUji.js';
+import { berkasAwalDariHtml, memuatKlienProduksi } from '../scripts/profil/berkasAwal.mjs';
 import { masukCepat } from '../src/lokal/masukCepat.js';
 import { isiSekolahPenuh, buatPenegak } from '../src/lokal/sekolahPenuh.js';
 import { buatApi } from '../src/lib/api.js';
@@ -110,16 +111,26 @@ console.log('\n--- Data sekolah penuh ---');
   await pg.close();
 }
 
-console.log('\n--- Build produksi tidak memuat mode uji ---');
+console.log('\n--- Build produksi: tanpa mode uji, dengan klien Supabase, dan hanya JS awal yang perlu ---');
 {
   const keluar = '.uji/dist-uji';
   rmSync(`${P}/${keluar}`, { recursive: true, force: true });
-  const b = spawnSync(`npx vite build --outDir ${keluar} --emptyOutDir`, { cwd: P, shell: true, encoding: 'utf8', timeout: 300000 });
+  // Lingkungan sengaja "kotor" seperti pada sesi pengembangan (VITE_BACKEND=lokal tersisa di shell); vite.config.js harus membuangnya.
+  // VITE_SUPABASE_* diisi nilai contoh: tanpa keduanya bundel produksi tidak memuat klien Supabase sama sekali.
+  const env = { ...process.env, VITE_BACKEND: 'lokal', VITE_SUPABASE_URL: 'https://contoh.supabase.co', VITE_SUPABASE_ANON_KEY: 'contoh' };
+  const b = spawnSync(`npx vite build --outDir ${keluar} --emptyOutDir`, { cwd: P, shell: true, encoding: 'utf8', timeout: 300000, env });
   ok(b.status === 0, 'build produksi berhasil' + (b.status === 0 ? '' : ': ' + (b.stdout + b.stderr).slice(-300)));
   const berkas = readdirSync(`${P}/${keluar}/assets`).filter((f) => f.endsWith('.js'));
   const semua = berkas.map((f) => readFileSync(`${P}/${keluar}/assets/${f}`, 'utf8')).join('\n');
   const penanda = ['sigarda-lokal-penuh', 'Sangga Cendrawasih', '[masuk cepat]', 'Menyiapkan data sekolah penuh', 'Masuk cepat tanpa PIN', 'tidak ada pada data lokal ini', '?data=penuh'];
   for (const t of penanda) ok(!semua.includes(t), `build produksi tidak memuat "${t}"`);
+  ok(memuatKlienProduksi(semua), 'build produksi memuat klien Supabase walau VITE_BACKEND=lokal ada di lingkungan (dibuang oleh vite.config.js)');
+  // JS awal = index.html + modulepreload. Halaman publik dan dasbor per peran dimuat malas (Fase 0b), begitu pula pembuat kode QR.
+  const awal = berkasAwalDariHtml(readFileSync(`${P}/${keluar}/index.html`, 'utf8')).js.map((f) => readFileSync(`${P}/${keluar}/${f}`, 'utf8')).join('\n');
+  ok(memuatKlienProduksi(awal), 'JS awal memuat klien Supabase (aplikasi tidak dapat masuk tanpanya)');
+  const malas = [['Layak dan lulus untuk dilantik', 'halaman verifikasi QR'], ['Tautan tidak berlaku', 'halaman tautan berbagi Berkas Garuda'], ['Antrian pengujian SKU', 'dasbor Pembina/Dewan'], ['Dashboard Admin Gudep', 'dasbor Admin']];
+  for (const [teks, nama] of malas) ok(!awal.includes(teks) && semua.includes(teks), `${nama} dimuat malas: tidak ada di JS awal, ada di potongan lain`);
+  ok(!/\baddData\b/.test(awal) && /\baddData\b/.test(semua), 'pembuat kode QR dimuat malas: tidak ada di JS awal, ada di potongan lain');
   rmSync(`${P}/${keluar}`, { recursive: true, force: true });
 }
 
