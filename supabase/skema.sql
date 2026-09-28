@@ -5376,6 +5376,20 @@ create trigger notif_berita_status after insert or update of status on public.be
 create trigger notif_prestasi_status after insert or update of status on public.beranda_prestasi for each row execute function sigarda.notif_beranda_konten();
 create trigger notif_galeri_status after insert or update of status on public.beranda_galeri for each row execute function sigarda.notif_beranda_konten();
 -- ===== akhir notifikasi beranda konten =====
+
+-- ===== Kelola Beranda: arsip berita publik (Fase 4): aksi =====
+-- Semua berita TERBIT yang sudah waktunya (terbit_pada <= sekarang), terbaru dulu, paling banyak 200, TANPA login (hanya membaca). Dipakai build situs untuk
+-- membuat satu halaman statis per berita (alamat tetap berdasarkan id, terbaca mesin pencari) dan sitemap; sg_beranda_publik hanya memuat 6 terbaru tanpa id.
+-- Kolom: id, kategori, judul, ringkasan, isi, sampulUrl, terbitPada, diubahPada SAJA (tanpa penulis, peninjau, catatan tinjauan, atau status).
+create function public.sg_berita_publik() returns jsonb
+language sql stable security definer set search_path = public as
+$$
+  select coalesce(jsonb_agg(jsonb_build_object('id', b.id, 'kategori', b.kategori, 'judul', b.judul, 'ringkasan', b.ringkasan, 'isi', b.isi, 'sampulUrl', b.sampul_url,
+    'terbitPada', b.terbit_pada, 'diubahPada', b.diubah_pada) order by b.terbit_pada desc, b.id desc), '[]'::jsonb)
+  from (select id, kategori, judul, ringkasan, isi, sampul_url, terbit_pada, diubah_pada from public.beranda_berita
+        where status = 'terbit' and terbit_pada <= now() order by terbit_pada desc, id desc limit 200) b
+$$;
+-- ===== akhir arsip berita publik =====
 -- ===== Dokumen terbit: fungsi aksi =====
 -- Menerbitkan surat pengantar ke guru agama untuk butir agama Penegak yang tidak punya Pembina seagama (Pembina atau Admin Gudep).
 -- Surat dicetak untuk tanda tangan dan stempel basah; QR memuat token (sg_verifikasi_token). Selama surat berlaku, Pembina mana pun boleh
@@ -7445,7 +7459,7 @@ grant execute on function
   to authenticated;
 -- Fungsi yang boleh dipanggil tanpa login (hanya membaca): verifikasi keaslian dokumen, identitas gudep di halaman masuk, dan
 -- tautan berbagi baca-saja Berkas Calon Garuda (tahap L7), dan isi beranda publik (Fase 1 landing page: hanya membaca)
-grant execute on function public.sg_verifikasi_token(text), public.sg_verifikasi_kode(text), public.sg_gudep_publik(), public.sg_garuda_token_baca(text), public.sg_beranda_publik() to anon, authenticated;
+grant execute on function public.sg_verifikasi_token(text), public.sg_verifikasi_kode(text), public.sg_gudep_publik(), public.sg_garuda_token_baca(text), public.sg_beranda_publik(), public.sg_berita_publik() to anon, authenticated;
 grant execute on function
   public.sg_sku_catat_internal(uuid, uuid, text, text, date, text, text),
   public.sg_sku_catat_rubrik_internal(uuid, uuid, text, date, jsonb, text, text),

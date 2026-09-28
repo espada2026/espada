@@ -1,7 +1,9 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import { renderBerandaKeHtml, sisipkanPrarender } from './scripts/prarender.mjs';
+import { bangunBeritaStatis } from './scripts/berita-statis.mjs';
 
 const BOOT_LOKAL = fileURLToPath(new URL('./src/lokal/bootLokal.js', import.meta.url));
 
@@ -50,6 +52,26 @@ const prarenderBeranda = () => ({
   },
 });
 
+/**
+ * Halaman berita statis (satu HTML per berita terbit) dan sitemap, dibuat SESUDAH build dari data publik (sg_berita_publik). Hanya bila SIGARDA_BERITA_STATIS=1
+ * (diset alur deploy); build lain (uji, profil, lokal) tidak menyentuh jaringan. Gagal apa pun = peringatan, bukan galat build. Lihat scripts/berita-statis.mjs.
+ */
+const beritaStatis = (aktif, url, kunci) => {
+  let dist = 'dist';
+  return {
+    name: 'sigarda-berita',
+    apply: 'build',
+    configResolved(c) { dist = path.resolve(c.root, c.build.outDir); },
+    async closeBundle() {
+      if (!aktif) return;
+      let pesan;
+      let jumlah = 0;
+      try { ({ jumlah, pesan } = await bangunBeritaStatis({ dist, url, kunci })); } catch (e) { pesan = `galat tak terduga: ${String(e?.message ?? e).slice(0, 200)}`; }
+      console.log(`${jumlah || !process.env.GITHUB_ACTIONS ? '' : '::warning::'}[berita-statis] ${pesan}`);
+    },
+  };
+};
+
 // VITE_BASE dipakai saat deploy ke GitHub Pages, mis. VITE_BASE=/sigarda/
 export default defineConfig(({ mode, command }) => {
   // Hanya mode "lokal" yang memakai backend lokal. Variabel lingkungan VITE_BACKEND=lokal yang tersisa di shell (mis. sesi pengembangan) membuat
@@ -57,9 +79,10 @@ export default defineConfig(({ mode, command }) => {
   // jauh lebih kecil dari yang terbit (penyebab lain: VITE_SUPABASE_URL/ANON_KEY kosong; itu dijaga scripts/profil). Dibuang di sini, sebelum Vite
   // membaca lingkungan (dijaga uji/mode-uji.mjs).
   if (mode !== 'lokal') delete process.env.VITE_BACKEND;
+  const env = loadEnv(mode, process.cwd(), 'VITE_');
   return {
     base: process.env.VITE_BASE || '/',
-    plugins: [backendLokal(mode === 'lokal'), versiTerbit(command === 'build' && mode !== 'lokal'), prarenderBeranda(), react()],
+    plugins: [backendLokal(mode === 'lokal'), versiTerbit(command === 'build' && mode !== 'lokal'), prarenderBeranda(), beritaStatis(command === 'build' && mode !== 'lokal' && process.env.SIGARDA_BERITA_STATIS === '1', env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY), react()],
     define: { __BUILD_ID__: JSON.stringify(command === 'build' && mode !== 'lokal' ? ID_BUILD : '') },
     // Edge Function memakai alamat gaya Deno ("npm:..."); di sini dialihkan ke paket yang terpasang (mode lokal).
     resolve: { alias: { 'npm:@supabase/supabase-js@2': '@supabase/supabase-js' } },
