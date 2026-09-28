@@ -28,7 +28,7 @@ const potret = async (db) => {
   };
 };
 
-const A = await baru('git:bbb21bf'); // keadaan TEPAT sesudah migrasi ini (main sesudah PR #52); skema.sql terbaru kini juga memuat migrasi terbit-ulang
+const A = await baru('git:bbb21bf'); // keadaan TEPAT sesudah migrasi ini (main sesudah PR #52); skema.sql terbaru kini juga memuat tanggal-terbit-berita
 const pa = await potret(A);
 
 console.log('--- Database berisi data: kesetaraan, data utuh, idempoten ---');

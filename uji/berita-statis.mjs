@@ -63,7 +63,7 @@ console.log('\n--- Server: sg_berita_publik ---');
   const simpan = (id, judul, status, terbit = null) => sebagai(id, "select public.sg_berita_simpan(null, 'kegiatan', $1, 'Ringkas', 'Isi lengkap', '', $2, $3::timestamptz) as id", [judul, status, terbit]).then((r) => r[0].id);
   const idLama = await simpan(pembina.id, 'Terbit lama', 'terbit', '2026-01-01T00:00:00Z');
   const idBaru = await simpan(pembina.id, 'Terbit baru', 'terbit', '2026-06-01T00:00:00Z');
-  await simpan(pembina.id, 'Terjadwal depan', 'terbit', '2999-01-01T00:00:00Z');
+  await simpan(pembina.id, 'Terjadwal depan', 'terbit', new Date(Date.now() + 200 * 864e5).toISOString());
   await simpan(pembina.id, 'Masih draf', 'draf');
   await simpan(dewan.id, 'Menunggu Pembina', 'menunggu');
   const idTolak = await simpan(dewan.id, 'Akan ditolak', 'menunggu');

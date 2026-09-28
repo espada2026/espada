@@ -120,7 +120,7 @@ console.log('\n--- Pemicu: hanya perubahan yang menyentuh berita TERBIT menandai
   await sebagai(pembina, 'select public.sg_berita_hapus($1)', [t2]);
   ok((await konf()).perlu === true, 'menghapus berita terbit menandai');
   await tandaiBersih();
-  await simpanBerita(pembina, 'Terjadwal', 'terbit', '2999-01-01T00:00:00Z');
+  await simpanBerita(pembina, 'Terjadwal', 'terbit', new Date(Date.now() + 30 * 86400000).toISOString()); // sg_berita_simpan membatasi jadwal paling jauh 366 hari ke depan
   await q('update public.terbit_ulang_konfigurasi set perlu = false, perlu_sejak = null');
   ok((await q("select count(*)::int n from public.beranda_berita where status = 'terbit'"))[0].n >= 2, 'prasyarat: ada berita terbit (satu terjadwal di masa depan)');
 }

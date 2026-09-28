@@ -7,10 +7,11 @@ import LogoMark from '../components/LogoMark';
 import SumberPeraturan from '../components/SumberPeraturan';
 import { labelJenisAgenda } from '../lib/agendaLogic';
 import { namaAmbalan } from '../lib/gudepLogic';
-import { jaringanSosial, pecahParagraf, pecahTanggal, tautanBagikanWa, tautanPencarianPeta, tautanPeta, tautanWhatsapp, kandidatGambar } from '../lib/berandaLogic';
+import { jaringanSosial, pecahParagraf, pecahTanggal, tautanBagikanWa, tautanPencarianPeta, tautanPeta, tanggalWib, tautanWhatsapp, kandidatGambar } from '../lib/berandaLogic';
 import { bolehSunting, tautanSunting } from '../lib/suntingLogic';
 import { halamanBerita } from '../lib/beritaStatisLogic';
 import { LABEL_KATEGORI_BERITA, LABEL_KELOMPOK_GALERI, LABEL_PLATFORM, LABEL_TINGKAT_PRESTASI } from '../lib/berandaKontenLogic';
+import { analisisSosial, LABEL_PLATFORM_SOSIAL } from '../lib/sosialLogic';
 import { ALAMAT_SITUS, DASA_DARMA, MENU, PERJALANAN, PROGRAM, TANYA_JAWAB, TRI_SATYA } from './landingData';
 import { IkonBeranda, LanskapPerkemahan, PetaBergaya } from './ilustrasi';
 
@@ -234,7 +235,7 @@ export function Perjalanan() {
 
 /** Kartu berita: sampul (bila ada), kategori, judul, ringkasan, isi lengkap di balik "Baca selengkapnya" (tanpa JavaScript, elemen <details>), dan tanggal terbit. */
 function KartuBerita({ b, besar = false, halaman = '' }) {
-  const t = pecahTanggal(String(b.terbitPada ?? '').slice(0, 10));
+  const t = pecahTanggal(tanggalWib(b.terbitPada));
   const sampul = kandidatGambar(b.sampulUrl);
   const isi = pecahParagraf(b.isi);
   return (
@@ -393,24 +394,65 @@ export function KabarAgenda({ agenda = [], memuat = false }) {
   );
 }
 
-/** Kartu tautan media sosial (bukan sematan resmi): pratinjau gambar bila ada, keterangan, dan tautan keluar. Kosong = bagian tidak tampil. */
+/**
+ * Kartu satu postingan media sosial. Tanpa skrip pihak ketiga saat halaman dimuat: kartu awalnya hanya gambar pratinjau + tombol putar; pemutar (iframe resmi
+ * platform, alamat dari analisisSosial) baru dibuat saat pengunjung mengetuk tombol putar, jadi butuh satu ketukan sebelum video berputar. Postingan yang tidak
+ * dapat disematkan (tautan pendek, tautan Bagikan baru) tetap kartu tautan yang membuka postingannya di platform.
+ */
+function KartuSosial({ s }) {
+  const [putar, setPutar] = useState(false);
+  const a = analisisSosial(s.tautan);
+  const nama = LABEL_PLATFORM_SOSIAL[a.platform] ?? LABEL_PLATFORM[s.platform] ?? s.platform;
+  const dariPengurus = kandidatGambar(s.gambarUrl);
+  const sumber = dariPengurus.length ? dariPengurus : (a.thumbUrl ? [a.thumbUrl] : []);
+  const video = a.bentuk === 'video';
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl bg-pramuka-50 text-pramuka-900">
+      {a.embedUrl && putar ? (
+        <div className={`w-full bg-black ${video ? 'aspect-video' : 'h-[600px]'}`}>
+          <iframe
+            title={`Pemutar ${nama}${s.keterangan ? `: ${s.keterangan}` : ''}`}
+            src={a.embedUrl}
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share; fullscreen"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation allow-forms"
+            className="h-full w-full border-0"
+          />
+        </div>
+      ) : a.embedUrl ? (
+        <button type="button" onClick={() => setPutar(true)} aria-label={`Putar postingan ${nama}${s.keterangan ? `: ${s.keterangan}` : ''}`} className="group relative block w-full text-left">
+          <GambarSampul sumber={sumber} kelas={video ? 'aspect-video w-full object-cover' : 'aspect-square w-full object-cover'} kelasPengganti={video ? 'aspect-video w-full bg-pramuka-700' : 'aspect-square w-full bg-pramuka-700'} ikon="kompas" ukuranIkon={36} />
+          <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center bg-pramuka-900/15">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-emas text-pramuka-900 shadow-lg transition group-hover:scale-105">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg>
+            </span>
+          </span>
+        </button>
+      ) : (
+        <a href={s.tautan} target="_blank" rel="noopener noreferrer" className="block no-underline">
+          <GambarSampul sumber={sumber} kelas="aspect-square w-full object-cover" kelasPengganti="aspect-square w-full bg-pramuka-700" ikon="kompas" ukuranIkon={36} />
+        </a>
+      )}
+      <div className="flex flex-1 flex-col gap-1 p-4">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-emas-dark">{nama}</span>
+        {s.keterangan && <p className="text-sm text-pramuka-700 [overflow-wrap:anywhere]">{s.keterangan}</p>}
+        {a.embedUrl && !putar && <p className="text-xs text-pramuka-600">Ketuk gambar untuk memutar.</p>}
+        <a href={s.tautan} target="_blank" rel="noopener noreferrer" className="mt-auto inline-block pt-1 text-xs font-semibold text-pramuka-600 hover:underline">Buka di {nama} ↗</a>
+      </div>
+    </div>
+  );
+}
+
+/** Media sosial dari Kelola Beranda. Kosong = bagian tidak tampil sama sekali. */
 export function MediaSosial({ sosial = [], sunting = '' }) {
   if (sosial.length === 0) return null;
   return (
     <section id="sosial" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:#f8f2e4]">
       <div className={wrap}>
         <KepalaBagian gelap label="Media sosial" judul="Ikuti kabar terbaru kami" sunting={sunting} tab="sosial" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sosial.map((s, i) => (
-            <a key={`${s.tautan}|${i}`} href={s.tautan} target="_blank" rel="noopener noreferrer" className="flex flex-col overflow-hidden rounded-2xl bg-pramuka-50 text-pramuka-900 no-underline">
-              <GambarSampul sumber={kandidatGambar(s.gambarUrl)} kelas="aspect-square w-full object-cover" kelasPengganti="aspect-square w-full bg-pramuka-700" ikon="kompas" ukuranIkon={36} />
-              <div className="p-4">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emas-dark">{LABEL_PLATFORM[s.platform] ?? s.platform}</span>
-                {s.keterangan && <p className="text-sm text-pramuka-700">{s.keterangan}</p>}
-                <span className="mt-1 inline-block text-xs font-semibold text-pramuka-600">Buka tautan ↗</span>
-              </div>
-            </a>
-          ))}
+        <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {sosial.map((s, i) => <KartuSosial key={`${s.tautan}|${i}`} s={s} />)}
         </div>
       </div>
     </section>

@@ -30,6 +30,9 @@ begin
   if v_sampul <> '' and v_sampul !~ '^https://[A-Za-z0-9.-]+\.[A-Za-z]{2,}([/?#][^ ]*)?$' then raise exception 'Gambar sampul harus diawali https:// dan berupa alamat yang sah.'; end if;
   if v_status not in ('draf', 'menunggu', 'terbit') then raise exception 'Status berita tidak sah.'; end if;
   if v_status = 'terbit' and not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat menerbitkan berita.'; end if;
+  if p_terbit_pada is not null and (p_terbit_pada < timestamptz '2015-01-01 00:00:00+07' or p_terbit_pada > now() + interval '366 days') then
+    raise exception 'Tanggal terbit tidak sah (paling awal 2015, paling jauh satu tahun ke depan).';
+  end if;
 
   if p_id is not null then
     select * into v_lama from public.beranda_berita where id = p_id;
@@ -38,12 +41,12 @@ begin
       raise exception 'Anda hanya dapat mengubah berita sendiri yang belum terbit; berita yang sudah terbit hanya diubah Pembina atau Admin Gudep.';
     end if;
     update public.beranda_berita set kategori = p_kategori, judul = v_judul, ringkasan = v_ringkasan, isi = v_isi, sampul_url = v_sampul,
-        status = v_status, terbit_pada = case when v_status = 'terbit' then coalesce(p_terbit_pada, now()) else null end,
+        status = v_status, terbit_pada = case when v_status = 'terbit' then coalesce(p_terbit_pada, now()) else p_terbit_pada end,
         catatan_tinjauan = case when v_status = 'ditolak' then catatan_tinjauan else '' end, diubah_pada = now()
       where id = p_id returning id into v_id;
   else
     insert into public.beranda_berita (kategori, judul, ringkasan, isi, sampul_url, status, terbit_pada, dibuat_oleh, dibuat_oleh_nama)
-      values (p_kategori, v_judul, v_ringkasan, v_isi, v_sampul, v_status, case when v_status = 'terbit' then coalesce(p_terbit_pada, now()) else null end, auth.uid(), sigarda.nama_saya())
+      values (p_kategori, v_judul, v_ringkasan, v_isi, v_sampul, v_status, case when v_status = 'terbit' then coalesce(p_terbit_pada, now()) else p_terbit_pada end, auth.uid(), sigarda.nama_saya())
       returning id into v_id;
   end if;
   return v_id;
@@ -73,7 +76,7 @@ begin
   if p_keputusan = 'ditolak' and char_length(v_catatan) < 5 then raise exception 'Alasan penolakan wajib diisi, minimal 5 karakter.'; end if;
   select true into v_ada from public.beranda_berita where id = p_id and status = 'menunggu';
   if v_ada is null then raise exception 'Pengajuan berita tidak ditemukan atau sudah ditinjau.'; end if;
-  update public.beranda_berita set status = p_keputusan, terbit_pada = case when p_keputusan = 'terbit' then now() else null end,
+  update public.beranda_berita set status = p_keputusan, terbit_pada = case when p_keputusan = 'terbit' then coalesce(terbit_pada, now()) else terbit_pada end,
       catatan_tinjauan = case when p_keputusan = 'ditolak' then v_catatan else '' end,
       ditinjau_oleh = auth.uid(), ditinjau_oleh_nama = sigarda.nama_saya(), ditinjau_pada = now(), diubah_pada = now()
     where id = p_id;

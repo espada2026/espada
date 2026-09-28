@@ -7,8 +7,10 @@ import { isiDataContoh } from '../src/lokal/seedLokal.js';
 import { PIN_DEMO } from '../src/lokal/pinDemo.js';
 import { buatApi } from '../src/lib/api.js';
 import {
-  bolehUbah, periksaBerita, periksaFaq, periksaGaleri, periksaPrestasi, periksaSosial, tahunDari, untukFormBerita, untukFormFaq, untukFormGaleri, untukFormPrestasi, untukFormSosial,
+  bolehUbah, periksaBerita, periksaFaq, periksaGaleri, periksaPrestasi, periksaSosial, tahunDari, terbitPadaDari, untukFormBerita, untukFormFaq, untukFormGaleri, untukFormPrestasi, untukFormSosial,
 } from '../src/lib/berandaKontenLogic.js';
+import { tanggalWib } from '../src/lib/berandaLogic.js';
+import { hariIni as hariIniKlien } from '../src/lib/format.js';
 
 const P = process.cwd().replace(/\\/g, '/');
 let gagal = 0, lulus = 0;
@@ -55,6 +57,20 @@ console.log('--- Berita: kisi masukan klien = server ---');
     if (s !== c) beda.push(`kategori=${kategori}: server ${s}, klien ${c}`);
   }
   ok(beda.length === 0, `${n} kombinasi berita: klien dan server sama-sama menerima/menolak${beda.length ? ' | BEDA: ' + beda.slice(0, 6).join(' ; ') : ''}`);
+  {
+    // Tanggal terbit: kisi masukan klien (terbitTanggal lewat terbitPadaDari) = server (p_terbit_pada)
+    const hariSql = async (n) => (await pg.query('select (sigarda.hari_ini() + $1::int)::text d', [n])).rows[0].d;
+    const kandidatTanggal = ['', await hariSql(0), await hariSql(-400), await hariSql(1), await hariSql(365), await hariSql(366), await hariSql(367), '2015-01-01', '2014-12-31', '1999-05-05', '2026-13-45', '2026-02-30', 'abc'];
+    const bedaTanggal = [];
+    for (const tanggal of kandidatTanggal) {
+      const b = { ...DASAR, terbitTanggal: tanggal };
+      let s = true;
+      try { await sqlSebagai(pg, pembina, 'select public.sg_berita_simpan(null, $1, $2, $3, $4, $5, $6, $7::timestamptz)', [b.kategori, b.judul, b.ringkasan, b.isi, b.sampulUrl, 'draf', terbitPadaDari(tanggal)]); } catch { s = false; }
+      const c = klien(b, 'draf');
+      if (s !== c) bedaTanggal.push(`tanggal=${JSON.stringify(tanggal)}: server ${s}, klien ${c}`);
+    }
+    ok(bedaTanggal.length === 0, `${kandidatTanggal.length} tanggal terbit: klien dan server sama-sama menerima/menolak${bedaTanggal.length ? ' | BEDA: ' + bedaTanggal.join(' ; ') : ''}`);
+  }
   // bolehTerbit = false (Dewan): status 'terbit' harus ditolak DI KEDUA SISI
   ok(!(await server(DASAR, 'terbit_sbg_dewan')) === true || true, ''); // no-op, dicek eksplisit di bawah
   const sDewanTerbit = await (async () => { try { const dewan = await (async () => { const a = buatApi(buatKlienFake(pg)); return (await a.masuk('dewan', PIN_DEMO.dewan)).id; })(); await sqlSebagai(pg, dewan, "select public.sg_berita_simpan(null, 'kegiatan', 'x', '', 'y', '', 'terbit', null)"); return true; } catch { return false; } })();
@@ -122,6 +138,13 @@ console.log('\n--- FAQ: kisi masukan klien = server ---');
 
 console.log('\n--- untukForm*: aman untuk data rusak ---');
 {
+  ok(/^\d{4}-\d{2}-\d{2}$/.test(untukFormBerita(null).terbitTanggal) && untukFormBerita(null).terbitTanggal === hariIniKlien(), 'untukFormBerita: berita baru memakai hari ini (WIB) sebagai tanggal terbit bawaan');
+  ok(untukFormBerita({ terbitPada: '2026-08-30T17:00:00+00:00' }).terbitTanggal === '2026-08-31' && untukFormBerita({ terbitPada: '2026-08-30T16:59:59+00:00' }).terbitTanggal === '2026-08-30', 'untukFormBerita: tanggal dari waktu terbit dibaca menurut WIB (17.00 UTC = 00.00 WIB hari berikutnya)');
+  ok(untukFormBerita({ terbitTanggal: '', terbitPada: '2026-08-31T00:00:00+07:00' }).terbitTanggal === '', 'tanggal yang dikosongkan pengguna tetap kosong (tidak dikembalikan ke bawaan)');
+  ok(tanggalWib('2026-08-30T17:00:00+00:00') === '2026-08-31' && tanggalWib('2026-08-31T00:00:00+07:00') === '2026-08-31' && tanggalWib('bukan tanggal') === '' && tanggalWib(null) === '', 'tanggalWib: cap waktu ke tanggal kalender WIB, rusak = kosong');
+  ok(terbitPadaDari('') === null && terbitPadaDari('  ') === null && terbitPadaDari(null) === null, 'terbitPadaDari: kosong = null (server memakai saat diterbitkan)');
+  ok(terbitPadaDari('2026-08-31') === '2026-08-31T00:00:00+07:00' && tanggalWib(terbitPadaDari('2026-08-31')) === '2026-08-31', 'terbitPadaDari: tanggal baru = 00.00 WIB tanggal itu, dan kembali ke tanggal yang sama');
+  ok(terbitPadaDari('2026-08-31', '2026-08-31T03:20:00+07:00') === '2026-08-31T03:20:00+07:00' && terbitPadaDari('2026-09-01', '2026-08-31T03:20:00+07:00') === '2026-09-01T00:00:00+07:00', 'terbitPadaDari: tanggal tidak diubah = waktu semula (jam tidak bergeser); diubah = tanggal baru');
   ok(untukFormBerita(null).kategori === 'kegiatan' && untukFormBerita({ kategori: 'entah' }).kategori === 'kegiatan', 'untukFormBerita: kategori tak dikenal jatuh ke bawaan');
   ok(untukFormPrestasi(null).tingkat === 'ranting' && typeof untukFormPrestasi({ tahun: '2026' }).tahun === 'number', 'untukFormPrestasi: bawaan dan tahun dipaksa angka');
   ok(untukFormGaleri(5).judul === '' && untukFormGaleri({ kelompok: 'entah' }).kelompok === 'lainnya', 'untukFormGaleri: aman untuk input bukan objek');
