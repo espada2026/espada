@@ -13,7 +13,7 @@ import PanelFaq from '../components/PanelFaq';
  * Media sosial tanpa alur (langsung tampil); Pertanyaan umum (FAQ) hanya untuk Pembina dan Admin Gudep. Hak ditegakkan server; tampilan ini
  * hanya menyembunyikan tombol dan tab yang akan ditolak.
  */
-export default function KelolaBeranda() {
+export default function KelolaBeranda({ tabAwal = null }) {
   const { user } = useApp();
   const bolehTerbit = pembinaAtauAdmin(user);
   const TAB = [
@@ -24,7 +24,7 @@ export default function KelolaBeranda() {
     { id: 'sosial', label: 'Media Sosial' },
     ...(bolehTerbit ? [{ id: 'faq', label: 'Pertanyaan Umum' }] : []),
   ];
-  const [tab, setTab] = useState('kontak');
+  const [tab, setTab] = useState(tabAwal ?? 'kontak');
   const tabAktif = TAB.some((t) => t.id === tab) ? tab : 'kontak';
 
   return (

@@ -7,9 +7,10 @@ import LogoMark from '../components/LogoMark';
 import SumberPeraturan from '../components/SumberPeraturan';
 import { labelJenisAgenda } from '../lib/agendaLogic';
 import { namaAmbalan } from '../lib/gudepLogic';
-import { jaringanSosial, pecahParagraf, pecahTanggal, tautanPencarianPeta, tautanPeta, tautanWhatsapp, urlGambar } from '../lib/berandaLogic';
+import { jaringanSosial, pecahParagraf, pecahTanggal, tautanBagikanWa, tautanPencarianPeta, tautanPeta, tautanWhatsapp, urlGambar } from '../lib/berandaLogic';
+import { bolehSunting, tautanSunting } from '../lib/suntingLogic';
 import { LABEL_KATEGORI_BERITA, LABEL_KELOMPOK_GALERI, LABEL_PLATFORM, LABEL_TINGKAT_PRESTASI } from '../lib/berandaKontenLogic';
-import { DASA_DARMA, MENU, PERJALANAN, PROGRAM, TANYA_JAWAB, TRI_SATYA } from './landingData';
+import { ALAMAT_SITUS, DASA_DARMA, MENU, PERJALANAN, PROGRAM, TANYA_JAWAB, TRI_SATYA } from './landingData';
 import { IkonBeranda, LanskapPerkemahan, PetaBergaya } from './ilustrasi';
 
 const wrap = 'mx-auto w-full max-w-6xl px-5';
@@ -17,10 +18,22 @@ const judulBagian = 'font-display text-3xl font-extrabold leading-tight sm:text-
 const eyebrow = 'flex items-center gap-2.5 text-xs font-bold uppercase tracking-[0.2em]';
 const garisEyebrow = 'h-0.5 w-7 bg-emas';
 
-function KepalaBagian({ label, judul, isi, gelap = false }) {
+const kelasBagikan = 'inline-flex w-fit items-center text-xs font-bold text-emas-dark no-underline hover:underline';
+
+/** Ikon pensil menuju tab Kelola Beranda yang sesuai; hanya tampil bagi pengurus yang sedang masuk (`sunting` dari petunjuk di peramban, lihat suntingLogic.js). */
+function PensilSunting({ sunting, tab, label }) {
+  if (!bolehSunting(sunting, tab)) return null;
+  return (
+    <a href={tautanSunting(tab)} aria-label={`Sunting ${label} di Kelola Beranda`} title={`Sunting ${label} di Kelola Beranda`} className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-current normal-case tracking-normal no-underline hover:bg-white/10">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+    </a>
+  );
+}
+
+function KepalaBagian({ label, judul, isi, gelap = false, sunting = '', tab = '' }) {
   return (
     <div className="mb-10 flex max-w-2xl flex-col gap-3">
-      <span className={`${eyebrow} ${gelap ? 'text-emas-light' : 'text-emas-dark'}`}><span className={garisEyebrow} />{label}</span>
+      <span className={`${eyebrow} ${gelap ? 'text-emas-light' : 'text-emas-dark'}`}><span className={garisEyebrow} />{label}<PensilSunting sunting={sunting} tab={tab} label={label} /></span>
       <h2 className={`${judulBagian} ${gelap ? 'text-pramuka-50' : 'text-pramuka-900'}`}>{judul}</h2>
       {isi && <p className={`text-base leading-relaxed sm:text-lg ${gelap ? 'text-pramuka-200' : 'text-pramuka-700'}`}>{isi}</p>}
     </div>
@@ -109,7 +122,7 @@ export function Hero({ G, agendaTerdekat = null }) {
 }
 
 /** Tentang gudep: cerita, sambutan (bila diisi pengurus), Tri Satya dan Dasa Darma. */
-export function Tentang({ G, kontak, pembina, kamabigus }) {
+export function Tentang({ G, kontak, pembina, kamabigus, sunting = '' }) {
   const cerita = pecahParagraf(kontak.cerita);
   const sambutan = [
     { teks: pecahParagraf(kontak.sambutanPembina), orang: pembina, bawaan: 'Pembina Gudep' },
@@ -119,7 +132,7 @@ export function Tentang({ G, kontak, pembina, kamabigus }) {
     <section id="tentang" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#2e1b10]">
       <div className={`${wrap} tentang-grid`}>
         <div className="tentang-cerita">
-          <KepalaBagian label="Tentang kami" judul="Berlatih setiap Jumat, bertumbuh sepanjang tahun" />
+          <KepalaBagian label="Tentang kami" judul="Berlatih setiap Jumat, bertumbuh sepanjang tahun" sunting={sunting} tab="kontak" />
           <div className="space-y-4 text-base leading-relaxed text-pramuka-700 sm:text-lg">
             <p>
               Gugus Depan {G.sekolah} mendampingi Penegak dari kelas X sampai XII menempuh Syarat Kecakapan Umum (SKU), meraih Tanda Kecakapan Khusus (TKK),
@@ -235,18 +248,21 @@ function KartuBerita({ b, besar = false }) {
             </div>
           </details>
         )}
-        {t && <p className="mt-auto pt-1 text-xs text-pramuka-500">{t.namaHari}, {t.hari} {t.bulan} {t.tahun}</p>}
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pt-1">
+          {t ? <p className="text-xs text-pramuka-500">{t.namaHari}, {t.hari} {t.bulan} {t.tahun}</p> : <span />}
+          <a href={tautanBagikanWa(b.judul, `${ALAMAT_SITUS}#berita`)} target="_blank" rel="noopener noreferrer" className={kelasBagikan}>Bagikan lewat WhatsApp ↗</a>
+        </div>
       </div>
     </article>
   );
 }
 
 /** Berita terbit dari Kelola Beranda (Fase 2). */
-export function Berita({ berita = [], memuat = false }) {
+export function Berita({ berita = [], memuat = false, sunting = '' }) {
   return (
     <section id="berita" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#45291a]">
       <div className={wrap}>
-        <KepalaBagian label="Kabar gudep" judul="Yang sedang terjadi di gudep" isi="Ditulis oleh Dewan Ambalan, Pembina, dan Admin Gudep lewat Kelola Beranda." />
+        <KepalaBagian label="Kabar gudep" judul="Yang sedang terjadi di gudep" isi="Ditulis oleh Dewan Ambalan, Pembina, dan Admin Gudep lewat Kelola Beranda." sunting={sunting} tab="berita" />
         {berita.length === 0 ? (
           <p role="status" className="rounded-2xl border border-pramuka-200 bg-white p-6 text-pramuka-600">{memuat ? 'Memuat berita...' : 'Belum ada berita. Tengok lagi nanti.'}</p>
         ) : (
@@ -260,11 +276,11 @@ export function Berita({ berita = [], memuat = false }) {
 }
 
 /** Prestasi terbit dari Kelola Beranda. Nama regu/tim/gudep saja (bukan nama perorangan tanpa izin). */
-export function Prestasi({ prestasi = [], memuat = false }) {
+export function Prestasi({ prestasi = [], memuat = false, sunting = '' }) {
   return (
     <section id="prestasi" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:#f8f2e4]">
       <div className={wrap}>
-        <KepalaBagian gelap label="Prestasi" judul="Kerja keras yang membawa pulang penghargaan" />
+        <KepalaBagian gelap label="Prestasi" judul="Kerja keras yang membawa pulang penghargaan" sunting={sunting} tab="prestasi" />
         {prestasi.length === 0 ? (
           <p role="status" className="rounded-2xl bg-pramuka-50/10 p-6 text-pramuka-200">{memuat ? 'Memuat prestasi...' : 'Belum ada prestasi yang dicatat. Tengok lagi nanti.'}</p>
         ) : (
@@ -287,28 +303,35 @@ export function Prestasi({ prestasi = [], memuat = false }) {
 }
 
 /** Album galeri (tautan Google Drive atau Photos) dari Kelola Beranda. */
-export function Galeri({ galeri = [], memuat = false }) {
+export function Galeri({ galeri = [], memuat = false, sunting = '' }) {
   return (
     <section id="galeri" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:#45291a]">
       <div className={wrap}>
-        <KepalaBagian label="Galeri" judul="Momen dari lapangan" isi="Album lengkap ada di Google Drive atau Google Photos gudep." />
+        <KepalaBagian label="Galeri" judul="Momen dari lapangan" isi="Album lengkap ada di Google Drive atau Google Photos gudep." sunting={sunting} tab="galeri" />
         {galeri.length === 0 ? (
           <p role="status" className="rounded-2xl border border-pramuka-200 bg-white p-6 text-pramuka-600">{memuat ? 'Memuat galeri...' : 'Belum ada album. Tengok lagi nanti.'}</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {galeri.map((g, i) => (
-              <a key={`${g.judul}|${i}`} href={g.tautan} target="_blank" rel="noopener noreferrer" className="group overflow-hidden rounded-2xl border border-pramuka-200 bg-white no-underline">
-                {urlGambar(g.sampulUrl) ? (
-                  <img src={urlGambar(g.sampulUrl)} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover transition group-hover:scale-105" />
-                ) : (
-                  <div aria-hidden="true" className="flex aspect-[4/3] items-center justify-center bg-pramuka-800 text-emas-light"><IkonBeranda nama="tenda" ukuran={36} /></div>
-                )}
-                <div className="p-4">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-emas-dark">{LABEL_KELOMPOK_GALERI[g.kelompok] ?? g.kelompok}</span>
-                  <h3 className="font-display text-base font-bold text-pramuka-900">{g.judul}</h3>
-                  <span className="text-xs font-semibold text-pramuka-600">Buka album ↗</span>
+              <div key={`${g.judul}|${i}`} className="flex flex-col overflow-hidden rounded-2xl border border-pramuka-200 bg-white">
+                <a href={g.tautan} target="_blank" rel="noopener noreferrer" className="group block flex-1 no-underline">
+                  <div className="overflow-hidden">
+                    {urlGambar(g.sampulUrl) ? (
+                      <img src={urlGambar(g.sampulUrl)} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover transition group-hover:scale-105" />
+                    ) : (
+                      <div aria-hidden="true" className="flex aspect-[4/3] items-center justify-center bg-pramuka-800 text-emas-light"><IkonBeranda nama="tenda" ukuran={36} /></div>
+                    )}
+                  </div>
+                  <div className="p-4 pb-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-emas-dark">{LABEL_KELOMPOK_GALERI[g.kelompok] ?? g.kelompok}</span>
+                    <h3 className="font-display text-base font-bold text-pramuka-900">{g.judul}</h3>
+                    <span className="text-xs font-semibold text-pramuka-600">Buka album ↗</span>
+                  </div>
+                </a>
+                <div className="px-4 pb-4">
+                  <a href={tautanBagikanWa(g.judul, g.tautan)} target="_blank" rel="noopener noreferrer" className={kelasBagikan}>Bagikan lewat WhatsApp ↗</a>
                 </div>
-              </a>
+              </div>
             ))}
           </div>
         )}
@@ -353,12 +376,12 @@ export function KabarAgenda({ agenda = [], memuat = false }) {
 }
 
 /** Kartu tautan media sosial (bukan sematan resmi): pratinjau gambar bila ada, keterangan, dan tautan keluar. Kosong = bagian tidak tampil. */
-export function MediaSosial({ sosial = [] }) {
+export function MediaSosial({ sosial = [], sunting = '' }) {
   if (sosial.length === 0) return null;
   return (
     <section id="sosial" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:#f8f2e4]">
       <div className={wrap}>
-        <KepalaBagian gelap label="Media sosial" judul="Ikuti kabar terbaru kami" />
+        <KepalaBagian gelap label="Media sosial" judul="Ikuti kabar terbaru kami" sunting={sunting} tab="sosial" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sosial.map((s, i) => (
             <a key={`${s.tautan}|${i}`} href={s.tautan} target="_blank" rel="noopener noreferrer" className="flex flex-col overflow-hidden rounded-2xl bg-pramuka-50 text-pramuka-900 no-underline">
@@ -381,12 +404,12 @@ export function MediaSosial({ sosial = [] }) {
 }
 
 /** Pertanyaan umum: `faq` dari Kelola Beranda (Pembina/Admin), atau daftar bawaan (landingData.js) bila belum diisi. */
-export function TanyaJawab({ faq = [] }) {
+export function TanyaJawab({ faq = [], sunting = '' }) {
   const daftar = faq.length ? faq.map((f) => ({ t: f.pertanyaan, j: f.jawaban })) : TANYA_JAWAB;
   return (
     <section id="tanya" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:#45291a]">
       <div className={`${wrap} grid gap-12 lg:grid-cols-[1fr_1.4fr]`}>
-        <KepalaBagian label="Tanya jawab" judul="Sebelum Anda bergabung" isi="Jawaban singkat untuk calon Penegak dan orang tua. Tidak menemukan jawabannya? Hubungi kami lewat bagian Kontak." />
+        <KepalaBagian label="Tanya jawab" judul="Sebelum Anda bergabung" isi="Jawaban singkat untuk calon Penegak dan orang tua. Tidak menemukan jawabannya? Hubungi kami lewat bagian Kontak." sunting={sunting} tab="faq" />
         <div className="border-t border-pramuka-200">
           {daftar.map((q, i) => (
             <details key={q.t} open={i === 0} className="group border-b border-pramuka-200">
@@ -424,7 +447,7 @@ export function CekDokumen({ alamat = './' }) {
 }
 
 /** Kontak: hanya baris yang terisi yang tampil. Alamat dan jadwal selalu ada (dengan nilai bawaan). */
-export function Kontak({ G, kontak }) {
+export function Kontak({ G, kontak, sunting = '' }) {
   const wa = tautanWhatsapp(kontak.whatsapp);
   const sosial = jaringanSosial(kontak);
   const peta = tautanPeta(kontak) || tautanPencarianPeta(G.sekolah, G.kota);
@@ -432,7 +455,7 @@ export function Kontak({ G, kontak }) {
     <section id="kontak" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#f0e5cc]">
       <div className={`${wrap} grid gap-10 lg:grid-cols-[1fr_1.1fr]`}>
         <div>
-          <KepalaBagian label="Kontak" judul="Datang, bertanya, atau bergabung" />
+          <KepalaBagian label="Kontak" judul="Datang, bertanya, atau bergabung" sunting={sunting} tab="kontak" />
           <dl className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-4 text-base">
             <dt className="pt-0.5 text-xs font-bold uppercase tracking-[0.14em] text-emas-dark">Alamat</dt>
             <dd>{G.sekolah}{G.alamat ? <><br />{G.alamat}</> : null}</dd>

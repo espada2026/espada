@@ -9,6 +9,7 @@ import BatasHalaman from './components/BatasHalaman';
 import FormWhatsapp from './components/FormWhatsapp';
 import { Modal } from './components/ui';
 import { pembinaAtauAdmin } from './lib/hakLogic';
+import { parameterKelola, petunjukDari, simpanPetunjuk } from './lib/suntingLogic';
 import { menuSanggaTampil } from './lib/sanggaLogic';
 import { menuPraUjiTampil, ujiResmiTampil } from './lib/praUjiLogic';
 import { bolehKelolaMateri } from './lib/materiLogic';
@@ -189,6 +190,7 @@ function Shell() {
   const [tingkat, setTingkat] = useState('Bantara');
   const [materiButir, setMateriButir] = useState(null); // butir SKU yang dituju tombol "Materi"
   const [kelolaId, setKelolaId] = useState(null); // materi yang langsung dibuka di Kelola Materi ('baru' = tambah)
+  const [tabKelolaBeranda, setTabKelolaBeranda] = useState(null); // tab awal Kelola Beranda dari pensil sunting di halaman muka
   const ajakData = akun?.role === 'peserta' && (akun.status ?? 'aktif') === 'aktif'; // Penegak aktif: ajakan data diri (memuat nomor WhatsApp); peran lain: hanya nomor WhatsApp
   const [waTutup, setWaTutup] = useState(false); // ajakan isi nomor WhatsApp ditutup/dilewati untuk sesi masuk ini (tahap L5)
 
@@ -197,8 +199,12 @@ function Shell() {
     setFokusId(null);
     setMateriButir(null);
     setKelolaId(null);
+    setTabKelolaBeranda(null);
     setWaTutup(false); // setiap masuk baru (termasuk akun yang sama masuk lagi) ajakan tampil lagi bila nomor belum diisi
   }, [user?.id, user?.role]);
+
+  // Petunjuk bagi halaman muka (tanpa klien basis data): pengurus yang sedang masuk melihat pensil sunting di sana. Hanya tampilan; server yang menegakkan hak.
+  useEffect(() => { if (user) simpanPetunjuk(petunjukDari(user)); }, [user?.id, user?.role, user?.jabatan, user?.jabatanDewan, user?.status]);
 
   // Minta berkas dasbor peran ini lebih awal (data aplikasi masih dimuat), agar dasbor siap begitu data siap.
   useEffect(() => {
@@ -214,6 +220,11 @@ function Shell() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('buka') === 'notifikasi') {
       setTab('notifikasi');
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    const tabKelola = parameterKelola(window.location.search);
+    if (tabKelola) {
+      if (user.role !== 'peserta') { setTab('kelolaberanda'); setTabKelolaBeranda(tabKelola); } // pensil sunting di halaman muka; Penegak tetap di beranda (hak ditegakkan server)
       window.history.replaceState(null, '', window.location.pathname);
     }
     const layanan = navigator.serviceWorker;
@@ -301,7 +312,7 @@ function Shell() {
   } else if (tabAktif === 'gudep' && user.role === 'admin') {
     isi = <DataGudep />;
   } else if (tabAktif === 'kelolaberanda' && user.role !== 'peserta') {
-    isi = <KelolaBeranda />;
+    isi = <KelolaBeranda tabAwal={tabKelolaBeranda} />;
   } else if (tabAktif === 'naikkelas' && user.role === 'admin') {
     isi = <NaikKelas />;
   } else if (tabAktif === 'penugasan' && user.role === 'penguji' && user.jabatan === 'Pembina') {

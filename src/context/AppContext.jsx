@@ -17,6 +17,7 @@ import { resetGudep, setGudep, tambahGudep } from '../lib/gudepStore';
 import { PENGATURAN_IURAN_BAWAAN, gabungPengaturanIuran } from '../lib/iuranLogic';
 import { jumlahBelumDibaca, tandaiLokal } from '../lib/notifikasiLogic';
 import { berhentiPushPerangkat, pulihkanPush } from '../lib/pushClient';
+import { simpanPetunjuk } from '../lib/suntingLogic';
 
 /**
  * STATE APLIKASI
@@ -143,6 +144,7 @@ export function AppProvider({ children }) {
     setSesiUjianSiap(false);
     sesiUjianMuat.current = null;
     resetGudep();
+    simpanPetunjuk(''); // pensil sunting di halaman muka hanya untuk yang sedang masuk
     api()?.muatGudepPublik().then((r) => { if (r.ok) tambahGudep(r.data); }); // identitas publik untuk halaman masuk
     setDb(DB_KOSONG);
   }, []);
