@@ -8,7 +8,11 @@ import { PIN_DEMO } from '../src/lokal/pinDemo.js';
 import { buatApi } from '../src/lib/api.js';
 import { GUDEP_BAWAAN } from '../src/config.js';
 import { ALAMAT_SITUS } from '../src/landing/landingData.js';
-import { BATAS_BERITA_ARSIP, deskripsiBerita, jsonLdBerita, pathBerita, slugBerita, susunBeritaArsip, susunDokumenBerita, susunSitemap, urlBerita } from '../src/lib/beritaStatisLogic.js';
+import { createElement as h } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { Berita } from '../src/landing/bagian.jsx';
+import { ambilIndeksHalamanBerita } from '../src/lib/publikClient.js';
+import { BATAS_BERITA_ARSIP, deskripsiBerita, halamanBerita, indeksHalamanBerita, jsonLdBerita, kunciBerita, pathBerita, petaHalamanBerita, slugBerita, susunBeritaArsip, susunDokumenBerita, susunSitemap, urlBerita } from '../src/lib/beritaStatisLogic.js';
 import { alamatDariIndex, bangunBeritaStatis, kepalaDariIndex, panggilRpc } from '../scripts/berita-statis.mjs';
 
 let gagal = 0, lulus = 0;
@@ -138,6 +142,60 @@ console.log('\n--- Pembangun halaman statis (fetch palsu, folder hasil build sem
   const r = await panggilRpc({ url: 'https://p.co///', kunci: 'K', nama: 'sg_x', ambil: async (u, o) => ({ ok: true, status: 200, json: async () => ({ u, k: o.headers.apikey, m: o.method }) }) });
   ok(r.ok && r.data.u === 'https://p.co/rest/v1/rpc/sg_x' && r.data.k === 'K' && r.data.m === 'POST', 'panggilRpc: alamat RPC dirapikan, kunci anon di header');
   rmSync(akarUji, { recursive: true, force: true });
+}
+
+console.log('\n--- Kartu berita menaut ke halamannya hanya bila halaman itu ada ---');
+{
+  ok(kunciBerita('Judul  A', '2026-09-20T03:00:00+00:00') === kunciBerita('Judul A', '2026-09-20T03:00:00.000Z'), 'kunci sama untuk format waktu berbeda (sg_beranda_publik vs arsip) dan spasi ganda');
+  ok(kunciBerita('A', '2026-09-20T03:00:00Z') !== kunciBerita('A', '2026-09-20T04:00:00Z') && kunciBerita('A', 'x') !== kunciBerita('B', 'x'), 'judul atau waktu terbit berbeda = kunci berbeda');
+  const indeks = [
+    { path: 'berita/7-latihan-perdana/', judul: 'Latihan Perdana', terbitPada: '2026-09-20T03:00:00.000Z' },
+    { path: 'https://jahat.example/', judul: 'Luar', terbitPada: '2026-09-20T03:00:00Z' }, { path: '../rahasia/', judul: 'Naik', terbitPada: '2026-09-20T03:00:00Z' },
+    { path: 'berita/x-tanpa-id/', judul: 'Tanpa id', terbitPada: '2026-09-20T03:00:00Z' }, { path: 'berita/8-a/../../', judul: 'Menyusup', terbitPada: '2026-09-20T03:00:00Z' },
+    { path: 'javascript:alert(1)', judul: 'Skrip', terbitPada: '2026-09-20T03:00:00Z' }, { path: 'berita/9-waktu-rusak/', judul: 'Waktu rusak', terbitPada: 'kemarin' }, null, 'x', { path: 5, judul: 'A' },
+  ];
+  const peta = petaHalamanBerita(indeks);
+  ok(Object.keys(peta).length === 1 && peta[kunciBerita('Latihan Perdana', '2026-09-20T03:00:00Z')] === 'berita/7-latihan-perdana/', 'hanya alamat berita/<id>-<slug>/ yang sah diterima; alamat luar, naik folder, javascript:, tanpa id, dan waktu rusak dibuang');
+  ok(Object.keys(petaHalamanBerita({ bukan: 'larik' })).length === 0 && Object.keys(petaHalamanBerita(null)).length === 0, 'indeks yang bukan larik = peta kosong');
+  ok(halamanBerita(peta, { judul: 'Latihan Perdana', terbitPada: '2026-09-20T03:00:00+00:00' }) === 'berita/7-latihan-perdana/', 'berita dicocokkan lewat judul dan waktu terbit');
+  ok(halamanBerita(peta, { judul: 'Latihan Perdana (revisi)', terbitPada: '2026-09-20T03:00:00Z' }) === '' && halamanBerita(peta, { judul: 'Latihan Perdana', terbitPada: 'rusak' }) === '' && halamanBerita({}, { judul: 'A', terbitPada: '2026-09-20T03:00:00Z' }) === '', 'judul berubah, waktu rusak, atau tanpa peta = tanpa tautan (bukan tautan ke alamat yang belum ada)');
+
+  const jawab = (isi, status = 200) => async (u) => { jawab.terakhir = u; return { ok: status < 400, status, json: async () => isi }; };
+  ok((await ambilIndeksHalamanBerita({ ambil: jawab([{ path: 'berita/1-a/' }]), dasar: '/sigarda/' })).length === 1 && jawab.terakhir === '/sigarda/berita/index.json', 'indeks diambil dari berita/index.json di alamat dasar situs');
+  ok((await ambilIndeksHalamanBerita({ ambil: jawab({}, 404) })).length === 0 && (await ambilIndeksHalamanBerita({ ambil: jawab({ bukan: 'larik' }) })).length === 0 && (await ambilIndeksHalamanBerita({ ambil: async () => { throw new Error('putus'); } })).length === 0, '404, isi bukan larik, dan jaringan putus = indeks kosong tanpa galat');
+  ok((await ambilIndeksHalamanBerita({ ambil: async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('bukan JSON (mis. halaman HTML pengganti)'); } }) })).length === 0, 'jawaban yang bukan JSON (mis. HTML pengganti pada mode lokal) = indeks kosong');
+
+  const dua = [
+    { kategori: 'kegiatan', judul: 'Latihan Perdana', ringkasan: '', isi: '', sampulUrl: '', terbitPada: '2026-09-20T03:00:00+00:00' },
+    { kategori: 'kegiatan', judul: 'Berita Baru', ringkasan: '', isi: '', sampulUrl: '', terbitPada: '2026-09-27T03:00:00+00:00' },
+  ];
+  const dengan = renderToStaticMarkup(h(Berita, { berita: dua, halaman: peta }));
+  ok((dengan.match(/Halaman berita/g) ?? []).length === 1 && dengan.includes('href="./berita/7-latihan-perdana/"'), 'hanya kartu yang halamannya ada yang menaut ("Halaman berita"); berita baru tanpa halaman tidak menaut');
+  const wa = [...dengan.matchAll(/href="(https:\/\/wa\.me\/[^"]+)"/g)].map((m) => decodeURIComponent(/text=(.*)$/.exec(m[1].replace(/&amp;/g, '&'))[1]));
+  ok(wa[0] === `Latihan Perdana\n${ALAMAT_SITUS}berita/7-latihan-perdana/` && wa[1] === `Berita Baru\n${ALAMAT_SITUS}#berita`, 'bagikan WhatsApp memakai alamat halaman berita bila ada; bila belum, alamat bagian #berita');
+  ok(!renderToStaticMarkup(h(Berita, { berita: dua })).includes('Halaman berita'), 'tanpa indeks (bawaan) tidak ada tautan halaman berita');
+
+  const akarUji = `${P}/.uji/tmp/berita-indeks`;
+  rmSync(akarUji, { recursive: true, force: true });
+  mkdirSync(akarUji, { recursive: true });
+  writeFileSync(`${akarUji}/index.html`, '<html><head><link rel="canonical" href="https://situs.uji/" /></head><body></body></html>');
+  const arsip = [{ id: 7, kategori: 'kegiatan', judul: 'Latihan Perdana', ringkasan: '', isi: 'Isi.', sampulUrl: '', terbitPada: '2026-09-20T03:00:00Z', diubahPada: '2026-09-20T03:00:00Z' }];
+  const palsu = (b) => async (u) => ({ ok: true, status: 200, json: async () => (/sg_berita_publik$/.test(u) ? b : {}) });
+  await bangunBeritaStatis({ dist: akarUji, akar: P, url: 'https://p.co', kunci: 'k', ambil: palsu(arsip) });
+  const dariBuild = JSON.parse(readFileSync(`${akarUji}/berita/index.json`, 'utf8'));
+  ok(dariBuild.length === 1 && existsSync(`${akarUji}/${dariBuild[0].path}index.html`), 'build menulis berita/index.json yang menunjuk halaman yang benar-benar ada');
+  ok(halamanBerita(petaHalamanBerita(dariBuild), dua[0]) === dariBuild[0].path && halamanBerita(petaHalamanBerita(dariBuild), dua[1]) === '', 'alur utuh: indeks dari build dicocokkan dengan berita bentuk sg_beranda_publik (format waktu berbeda) tanpa salah cocok');
+  ok(JSON.stringify(dariBuild) === JSON.stringify(indeksHalamanBerita(susunBeritaArsip(arsip))), 'isi indeks = indeksHalamanBerita dari arsip bersih');
+  rmSync(akarUji, { recursive: true, force: true });
+  mkdirSync(akarUji, { recursive: true });
+  writeFileSync(`${akarUji}/index.html`, '<html><head><link rel="canonical" href="https://situs.uji/" /></head><body></body></html>');
+  await bangunBeritaStatis({ dist: akarUji, akar: P, url: 'https://p.co', kunci: 'k', ambil: palsu([]) });
+  ok(!existsSync(`${akarUji}/berita/index.json`), 'tanpa berita terbit: tidak ada berita/index.json (halaman muka memperlakukannya sebagai kosong)');
+  rmSync(akarUji, { recursive: true, force: true });
+
+  const hook = readFileSync(`${P}/src/landing/useBerandaPublik.js`, 'utf8');
+  const landing = readFileSync(`${P}/src/landing/Landing.jsx`, 'utf8');
+  ok(/Promise\.all\(\[panggil\('sg_beranda_publik'\), ambilIndeks\(\)\]\)/.test(hook) && /petaHalamanBerita\(indeks\)/.test(hook) && /halaman=\{beranda\.halaman\}/.test(landing), 'halaman muka memuat indeks bersama data beranda (satu gelombang, tanpa menunda tampilan) dan meneruskannya ke bagian Berita');
 }
 
 console.log('\n--- Penyambungan di alur build dan deploy ---');
