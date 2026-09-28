@@ -23,7 +23,7 @@ export default function Landing({ panggil }) {
         <Tentang G={G} kontak={beranda.kontak} pembina={beranda.pembina} kamabigus={beranda.kamabigus} sunting={sunting} />
         <Program />
         <Perjalanan />
-        <Berita berita={beranda.berita} memuat={beranda.memuat} sunting={sunting} halaman={beranda.halaman} />
+        <Berita berita={beranda.berita} memuat={beranda.memuat} sunting={sunting} halaman={beranda.halaman} adaLagi={beranda.adaLagi} memuatLagi={beranda.memuatLagi} galatLagi={beranda.galatLagi} onMuatLagi={beranda.muatLagi} />
         <Prestasi prestasi={beranda.prestasi} memuat={beranda.memuat} sunting={sunting} />
         <Galeri galeri={beranda.galeri} memuat={beranda.memuat} sunting={sunting} />
         <KabarAgenda agenda={beranda.agenda} memuat={beranda.memuat} />

@@ -154,5 +154,34 @@ console.log('\n--- Berkas SEO statis ---');
   ok(png.subarray(0, 8).toString('hex') === '89504e470d0a1a0a' && png.readUInt32BE(16) === 1200 && png.readUInt32BE(20) === 630 && png.length < 300 * 1024, `og-gudep.png: PNG 1200x630 (${(png.length / 1024).toFixed(0)} kB)`);
 }
 
+console.log('\n--- Sampul dan tombol "Muat berita lebih lama" ---');
+{
+  const satu = (i, sampulUrl = '') => ({ kategori: 'kegiatan', judul: `Berita ${i}`, ringkasan: 'r', isi: 'Isi satu.\n\nIsi dua.', sampulUrl, terbitPada: '2026-09-20' });
+  const enam = Array.from({ length: 6 }, (_, i) => satu(i + 1));
+  const fungsi = () => {};
+  const t0 = teks(h(Berita, { berita: enam, adaLagi: true }));
+  ok(!t0.includes('Muat berita lebih lama') && !t0.includes('Semua berita sudah ditampilkan'), 'tanpa onMuatLagi (prarender): tidak ada tombol maupun pesan');
+  const t1 = teks(h(Berita, { berita: enam, adaLagi: true, onMuatLagi: fungsi }));
+  ok(t1.includes('Muat berita lebih lama') && !t1.includes('disabled=""'), 'ada berita dan masih ada yang lebih lama: tombol "Muat berita lebih lama" tampil dan aktif');
+  ok(teks(h(Berita, { berita: enam, adaLagi: true, memuatLagi: true, onMuatLagi: fungsi })).includes('Memuat...') && teks(h(Berita, { berita: enam, adaLagi: true, memuatLagi: true, onMuatLagi: fungsi })).includes('disabled=""'), 'sedang memuat: tombol menjadi "Memuat..." dan tidak dapat ditekan dua kali');
+  ok(teks(h(Berita, { berita: enam, adaLagi: true, galatLagi: true, onMuatLagi: fungsi })).includes('belum dapat dimuat'), 'gagal memuat: pesan galat tampil dan tombol tetap ada untuk mencoba lagi');
+  const t2 = teks(h(Berita, { berita: [...enam, satu(7)], adaLagi: false, onMuatLagi: fungsi }));
+  ok(!t2.includes('Muat berita lebih lama') && t2.includes('Semua berita sudah ditampilkan'), 'sudah habis (lebih dari 6 tampil, adaLagi false): tombol hilang, pesan "Semua berita sudah ditampilkan"');
+  ok(!teks(h(Berita, { berita: [satu(1), satu(2)], adaLagi: false, onMuatLagi: fungsi })).includes('Semua berita sudah ditampilkan'), 'hanya beberapa berita sejak awal: tidak ada pesan yang tak perlu');
+  ok(!teks(h(Berita, { berita: [], onMuatLagi: fungsi, adaLagi: true })).includes('Muat berita lebih lama'), 'belum ada berita: tanpa tombol');
+
+  const id = '1AbCdEfGhIjKlMnOpQrStUvWxYz0123456';
+  const tb = teks(h(Berita, { berita: [satu(1, `https://drive.google.com/file/d/${id}/view?usp=sharing`), satu(2, `https://drive.google.com/file/d/${id}/view`)] }));
+  ok(tb.includes(`src="https://lh3.googleusercontent.com/d/${id}=w1000"`), 'sampul tautan berbagi Drive dipasang sebagai alamat gambar langsung (lh3)');
+  ok(tb.includes('referrerPolicy="no-referrer"') || tb.includes('referrerpolicy="no-referrer"'), 'gambar dipasang tanpa Referer (Google tidak menolak pemasangan di situs lain)');
+  const besar = tb.slice(tb.indexOf('<article'), tb.indexOf('</article>'));
+  ok(/<img[^>]*aspect-\[16\/10\][^>]*sm:self-start/.test(besar) && !/sm:aspect-auto/.test(besar), 'sampul kartu besar: rasio tetap dan self-start, tidak ikut memanjang saat "Baca selengkapnya" dibuka');
+  ok(tb.includes('grid items-start'), 'kartu berita sejajar ke atas: satu kartu yang dibuka tidak meregangkan kartu di sebelahnya');
+  const tp = teks(h(Berita, { berita: [satu(1, 'https://photos.app.goo.gl/AbCdEf123'), satu(2, 'https://drive.google.com/drive/folders/abcdefghijklmnopqrst')] }));
+  ok(!tp.includes('<img') && tp.includes('aria-hidden="true"'), 'sampul berupa tautan halaman (Photos berbagi, folder Drive): tanpa <img>, memakai gambar pengganti');
+  const tg = teks(h(Galeri, { galeri: [{ judul: 'Album A', tautan: 'https://photos.app.goo.gl/x', sampulUrl: `https://drive.google.com/open?id=${id}`, kelompok: 'lainnya' }, { judul: 'Album B', tautan: 'https://photos.app.goo.gl/y', sampulUrl: 'https://photos.app.goo.gl/z', kelompok: 'lainnya' }] }));
+  ok(tg.includes(`src="https://lh3.googleusercontent.com/d/${id}=w1000"`) && (tg.match(/<img/g) ?? []).length === 1, 'galeri: sampul Drive tampil sebagai gambar; sampul berupa halaman Photos memakai gambar pengganti');
+}
+
 console.log(`\nRINGKASAN LANDING: ${lulus} lulus, ${gagal} GAGAL.`);
 if (gagal) process.exit(1);
