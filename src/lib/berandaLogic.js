@@ -137,6 +137,15 @@ export const samaKontak = (a, b) => JSON.stringify(untukKirim(a)) === JSON.strin
 /** Paragraf untuk ditampilkan: pisah pada baris kosong, buang yang kosong. */
 export const pecahParagraf = (teks) => rapikanParagraf(teks).split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
 
+/**
+ * Tanggal kalender WIB ('YYYY-MM-DD') dari cap waktu ISO/timestamptz (mis. terbit_pada), atau '' bila tidak sah. Memotong 10 huruf pertama string ISO SALAH: waktu
+ * disimpan UTC, sehingga 00.00 WIB tanggal 31 Agustus (= 17.00 UTC tanggal 30) tampil sebagai 30 Agustus.
+ */
+export function tanggalWib(iso) {
+  const ms = Date.parse(String(iso ?? ''));
+  return Number.isFinite(ms) ? new Date(ms + 7 * 3600 * 1000).toISOString().slice(0, 10) : '';
+}
+
 /** Tautan WhatsApp ke nomor gudep (tanpa teks awal), atau '' bila nomor belum diisi atau bentuknya tidak sah. */
 export const tautanWhatsapp = (nomor) => (whatsappSah(nomor) ? waLink(nomor, 'Halo, saya ingin bertanya tentang Gudep.') : '');
 

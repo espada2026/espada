@@ -6,7 +6,7 @@
  * tanpa alur (langsung tampil); FAQ hanya Pembina dan Admin Gudep. Aturan di sini HARUS sama dengan 586-aksi-beranda-konten.sql
  * (dibandingkan langsung oleh uji/beranda-konten-klien.mjs).
  */
-import { rapikan, rapikanParagraf, tautanSah } from './berandaLogic';
+import { rapikan, rapikanParagraf, tanggalWib, tautanSah } from './berandaLogic';
 import { hariIni as hariIniWib } from './format';
 
 export const KATEGORI_BERITA = ['kegiatan', 'pengumuman', 'lainnya'];
@@ -38,20 +38,42 @@ export const bolehUbah = (bolehTerbit, dibuatOleh, status, akunId) =>
   bolehTerbit || (dibuatOleh === akunId && ['draf', 'menunggu', 'ditolak'].includes(status));
 
 // ------------------------------- Berita -------------------------------
+/** Batas tanggal terbit (sama dengan sg_berita_simpan): paling awal 1 Jan 2015, paling jauh 366 hari ke depan. */
+export const TANGGAL_TERBIT_MIN = '2015-01-01';
+export const HARI_TERBIT_MAKS = 366;
+const tambahHari = (iso, n) => { const d = new Date(`${iso}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const tanggalNyata = (t) => { if (!/^\d{4}-\d{2}-\d{2}$/.test(t)) return false; const d = new Date(`${t}T00:00:00Z`); return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === t; };
+
+/**
+ * `terbitTanggal` = tanggal terbit pilihan penulis ('YYYY-MM-DD', WIB): berita yang sudah tersimpan memakai tanggal terbitnya, berita baru memakai hari ini.
+ * Boleh masa lalu (berita terlambat ditulis) atau masa depan (terjadwal); dikosongkan = saat diterbitkan.
+ */
 export const untukFormBerita = (b) => ({
   kategori: KATEGORI_BERITA.includes(b?.kategori) ? b.kategori : 'kegiatan',
   judul: typeof b?.judul === 'string' ? b.judul : '',
   ringkasan: typeof b?.ringkasan === 'string' ? b.ringkasan : '',
   isi: typeof b?.isi === 'string' ? b.isi : '',
   sampulUrl: typeof b?.sampulUrl === 'string' ? b.sampulUrl : '',
+  terbitTanggal: typeof b?.terbitTanggal === 'string' ? b.terbitTanggal : (b?.terbitPada ? tanggalWib(b.terbitPada) : hariIniWib()),
 });
+
+/**
+ * Waktu terbit (untuk p_terbit_pada) dari tanggal pilihan: null bila kosong; waktu semula bila tanggalnya tidak diubah (jam tidak bergeser saat berita diubah);
+ * selain itu 00.00 WIB tanggal itu (tanggal hari ini pun sudah lewat, jadi langsung tampil; tanggal depan = terjadwal).
+ */
+export function terbitPadaDari(tanggal, aslinya = null) {
+  const t = String(tanggal ?? '').trim();
+  if (!t) return null;
+  if (aslinya && tanggalWib(aslinya) === t) return aslinya;
+  return `${t}T00:00:00+07:00`;
+}
 
 /**
  * { kolom: pesan } (kosong = sah); `status` ('draf'|'menunggu'|'terbit') dan `bolehTerbit` menentukan apakah status itu boleh dipakai.
  * Kategori diperiksa dari NILAI ASLI `b.kategori` (bukan lewat untukFormBerita, yang melunakkan nilai tak dikenal ke bawaan untuk formulir) supaya
  * nilai yang tidak dikenal tetap ditolak di sini, sama seperti server.
  */
-export function periksaBerita(b, status, bolehTerbit) {
+export function periksaBerita(b, status, bolehTerbit, hariIni = hariIniWib()) {
   const f = untukFormBerita(b);
   const judul = rapikan(f.judul), ringkasan = rapikan(f.ringkasan), isi = rapikanParagraf(f.isi), sampul = rapikan(f.sampulUrl);
   const galat = {};
@@ -60,6 +82,8 @@ export function periksaBerita(b, status, bolehTerbit) {
   if (panjang(ringkasan) > 200) galat.ringkasan = 'Maksimal 200 karakter.';
   if (!antara(isi, 1, 4000)) galat.isi = 'Wajib diisi, maksimal 4000 karakter.';
   if (sampul && !tautanSah(sampul)) galat.sampulUrl = 'Harus diawali https:// dan berupa alamat yang sah.';
+  const tanggal = String(f.terbitTanggal ?? '').trim();
+  if (tanggal && (!tanggalNyata(tanggal) || tanggal < TANGGAL_TERBIT_MIN || tanggal > tambahHari(hariIni, HARI_TERBIT_MAKS))) galat.terbitTanggal = 'Tanggal terbit tidak sah (paling awal 2015, paling jauh satu tahun ke depan).';
   if (!statusTersedia(bolehTerbit).includes(status)) galat.status = bolehTerbit ? 'Status tidak sah.' : 'Hanya Pembina dan Admin Gudep yang dapat menerbitkan.';
   return galat;
 }
