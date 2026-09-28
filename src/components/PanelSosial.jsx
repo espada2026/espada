@@ -123,7 +123,7 @@ export default function PanelSosial() {
             })}
           </div>
         )}
-        <p className="mt-3 text-xs text-pramuka-600">Beranda menampilkan paling banyak 6 kiriman terbaru yang tampil.</p>
+        <p className="mt-3 text-xs text-pramuka-600">Beranda menampilkan 6 kiriman terbaru yang tampil; kiriman lebih lama dimuat lewat tombol "Muat kiriman lebih lama".</p>
       </div>
 
       <form className="min-w-0 space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>

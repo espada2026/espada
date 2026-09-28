@@ -71,7 +71,9 @@ export function analisisSosial(tautan) {
 
   if (platform === 'tiktok') {
     const v = bagian.indexOf('video');
-    if (bagian[0]?.startsWith('@') && v === 1 && ID_TIKTOK.test(bagian[2] ?? '')) return postingan(platform, { embedUrl: `https://www.tiktok.com/embed/v2/${bagian[2]}`, bentuk: 'tegak' });
+    // Pemutar resmi "player/v1" (bukan embed/v2): pas di kotak kartu tanpa bilah gulir, dan rel=0 membuat video terkait berisi video dari pembuat yang sama (bukan rekomendasi TikTok).
+    // TikTok tidak menyediakan cara mematikan video terkait sepenuhnya. Diuji dari alamat situs sungguhan: dijeda hanya menampilkan bilah kendali. autoplay=1 karena pemutar baru dimuat sesudah tombol putar diketuk.
+    if (bagian[0]?.startsWith('@') && v === 1 && ID_TIKTOK.test(bagian[2] ?? '')) return postingan(platform, { embedUrl: `https://www.tiktok.com/player/v1/${bagian[2]}?rel=0&autoplay=1`, bentuk: 'tegak' });
     if (host !== 'tiktok.com' && bagian.length >= 1) return postingan(platform); // vm.tiktok.com/xxxx (tautan pendek): tidak dapat diputar langsung
     if (bagian[0] === 't' && bagian.length >= 2) return postingan(platform);
     return bukanPostingan(platform);

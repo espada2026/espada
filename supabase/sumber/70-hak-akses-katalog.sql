@@ -76,7 +76,7 @@ grant execute on function
   to authenticated;
 -- Fungsi yang boleh dipanggil tanpa login (hanya membaca): verifikasi keaslian dokumen, identitas gudep di halaman masuk, dan
 -- tautan berbagi baca-saja Berkas Calon Garuda (tahap L7), dan isi beranda publik (Fase 1 landing page: hanya membaca)
-grant execute on function public.sg_verifikasi_token(text), public.sg_verifikasi_kode(text), public.sg_gudep_publik(), public.sg_garuda_token_baca(text), public.sg_beranda_publik(), public.sg_berita_publik(), public.sg_berita_lagi(int) to anon, authenticated;
+grant execute on function public.sg_verifikasi_token(text), public.sg_verifikasi_kode(text), public.sg_gudep_publik(), public.sg_garuda_token_baca(text), public.sg_beranda_publik(), public.sg_berita_publik(), public.sg_berita_lagi(int), public.sg_prestasi_lagi(int), public.sg_galeri_lagi(int), public.sg_sosial_lagi(int) to anon, authenticated;
 grant execute on function
   public.sg_sku_catat_internal(uuid, uuid, text, text, date, text, text),
   public.sg_sku_catat_rubrik_internal(uuid, uuid, text, date, jsonb, text, text),

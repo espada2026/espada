@@ -32,7 +32,8 @@ console.log('\n--- analisisSosial: Instagram, TikTok, Facebook ---');
   ok(analisisSosial('https://www.instagram.com/gudepsmanbukateja/').jenis === 'bukan-postingan' && analisisSosial('https://www.instagram.com/stories/gudep/123/').jenis === 'bukan-postingan', 'profil dan story Instagram: bukan postingan');
 
   const tt = analisisSosial('https://www.tiktok.com/@gudep.smanbukateja/video/7412345678901234567?lang=id');
-  ok(tt.jenis === 'postingan' && tt.embedUrl === 'https://www.tiktok.com/embed/v2/7412345678901234567' && tt.bentuk === 'tegak', 'TikTok video: pemutar embed/v2 dari ID angka');
+  ok(tt.jenis === 'postingan' && tt.embedUrl === 'https://www.tiktok.com/player/v1/7412345678901234567?rel=0&autoplay=1' && tt.bentuk === 'tegak', 'TikTok video: pemutar player/v1 dari ID angka, rel=0 (video terkait dari pembuat yang sama) dan autoplay');
+  ok(!analisisSosial('https://www.tiktok.com/@a/video/7412345678901234567').embedUrl.includes('embed/v2'), 'TikTok: tidak lagi memakai pemutar lama embed/v2 (terpotong di kotak kartu dan tanpa pengaturan video terkait)');
   ok(analisisSosial('https://vm.tiktok.com/ZSabc123/').jenis === 'postingan' && analisisSosial('https://vm.tiktok.com/ZSabc123/').embedUrl === '' && analisisSosial('https://www.tiktok.com/t/ZTabc123/').embedUrl === '', 'tautan pendek TikTok: postingan tanpa pemutar');
   ok(analisisSosial('https://www.tiktok.com/@gudep.smanbukateja').jenis === 'bukan-postingan', 'profil TikTok: bukan postingan');
 

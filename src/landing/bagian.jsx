@@ -280,6 +280,24 @@ function KartuBerita({ b, besar = false, halaman = '' }) {
   );
 }
 
+/**
+ * Tombol "Muat ... lebih lama" untuk prestasi, galeri, dan media sosial (perilaku sama dengan Berita): `lagi` = { ada, memuat, galat, muat } dari useBerandaPublik.
+ * Tanpa `lagi` (mis. HTML prarender) atau tanpa kartu, tidak tampil. Sudah habis dan 6 atau lebih tampil = keterangan "Semua ... sudah ditampilkan".
+ * `gelap` = di atas latar gelap (tombol emas).
+ */
+function MuatLagi({ lagi, jumlah, nama, gelap = false }) {
+  if (!lagi || jumlah === 0) return null;
+  if (!lagi.ada) {
+    return jumlah >= 6 ? <p className={`mt-8 text-center text-sm ${gelap ? 'text-pramuka-200' : 'text-pramuka-600'}`}>Semua {nama} sudah ditampilkan.</p> : null;
+  }
+  return (
+    <div className="mt-8 flex flex-col items-center gap-2">
+      <button type="button" onClick={lagi.muat} disabled={lagi.memuat} className={`btn ${gelap ? 'btn-gold' : 'btn-outline'} disabled:cursor-wait disabled:opacity-60`}>{lagi.memuat ? 'Memuat...' : `Muat ${nama} lebih lama`}</button>
+      {lagi.galat && <p role="alert" className={`text-sm ${gelap ? 'text-red-200' : 'text-red-700'}`}>{nama[0].toUpperCase()}{nama.slice(1)} lebih lama belum dapat dimuat. Periksa sambungan internet lalu coba lagi.</p>}
+    </div>
+  );
+}
+
 /** Berita terbit dari Kelola Beranda (Fase 2). */
 export function Berita({ berita = [], memuat = false, sunting = '', halaman = {}, adaLagi = false, memuatLagi = false, galatLagi = false, onMuatLagi = null }) {
   return (
@@ -307,7 +325,7 @@ export function Berita({ berita = [], memuat = false, sunting = '', halaman = {}
 }
 
 /** Prestasi terbit dari Kelola Beranda. Nama regu/tim/gudep saja (bukan nama perorangan tanpa izin). */
-export function Prestasi({ prestasi = [], memuat = false, sunting = '' }) {
+export function Prestasi({ prestasi = [], memuat = false, sunting = '', lagi = null }) {
   return (
     <section id="prestasi" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:#f8f2e4]">
       <div className={wrap}>
@@ -328,13 +346,14 @@ export function Prestasi({ prestasi = [], memuat = false, sunting = '' }) {
           ))}
         </div>
         )}
+        <MuatLagi lagi={lagi} jumlah={prestasi.length} nama="prestasi" gelap />
       </div>
     </section>
   );
 }
 
 /** Album galeri (tautan Google Drive atau Photos) dari Kelola Beranda. */
-export function Galeri({ galeri = [], memuat = false, sunting = '' }) {
+export function Galeri({ galeri = [], memuat = false, sunting = '', lagi = null }) {
   return (
     <section id="galeri" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:#45291a]">
       <div className={wrap}>
@@ -362,6 +381,7 @@ export function Galeri({ galeri = [], memuat = false, sunting = '' }) {
             ))}
           </div>
         )}
+        <MuatLagi lagi={lagi} jumlah={galeri.length} nama="album" />
       </div>
     </section>
   );
@@ -456,7 +476,7 @@ function KartuSosial({ s }) {
 }
 
 /** Media sosial dari Kelola Beranda. Kosong = bagian tidak tampil sama sekali. */
-export function MediaSosial({ sosial = [], sunting = '' }) {
+export function MediaSosial({ sosial = [], sunting = '', lagi = null }) {
   if (sosial.length === 0) return null;
   return (
     <section id="sosial" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:#f8f2e4]">
@@ -465,6 +485,7 @@ export function MediaSosial({ sosial = [], sunting = '' }) {
         <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sosial.map((s, i) => <KartuSosial key={`${s.tautan}|${i}`} s={s} />)}
         </div>
+        <MuatLagi lagi={lagi} jumlah={sosial.length} nama="kiriman" gelap />
       </div>
     </section>
   );

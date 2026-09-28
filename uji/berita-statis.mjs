@@ -113,7 +113,22 @@ console.log('\n--- Pembangun halaman statis (fetch palsu, folder hasil build sem
   const jsonLd = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(p7)[1];
   const ld = JSON.parse(jsonLd);
   ok(ld['@type'] === 'NewsArticle' && ld.mainEntityOfPage['@id'] === 'https://situs.uji/berita/7-perkemahan-b-jumat-b-agung-seru/' && ld.publisher.name === 'Gugus Depan Uji', 'JSON-LD sah dan menyebut penerbit dari data gudep publik');
-  ok(!jsonLd.includes('</') && (p7.match(/<script/g) ?? []).length === 1, 'isi tidak dapat menutup tag skrip JSON-LD (hanya satu tag skrip)');
+  ok(!jsonLd.includes('</') && (p7.match(/<script/g) ?? []).length === 2, 'isi tidak dapat menutup tag skrip JSON-LD (hanya dua tag skrip: JSON-LD dan skrip tetap panah ke atas)');
+  {
+    const skrip = p7.slice(p7.indexOf('<script>') + 8, p7.indexOf('</script>', p7.indexOf('<script>')));
+    ok(skrip.includes("getElementById('ke-atas')") && !/alert|Jumat|Perkemahan/.test(skrip), 'skrip panah ke atas tetap (tidak memuat isi berita) dan hanya menyentuh #ke-atas');
+    const bar = p7.indexOf('<div class="sticky top-0 z-40"><header');
+    const dalam = bar >= 0 ? p7.slice(bar, p7.indexOf('<main')) : '';
+    ok(bar >= 0 && dalam.includes('</header><nav aria-label="Jejak halaman"') && dalam.includes('← Semua berita</a>') && dalam.endsWith('</nav></div>'), 'header dan bilah "← Semua berita" berada dalam satu pembungkus sticky top-0 (tetap terlihat saat menggulir sampai akhir)');
+    ok(dalam.includes('href="https://situs.uji/#berita"'), 'tombol "Semua berita" menuju bagian berita di halaman muka (alamat utama)');
+    ok(p7.includes('id="atas"') && p7.includes('<a id="ke-atas" href="#atas" aria-label="Kembali ke atas"'), 'panah ke atas: tautan #atas yang tetap berfungsi tanpa JavaScript');
+    const sku = readFileSync(P + '/src/components/ProgresKotak.jsx', 'utf8');
+    const kelasSku = sku.slice(sku.indexOf('className="no-print fixed') + 11).split('"')[0];
+    const kelasBerita = p7.slice(p7.indexOf('<a id="ke-atas"')).split('class="')[1].split('"')[0];
+    const tanpaPosisi = (k) => k.split(' ').filter((c) => !c.startsWith('bottom-') && !c.startsWith('md:bottom-')).sort().join(' ');
+    ok(kelasSku.startsWith('no-print fixed') && tanpaPosisi(kelasSku) === tanpaPosisi(kelasBerita), 'panah ke atas: kelas (ukuran, warna, cincin emas, bayangan, z-index) SAMA dengan TombolKeAtas di halaman butir SKU dan SPG; hanya jarak bawah tanpa menu ponsel');
+    ok(p7.includes('<polyline points="5 12 12 5 19 12"></polyline>') && p7.includes('<line x1="12" y1="19" x2="12" y2="5">'), 'ikon panah ke atas: gambar yang sama dengan ikon panahAtas aplikasi');
+  }
   ok(ld.image[0] === 'https://lh3.googleusercontent.com/d/1AbCdEfGhIjKlMnOpQrStUv=w1000' && p7.includes('property="og:image" content="https://lh3.googleusercontent.com/d/1AbCdEfGhIjKlMnOpQrStUv=w1000"'), 'sampul Google Drive diubah ke alamat gambar langsung untuk JSON-LD dan Open Graph');
   const p8 = readFileSync(`${dist}/berita/8-pengumuman-tanpa-sampul/index.html`, 'utf8');
   ok(p8.includes('property="og:image" content="https://situs.uji/og-gudep.png"') && !('image' in JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(p8)[1])), 'tanpa sampul: Open Graph memakai og-gudep.png; JSON-LD tanpa gambar');

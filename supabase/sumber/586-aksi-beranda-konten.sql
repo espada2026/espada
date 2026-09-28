@@ -363,3 +363,52 @@ $$
   ) x
 $$;
 -- ===== akhir berita lebih lama =====
+
+-- ===== Kelola Beranda: prestasi, galeri, dan media sosial lebih lama (tombol "Muat ... lebih lama"): aksi =====
+-- Sama dengan sg_berita_lagi: halaman muka menampilkan 6 yang terbaru (sg_beranda_publik); fungsi-fungsi ini memberi 6 berikutnya sesudah p_lewati yang sudah
+-- tampil, TANPA login (hanya membaca), kolom sama dengan yang di sg_beranda_publik (tanpa id, penulis, peninjau, atau catatan tinjauan). 'adaLagi' = masih ada yang
+-- lebih lama (dibaca 7 baris, yang ke-7 tidak dikirim). p_lewati dibatasi 0..1000. Urutan SAMA dengan sg_beranda_publik: prestasi menurut tahun (lalu id) terbaru dulu,
+-- galeri dan media sosial menurut waktu dibuat terbaru dulu.
+create function public.sg_prestasi_lagi(p_lewati int) returns jsonb
+language sql stable security definer set search_path = public as
+$$
+  select jsonb_build_object(
+    'prestasi', coalesce(jsonb_agg(jsonb_build_object('judul', x.judul, 'tingkat', x.tingkat, 'peringkat', x.peringkat, 'tahun', x.tahun, 'diraihOleh', x.diraih_oleh,
+      'fotoUrl', x.foto_url) order by x.urut) filter (where x.urut <= 6), '[]'::jsonb),
+    'adaLagi', coalesce(bool_or(x.urut > 6), false))
+  from (
+    select p.judul, p.tingkat, p.peringkat, p.tahun, p.diraih_oleh, p.foto_url, row_number() over (order by p.tahun desc, p.id desc) as urut
+    from (select id, judul, tingkat, peringkat, tahun, diraih_oleh, foto_url from public.beranda_prestasi
+          where status = 'terbit' order by tahun desc, id desc
+          offset least(greatest(coalesce(p_lewati, 0), 0), 1000) limit 7) p
+  ) x
+$$;
+create function public.sg_galeri_lagi(p_lewati int) returns jsonb
+language sql stable security definer set search_path = public as
+$$
+  select jsonb_build_object(
+    'galeri', coalesce(jsonb_agg(jsonb_build_object('judul', x.judul, 'tautan', x.tautan, 'sampulUrl', x.sampul_url, 'kelompok', x.kelompok) order by x.urut)
+      filter (where x.urut <= 6), '[]'::jsonb),
+    'adaLagi', coalesce(bool_or(x.urut > 6), false))
+  from (
+    select g.judul, g.tautan, g.sampul_url, g.kelompok, row_number() over (order by g.dibuat_pada desc, g.id desc) as urut
+    from (select id, judul, tautan, sampul_url, kelompok, dibuat_pada from public.beranda_galeri
+          where status = 'terbit' order by dibuat_pada desc, id desc
+          offset least(greatest(coalesce(p_lewati, 0), 0), 1000) limit 7) g
+  ) x
+$$;
+create function public.sg_sosial_lagi(p_lewati int) returns jsonb
+language sql stable security definer set search_path = public as
+$$
+  select jsonb_build_object(
+    'sosial', coalesce(jsonb_agg(jsonb_build_object('platform', x.platform, 'tautan', x.tautan, 'keterangan', x.keterangan, 'gambarUrl', x.gambar_url) order by x.urut)
+      filter (where x.urut <= 6), '[]'::jsonb),
+    'adaLagi', coalesce(bool_or(x.urut > 6), false))
+  from (
+    select s.platform, s.tautan, s.keterangan, s.gambar_url, row_number() over (order by s.dibuat_pada desc, s.id desc) as urut
+    from (select id, platform, tautan, keterangan, gambar_url, dibuat_pada from public.beranda_sosial
+          where tampil order by dibuat_pada desc, id desc
+          offset least(greatest(coalesce(p_lewati, 0), 0), 1000) limit 7) s
+  ) x
+$$;
+-- ===== akhir sisa lebih lama =====
