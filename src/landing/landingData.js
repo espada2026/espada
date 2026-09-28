@@ -6,15 +6,20 @@
 /** Alamat utama situs untuk tautan bagikan (halaman muka dirender saat build tanpa window). Harus sama dengan canonical di index.html (dijaga uji/landing.mjs). */
 export const ALAMAT_SITUS = 'https://sigarda.smabukateja.sch.id/';
 
+/** `bilaAda` = bagian itu hanya dirender bila ada isinya (Media Sosial), jadi tautannya juga hanya tampil bila ada; lihat menuTampil. Empat butir pertama dipakai pula di kaki halaman. */
 export const MENU = [
   { href: '#tentang', label: 'Tentang' },
   { href: '#program', label: 'Program' },
   { href: '#berita', label: 'Berita' },
   { href: '#galeri', label: 'Galeri' },
+  { href: '#sosial', label: 'Media Sosial', bilaAda: 'sosial' },
   { href: '#kabar', label: 'Agenda' },
   { href: '#tanya', label: 'Tanya Jawab' },
   { href: '#kontak', label: 'Kontak' },
 ];
+
+/** Menu yang ditampilkan: butir ber-`bilaAda` hanya bila `ada[bilaAda]` benar (mis. `{ sosial: true }` bila ada kiriman media sosial). Tanpa argumen = tanpa butir bersyarat (HTML prarender). */
+export const menuTampil = (ada = {}) => MENU.filter((m) => !m.bilaAda || ada[m.bilaAda] === true);
 
 export const TRI_SATYA = [
   'Menjalankan kewajibanku terhadap Tuhan Yang Maha Esa, Negara Kesatuan Republik Indonesia, dan mengamalkan Pancasila.',

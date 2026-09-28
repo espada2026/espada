@@ -37,7 +37,7 @@ console.log('\n--- PratinjauSampul (tampilan awal) ---');
   ok(teks(h(PratinjauSampul, { nilai: `https://drive.google.com/drive/folders/${id}` })).includes('tautan folder Google Drive'), 'folder Drive: peringatan folder');
   const t2 = teks(h(PratinjauSampul, { nilai: `https://drive.google.com/file/d/${id}/view`, rasio: 'galeri' }));
   ok(t2.includes('data-pratinjau="menguji"') && t2.includes('aspect-[4/3]') && t2.includes('Menguji apakah foto dapat dimuat') && !t2.includes('<img'), 'berkas Drive: mulai dari status menguji, kotak berasio kartu galeri (4/3), belum ada gambar');
-  ok(teks(h(PratinjauSampul, { nilai: 'https://contoh.com/f.png', rasio: 'sosial' })).includes('aspect-square') && teks(h(PratinjauSampul, { nilai: 'https://contoh.com/f.png' })).includes('aspect-[16/10]'), 'rasio pratinjau mengikuti kartu: sosial persegi, bawaan berita 16/10');
+  ok(teks(h(PratinjauSampul, { nilai: 'https://contoh.com/f.png', rasio: 'sosial' })).includes('aspect-[4/5]') && teks(h(PratinjauSampul, { nilai: 'https://contoh.com/f.png' })).includes('aspect-[16/10]'), 'rasio pratinjau mengikuti kartu: sosial 4:5, bawaan berita 16/10');
 }
 
 console.log('\n--- Penyambungan ke formulir ---');

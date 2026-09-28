@@ -17,7 +17,7 @@ export default function Landing({ panggil }) {
   const [sunting] = useState(() => bacaPetunjuk(sesi)); // pensil sunting hanya bagi pengurus yang sedang masuk (lihat suntingLogic.js); kosong saat prarender
   return (
     <div className="bg-pramuka-50 text-pramuka-900">
-      <NavBeranda G={G} sesi={sesi} />
+      <NavBeranda G={G} sesi={sesi} ada={{ sosial: (beranda.sosial ?? []).length > 0 }} />
       <main>
         <Hero G={G} agendaTerdekat={beranda.agenda[0] ?? null} />
         <Tentang G={G} kontak={beranda.kontak} pembina={beranda.pembina} kamabigus={beranda.kamabigus} sunting={sunting} />

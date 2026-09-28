@@ -20,7 +20,7 @@ function InfoTautan({ nilai, adaGambar }) {
     return (
       <p role="status" className="mt-1 text-xs font-medium leading-relaxed text-emerald-800">
         Terdeteksi postingan {nama}. Di beranda tampil gambar pratinjau dengan tombol putar; pemutarnya baru dimuat saat pengunjung mengetuknya.
-        {a.thumbUrl ? ' Gambar pratinjau diambil otomatis dari YouTube (boleh diganti di bawah).' : adaGambar ? '' : ' Isi gambar pratinjau di bawah agar kartu tidak kosong.'}
+        {a.thumbUrl ? ' Gambar pratinjau diambil otomatis dari YouTube (boleh diganti di bawah).' : adaGambar ? '' : ' Isi gambar pratinjau di bawah: ' + nama + ' tidak menyediakan gambar otomatis. Tanpa gambar, kartu di beranda hanya menampilkan latar polos bertuliskan ' + nama + '.'}
       </p>
     );
   }
