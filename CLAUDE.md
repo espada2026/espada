@@ -74,6 +74,7 @@ Aplikasi web Sistem Informasi Garuda dan SKU Penegak. React 18 + Vite 5 + Tailwi
 - Deretan lencana/chip harus **satu baris** di semua lebar (sisanya disembunyikan di balik tombol `+N`): `src/components/TerkaitButir.jsx`.
 - Tabel lebar dibungkus `overflow-x-auto` (kini otomatis `position: relative` di `index.css`). Elemen `absolute` (mis. `sr-only`) yang lolos dari pembungkus melebarkan halaman dan membuat menu bawah bergeser di ponsel.
 - Uji halaman baru di lebar 320, 375, dan 768px: ukur `document.documentElement.scrollWidth` dengan `html,body{overflow-x:visible !important}` disuntik sementara; nilainya harus sama dengan lebar layar. Emulator browser pane menahan animasi dan screenshot-nya terpotong: ukur lewat DOM, minta pengguna memeriksa kilau di HP.
+- **Grid dua kolom daftar + formulir:** pakai `grid grid-cols-1 gap-6 lg:grid-cols-2` dengan `min-w-0` pada kedua anak, BUKAN `lg:grid-cols-[1.1fr_1fr]` atau grid tanpa `grid-cols-1`: trek `fr` dan trek `auto` tidak boleh lebih sempit dari isinya, jadi judul panjang melebarkan kolom daftar dan mendorong formulir (di ponsel isian menjorok keluar). Teks pengguna yang panjang diberi `[overflow-wrap:anywhere]`, bukan `truncate` (dijaga `uji/kelola-beranda-lebar.mjs` untuk panel Kelola Beranda; halaman lain yang masih memakai `1.1fr_1fr` dengan isi dari pengguna bisa mengalami hal sama).
 - Peran, dan hak, ditegakkan di server; tampilan hanya menyembunyikan tombol.
 
 ## Lingkungan Windows / PowerShell

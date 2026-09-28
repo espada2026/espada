@@ -62,8 +62,8 @@ export default function PanelSosial() {
   const galat = dicoba ? periksaSosial(form) : {};
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-      <div>
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="min-w-0">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-bold text-pramuka-900">Kiriman media sosial</h3>
           {id !== null && <button type="button" className="btn btn-outline btn-sm" onClick={bukaBaru}>+ Kiriman baru</button>}
@@ -78,7 +78,7 @@ export default function PanelSosial() {
               return (
                 <div key={s.id} className="flex flex-wrap items-start justify-between gap-2 p-3">
                   <div className="min-w-0">
-                    <p className="font-semibold text-pramuka-900">{LABEL_PLATFORM[s.platform]}{s.keterangan ? ` · ${s.keterangan}` : ''}</p>
+                    <p className="font-semibold text-pramuka-900 [overflow-wrap:anywhere]">{LABEL_PLATFORM[s.platform]}{s.keterangan ? ` · ${s.keterangan}` : ''}</p>
                     <p className="truncate text-xs text-pramuka-600">{s.tautan}</p>
                   </div>
                   <div className="flex shrink-0 flex-wrap items-center gap-1.5">
@@ -94,7 +94,7 @@ export default function PanelSosial() {
         <p className="mt-3 text-xs text-pramuka-600">Beranda menampilkan paling banyak 6 kiriman terbaru yang tampil.</p>
       </div>
 
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
+      <form className="min-w-0 space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
         <h3 className="text-base font-bold text-pramuka-900">{id !== null ? 'Ubah kiriman' : 'Tambah kiriman'}</h3>
         <Field label="Platform" htmlFor="sosial-platform">
           <select id="sosial-platform" className="input" value={form.platform} onChange={(e) => ubah('platform', e.target.value)}>

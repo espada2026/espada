@@ -99,8 +99,8 @@ export default function PanelKontenTinjau({ skema }) {
   const sedangUbah = id !== null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-      <div>
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="min-w-0">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-bold text-pramuka-900">{skema.labelJamak}</h3>
           {sedangUbah && <button type="button" className="btn btn-outline btn-sm" onClick={bukaBaru}>+ {skema.labelSatuan} baru</button>}
@@ -118,10 +118,10 @@ export default function PanelKontenTinjau({ skema }) {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <Pil status={item.status} />
-                      <span className="truncate font-semibold text-pramuka-900">{r.judul}</span>
+                      <span className="min-w-0 font-semibold text-pramuka-900 [overflow-wrap:anywhere]">{r.judul}</span>
                     </div>
-                    <p className="mt-0.5 text-xs text-pramuka-600">{r.meta} · {item.dibuatOlehNama || 'tanpa nama'} · {waktuRelatif(item.dibuatPada)}</p>
-                    {item.status === 'ditolak' && item.catatanTinjauan && <p className="mt-1 text-xs font-medium text-red-700">Catatan: {item.catatanTinjauan}</p>}
+                    <p className="mt-0.5 text-xs text-pramuka-600 [overflow-wrap:anywhere]">{r.meta} · {item.dibuatOlehNama || 'tanpa nama'} · {waktuRelatif(item.dibuatPada)}</p>
+                    {item.status === 'ditolak' && item.catatanTinjauan && <p className="mt-1 text-xs font-medium text-red-700 [overflow-wrap:anywhere]">Catatan: {item.catatanTinjauan}</p>}
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-1.5">
                     {item.status === 'menunggu' && bolehTerbit && (
@@ -140,7 +140,7 @@ export default function PanelKontenTinjau({ skema }) {
         )}
       </div>
 
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
+      <form className="min-w-0 space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
         <h3 className="text-base font-bold text-pramuka-900">{sedangUbah ? `Ubah ${skema.labelSatuan}` : `Tambah ${skema.labelSatuan}`}</h3>
         {skema.fields.map((f) => <Isian key={f.kunci} f={f} nilai={form[f.kunci]} ubah={ubahIsian} galat={galat[f.kunci]} />)}
         <div className="flex flex-wrap items-center gap-2">
