@@ -20,7 +20,7 @@ const baru = async (skemaFile) => { const db = new PGlite(); await siapkanPg(db,
 const cacah = async (db) => (await db.query(`select (select count(*) from public.profiles)::int p, (select count(*) from public.beranda_berita)::int b`)).rows[0];
 const fungsiPublik = async (db) => (await db.query(`select md5(prosrc) badan from pg_proc where proname = 'sg_beranda_publik'`)).rows[0].badan;
 
-const A = await baru('supabase/skema.sql'); // migrasi ini yang paling baru: skema.sql terbaru = keadaan sesudahnya
+const A = await baru('git:6832723'); // keadaan TEPAT sesudah migrasi ini (main sesudah PR #46); skema.sql terbaru kini juga memuat sg_berita_publik (migrasi berita-publik)
 const fa = await fungsiPublik(A);
 
 console.log('--- Database berisi data: kesetaraan, data utuh, idempoten ---');

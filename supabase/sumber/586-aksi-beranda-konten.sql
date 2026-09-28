@@ -326,3 +326,17 @@ create trigger notif_berita_status after insert or update of status on public.be
 create trigger notif_prestasi_status after insert or update of status on public.beranda_prestasi for each row execute function sigarda.notif_beranda_konten();
 create trigger notif_galeri_status after insert or update of status on public.beranda_galeri for each row execute function sigarda.notif_beranda_konten();
 -- ===== akhir notifikasi beranda konten =====
+
+-- ===== Kelola Beranda: arsip berita publik (Fase 4): aksi =====
+-- Semua berita TERBIT yang sudah waktunya (terbit_pada <= sekarang), terbaru dulu, paling banyak 200, TANPA login (hanya membaca). Dipakai build situs untuk
+-- membuat satu halaman statis per berita (alamat tetap berdasarkan id, terbaca mesin pencari) dan sitemap; sg_beranda_publik hanya memuat 6 terbaru tanpa id.
+-- Kolom: id, kategori, judul, ringkasan, isi, sampulUrl, terbitPada, diubahPada SAJA (tanpa penulis, peninjau, catatan tinjauan, atau status).
+create function public.sg_berita_publik() returns jsonb
+language sql stable security definer set search_path = public as
+$$
+  select coalesce(jsonb_agg(jsonb_build_object('id', b.id, 'kategori', b.kategori, 'judul', b.judul, 'ringkasan', b.ringkasan, 'isi', b.isi, 'sampulUrl', b.sampul_url,
+    'terbitPada', b.terbit_pada, 'diubahPada', b.diubah_pada) order by b.terbit_pada desc, b.id desc), '[]'::jsonb)
+  from (select id, kategori, judul, ringkasan, isi, sampul_url, terbit_pada, diubah_pada from public.beranda_berita
+        where status = 'terbit' and terbit_pada <= now() order by terbit_pada desc, id desc limit 200) b
+$$;
+-- ===== akhir arsip berita publik =====
