@@ -33,7 +33,7 @@ const potret = async (db) => {
   };
 };
 
-const A = await baru(`${P}/supabase/skema.sql`);
+const A = await baru('git:a004b1b'); // keadaan TEPAT sesudah migrasi ini (main sesudah PR #56, tanpa perubahan SQL sejak PR #55); skema.sql terbaru kini juga memuat muat-lebih-lama
 const pa = await potret(A);
 
 console.log('--- Database berisi data: kesetaraan, data utuh, idempoten ---');

@@ -5192,9 +5192,9 @@ end $$;
 --   agenda    : paling banyak 6 kegiatan mendatang (hari ini WIB dan sesudahnya) berisi jenis, judul, tanggal SAJA; keterangan dan
 --               peserta_terkait tidak pernah keluar
 --   berita    : paling banyak 6 berita TERBIT dan sudah waktunya (terbit_pada <= sekarang), terbaru dulu; kategori, judul, ringkasan, isi, sampul, tanggal SAJA
---   prestasi  : semua prestasi TERBIT, tahun terbaru dulu; judul, tingkat, peringkat, tahun, diraih_oleh, foto SAJA
---   galeri    : semua album TERBIT; judul, tautan, sampul, kelompok SAJA
---   sosial    : paling banyak 6 kiriman media sosial yang tampil, terbaru dulu; platform, tautan, keterangan, gambar SAJA
+--   prestasi  : paling banyak 6 prestasi TERBIT, tahun terbaru dulu; judul, tingkat, peringkat, tahun, diraih_oleh, foto SAJA (sisanya lewat sg_prestasi_lagi)
+--   galeri    : paling banyak 6 album TERBIT, terbaru dulu; judul, tautan, sampul, kelompok SAJA (sisanya lewat sg_galeri_lagi)
+--   sosial    : paling banyak 6 kiriman media sosial yang tampil, terbaru dulu; platform, tautan, keterangan, gambar SAJA (sisanya lewat sg_sosial_lagi)
 --   faq       : semua pertanyaan umum, urut sesuai pengaturan Pembina/Admin (kosong = klien memakai daftar bawaan)
 -- Data anggota, hasil SKU, catatan tinjauan, dan siapa yang menulis/meninjau TIDAK PERNAH keluar dari sini (fungsi ini publik).
 create function public.sg_beranda_publik() returns jsonb
@@ -5221,11 +5221,11 @@ begin
     ), '[]'::jsonb),
     'prestasi', coalesce((
       select jsonb_agg(jsonb_build_object('judul', p.judul, 'tingkat', p.tingkat, 'peringkat', p.peringkat, 'tahun', p.tahun, 'diraihOleh', p.diraih_oleh, 'fotoUrl', p.foto_url) order by p.tahun desc, p.id desc)
-      from (select id, judul, tingkat, peringkat, tahun, diraih_oleh, foto_url from public.beranda_prestasi where status = 'terbit') p
+      from (select id, judul, tingkat, peringkat, tahun, diraih_oleh, foto_url from public.beranda_prestasi where status = 'terbit' order by tahun desc, id desc limit 6) p
     ), '[]'::jsonb),
     'galeri', coalesce((
       select jsonb_agg(jsonb_build_object('judul', g.judul, 'tautan', g.tautan, 'sampulUrl', g.sampul_url, 'kelompok', g.kelompok) order by g.dibuat_pada desc, g.id desc)
-      from (select id, judul, tautan, sampul_url, kelompok, dibuat_pada from public.beranda_galeri where status = 'terbit') g
+      from (select id, judul, tautan, sampul_url, kelompok, dibuat_pada from public.beranda_galeri where status = 'terbit' order by dibuat_pada desc, id desc limit 6) g
     ), '[]'::jsonb),
     'sosial', coalesce((
       select jsonb_agg(jsonb_build_object('platform', s.platform, 'tautan', s.tautan, 'keterangan', s.keterangan, 'gambarUrl', s.gambar_url) order by s.dibuat_pada desc, s.id desc)
@@ -5603,6 +5603,55 @@ $$
   ) x
 $$;
 -- ===== akhir berita lebih lama =====
+
+-- ===== Kelola Beranda: prestasi, galeri, dan media sosial lebih lama (tombol "Muat ... lebih lama"): aksi =====
+-- Sama dengan sg_berita_lagi: halaman muka menampilkan 6 yang terbaru (sg_beranda_publik); fungsi-fungsi ini memberi 6 berikutnya sesudah p_lewati yang sudah
+-- tampil, TANPA login (hanya membaca), kolom sama dengan yang di sg_beranda_publik (tanpa id, penulis, peninjau, atau catatan tinjauan). 'adaLagi' = masih ada yang
+-- lebih lama (dibaca 7 baris, yang ke-7 tidak dikirim). p_lewati dibatasi 0..1000. Urutan SAMA dengan sg_beranda_publik: prestasi menurut tahun (lalu id) terbaru dulu,
+-- galeri dan media sosial menurut waktu dibuat terbaru dulu.
+create function public.sg_prestasi_lagi(p_lewati int) returns jsonb
+language sql stable security definer set search_path = public as
+$$
+  select jsonb_build_object(
+    'prestasi', coalesce(jsonb_agg(jsonb_build_object('judul', x.judul, 'tingkat', x.tingkat, 'peringkat', x.peringkat, 'tahun', x.tahun, 'diraihOleh', x.diraih_oleh,
+      'fotoUrl', x.foto_url) order by x.urut) filter (where x.urut <= 6), '[]'::jsonb),
+    'adaLagi', coalesce(bool_or(x.urut > 6), false))
+  from (
+    select p.judul, p.tingkat, p.peringkat, p.tahun, p.diraih_oleh, p.foto_url, row_number() over (order by p.tahun desc, p.id desc) as urut
+    from (select id, judul, tingkat, peringkat, tahun, diraih_oleh, foto_url from public.beranda_prestasi
+          where status = 'terbit' order by tahun desc, id desc
+          offset least(greatest(coalesce(p_lewati, 0), 0), 1000) limit 7) p
+  ) x
+$$;
+create function public.sg_galeri_lagi(p_lewati int) returns jsonb
+language sql stable security definer set search_path = public as
+$$
+  select jsonb_build_object(
+    'galeri', coalesce(jsonb_agg(jsonb_build_object('judul', x.judul, 'tautan', x.tautan, 'sampulUrl', x.sampul_url, 'kelompok', x.kelompok) order by x.urut)
+      filter (where x.urut <= 6), '[]'::jsonb),
+    'adaLagi', coalesce(bool_or(x.urut > 6), false))
+  from (
+    select g.judul, g.tautan, g.sampul_url, g.kelompok, row_number() over (order by g.dibuat_pada desc, g.id desc) as urut
+    from (select id, judul, tautan, sampul_url, kelompok, dibuat_pada from public.beranda_galeri
+          where status = 'terbit' order by dibuat_pada desc, id desc
+          offset least(greatest(coalesce(p_lewati, 0), 0), 1000) limit 7) g
+  ) x
+$$;
+create function public.sg_sosial_lagi(p_lewati int) returns jsonb
+language sql stable security definer set search_path = public as
+$$
+  select jsonb_build_object(
+    'sosial', coalesce(jsonb_agg(jsonb_build_object('platform', x.platform, 'tautan', x.tautan, 'keterangan', x.keterangan, 'gambarUrl', x.gambar_url) order by x.urut)
+      filter (where x.urut <= 6), '[]'::jsonb),
+    'adaLagi', coalesce(bool_or(x.urut > 6), false))
+  from (
+    select s.platform, s.tautan, s.keterangan, s.gambar_url, row_number() over (order by s.dibuat_pada desc, s.id desc) as urut
+    from (select id, platform, tautan, keterangan, gambar_url, dibuat_pada from public.beranda_sosial
+          where tampil order by dibuat_pada desc, id desc
+          offset least(greatest(coalesce(p_lewati, 0), 0), 1000) limit 7) s
+  ) x
+$$;
+-- ===== akhir sisa lebih lama =====
 -- ===== Dokumen terbit: fungsi aksi =====
 -- Menerbitkan surat pengantar ke guru agama untuk butir agama Penegak yang tidak punya Pembina seagama (Pembina atau Admin Gudep).
 -- Surat dicetak untuk tanda tangan dan stempel basah; QR memuat token (sg_verifikasi_token). Selama surat berlaku, Pembina mana pun boleh
@@ -7673,7 +7722,7 @@ grant execute on function
   to authenticated;
 -- Fungsi yang boleh dipanggil tanpa login (hanya membaca): verifikasi keaslian dokumen, identitas gudep di halaman masuk, dan
 -- tautan berbagi baca-saja Berkas Calon Garuda (tahap L7), dan isi beranda publik (Fase 1 landing page: hanya membaca)
-grant execute on function public.sg_verifikasi_token(text), public.sg_verifikasi_kode(text), public.sg_gudep_publik(), public.sg_garuda_token_baca(text), public.sg_beranda_publik(), public.sg_berita_publik(), public.sg_berita_lagi(int) to anon, authenticated;
+grant execute on function public.sg_verifikasi_token(text), public.sg_verifikasi_kode(text), public.sg_gudep_publik(), public.sg_garuda_token_baca(text), public.sg_beranda_publik(), public.sg_berita_publik(), public.sg_berita_lagi(int), public.sg_prestasi_lagi(int), public.sg_galeri_lagi(int), public.sg_sosial_lagi(int) to anon, authenticated;
 grant execute on function
   public.sg_sku_catat_internal(uuid, uuid, text, text, date, text, text),
   public.sg_sku_catat_rubrik_internal(uuid, uuid, text, date, jsonb, text, text),

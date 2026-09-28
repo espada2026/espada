@@ -189,6 +189,41 @@ export function susunBeritaLagi(mentah) {
   return { berita: susunBerita(m.berita), adaLagi: m.adaLagi === true };
 }
 
+/** Larik prestasi, galeri, atau media sosial dari server (sg_beranda_publik atau sg_*_lagi) yang aman ditampilkan; yang tidak lengkap dibuang. Tidak dibatasi jumlahnya (server yang membatasi). */
+const larikAman = (x) => (Array.isArray(x) ? x : []);
+const objAman = (x) => (x && typeof x === 'object' && !Array.isArray(x) ? x : {});
+const teksAman = (x) => (typeof x === 'string' ? rapikan(x) : '');
+export const susunPrestasi = (mentah) => larikAman(mentah)
+  .map((p) => ({ judul: teksAman(objAman(p).judul), tingkat: teksAman(objAman(p).tingkat), peringkat: teksAman(objAman(p).peringkat), tahun: Number(objAman(p).tahun) || 0, diraihOleh: teksAman(objAman(p).diraihOleh), fotoUrl: teksAman(objAman(p).fotoUrl) }))
+  .filter((p) => p.judul);
+export const susunGaleri = (mentah) => larikAman(mentah)
+  .map((g) => ({ judul: teksAman(objAman(g).judul), tautan: teksAman(objAman(g).tautan), sampulUrl: teksAman(objAman(g).sampulUrl), kelompok: teksAman(objAman(g).kelompok) }))
+  .filter((g) => g.judul && tautanSah(g.tautan));
+export const susunSosial = (mentah) => larikAman(mentah)
+  .map((s) => ({ platform: teksAman(objAman(s).platform), tautan: teksAman(objAman(s).tautan), keterangan: teksAman(objAman(s).keterangan), gambarUrl: teksAman(objAman(s).gambarUrl) }))
+  .filter((s) => s.platform && tautanSah(s.tautan));
+
+/** Kunci pencocokan kartu yang sama (tanpa kembar) pada tiap jenis: penulisan baru di antara dua permintaan menggeser urutan, jadi satu kartu dapat datang dua kali. */
+export const KUNCI_KARTU = {
+  prestasi: (p) => [p.judul, p.tingkat, p.peringkat, p.tahun, p.diraihOleh].join('|'),
+  galeri: (g) => `${g.judul}|${g.tautan}`,
+  sosial: (s) => `${s.platform}|${s.tautan}`,
+};
+/** Kartu yang sudah tampil + gelombang lebih lama, tanpa kembar menurut KUNCI_KARTU[jenis]. */
+export function gabungKartu(jenis, tampil, lama) {
+  const kunci = KUNCI_KARTU[jenis];
+  const ada = new Set(tampil.map(kunci));
+  const hasil = [...tampil];
+  for (const k of lama) { if (!ada.has(kunci(k))) { ada.add(kunci(k)); hasil.push(k); } }
+  return hasil;
+}
+const SUSUN_KARTU = { prestasi: susunPrestasi, galeri: susunGaleri, sosial: susunSosial };
+/** Jawaban sg_prestasi_lagi / sg_galeri_lagi / sg_sosial_lagi: { daftar (paling banyak 6), adaLagi } (data rusak = kosong dan tidak ada lagi). */
+export function susunKartuLagi(jenis, mentah) {
+  const m = objAman(mentah);
+  return { daftar: SUSUN_KARTU[jenis](m[jenis]).slice(0, 6), adaLagi: m.adaLagi === true };
+}
+
 export function susunBerandaPublik(mentah) {
   const m = mentah && typeof mentah === 'object' ? mentah : {};
   const obj = (x) => (x && typeof x === 'object' && !Array.isArray(x) ? x : {});
@@ -205,15 +240,9 @@ export function susunBerandaPublik(mentah) {
     .slice(0, 6);
   const larik = (x) => (Array.isArray(x) ? x : []);
   const berita = susunBerita(m.berita);
-  const prestasi = larik(m.prestasi)
-    .map((p) => ({ judul: teks(obj(p).judul), tingkat: teks(obj(p).tingkat), peringkat: teks(obj(p).peringkat), tahun: Number(obj(p).tahun) || 0, diraihOleh: teks(obj(p).diraihOleh), fotoUrl: teks(obj(p).fotoUrl) }))
-    .filter((p) => p.judul);
-  const galeri = larik(m.galeri)
-    .map((g) => ({ judul: teks(obj(g).judul), tautan: teks(obj(g).tautan), sampulUrl: teks(obj(g).sampulUrl), kelompok: teks(obj(g).kelompok) }))
-    .filter((g) => g.judul && tautanSah(g.tautan));
-  const sosial = larik(m.sosial)
-    .map((s) => ({ platform: teks(obj(s).platform), tautan: teks(obj(s).tautan), keterangan: teks(obj(s).keterangan), gambarUrl: teks(obj(s).gambarUrl) }))
-    .filter((s) => s.platform && tautanSah(s.tautan)).slice(0, 6);
+  const prestasi = susunPrestasi(m.prestasi);
+  const galeri = susunGaleri(m.galeri);
+  const sosial = susunSosial(m.sosial).slice(0, 6);
   const faq = larik(m.faq)
     .map((f) => ({ pertanyaan: teks(obj(f).pertanyaan), jawaban: teks(obj(f).jawaban) }))
     .filter((f) => f.pertanyaan && f.jawaban);

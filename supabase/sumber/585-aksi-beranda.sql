@@ -54,9 +54,9 @@ end $$;
 --   agenda    : paling banyak 6 kegiatan mendatang (hari ini WIB dan sesudahnya) berisi jenis, judul, tanggal SAJA; keterangan dan
 --               peserta_terkait tidak pernah keluar
 --   berita    : paling banyak 6 berita TERBIT dan sudah waktunya (terbit_pada <= sekarang), terbaru dulu; kategori, judul, ringkasan, isi, sampul, tanggal SAJA
---   prestasi  : semua prestasi TERBIT, tahun terbaru dulu; judul, tingkat, peringkat, tahun, diraih_oleh, foto SAJA
---   galeri    : semua album TERBIT; judul, tautan, sampul, kelompok SAJA
---   sosial    : paling banyak 6 kiriman media sosial yang tampil, terbaru dulu; platform, tautan, keterangan, gambar SAJA
+--   prestasi  : paling banyak 6 prestasi TERBIT, tahun terbaru dulu; judul, tingkat, peringkat, tahun, diraih_oleh, foto SAJA (sisanya lewat sg_prestasi_lagi)
+--   galeri    : paling banyak 6 album TERBIT, terbaru dulu; judul, tautan, sampul, kelompok SAJA (sisanya lewat sg_galeri_lagi)
+--   sosial    : paling banyak 6 kiriman media sosial yang tampil, terbaru dulu; platform, tautan, keterangan, gambar SAJA (sisanya lewat sg_sosial_lagi)
 --   faq       : semua pertanyaan umum, urut sesuai pengaturan Pembina/Admin (kosong = klien memakai daftar bawaan)
 -- Data anggota, hasil SKU, catatan tinjauan, dan siapa yang menulis/meninjau TIDAK PERNAH keluar dari sini (fungsi ini publik).
 create function public.sg_beranda_publik() returns jsonb
@@ -83,11 +83,11 @@ begin
     ), '[]'::jsonb),
     'prestasi', coalesce((
       select jsonb_agg(jsonb_build_object('judul', p.judul, 'tingkat', p.tingkat, 'peringkat', p.peringkat, 'tahun', p.tahun, 'diraihOleh', p.diraih_oleh, 'fotoUrl', p.foto_url) order by p.tahun desc, p.id desc)
-      from (select id, judul, tingkat, peringkat, tahun, diraih_oleh, foto_url from public.beranda_prestasi where status = 'terbit') p
+      from (select id, judul, tingkat, peringkat, tahun, diraih_oleh, foto_url from public.beranda_prestasi where status = 'terbit' order by tahun desc, id desc limit 6) p
     ), '[]'::jsonb),
     'galeri', coalesce((
       select jsonb_agg(jsonb_build_object('judul', g.judul, 'tautan', g.tautan, 'sampulUrl', g.sampul_url, 'kelompok', g.kelompok) order by g.dibuat_pada desc, g.id desc)
-      from (select id, judul, tautan, sampul_url, kelompok, dibuat_pada from public.beranda_galeri where status = 'terbit') g
+      from (select id, judul, tautan, sampul_url, kelompok, dibuat_pada from public.beranda_galeri where status = 'terbit' order by dibuat_pada desc, id desc limit 6) g
     ), '[]'::jsonb),
     'sosial', coalesce((
       select jsonb_agg(jsonb_build_object('platform', s.platform, 'tautan', s.tautan, 'keterangan', s.keterangan, 'gambarUrl', s.gambar_url) order by s.dibuat_pada desc, s.id desc)

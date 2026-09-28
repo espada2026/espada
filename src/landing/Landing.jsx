@@ -24,10 +24,10 @@ export default function Landing({ panggil }) {
         <Program />
         <Perjalanan />
         <Berita berita={beranda.berita} memuat={beranda.memuat} sunting={sunting} halaman={beranda.halaman} adaLagi={beranda.adaLagi} memuatLagi={beranda.memuatLagi} galatLagi={beranda.galatLagi} onMuatLagi={beranda.muatLagi} />
-        <Prestasi prestasi={beranda.prestasi} memuat={beranda.memuat} sunting={sunting} />
-        <Galeri galeri={beranda.galeri} memuat={beranda.memuat} sunting={sunting} />
+        <Prestasi prestasi={beranda.prestasi} memuat={beranda.memuat} sunting={sunting} lagi={beranda.lagi.prestasi} />
+        <Galeri galeri={beranda.galeri} memuat={beranda.memuat} sunting={sunting} lagi={beranda.lagi.galeri} />
         <KabarAgenda agenda={beranda.agenda} memuat={beranda.memuat} />
-        <MediaSosial sosial={beranda.sosial} sunting={sunting} />
+        <MediaSosial sosial={beranda.sosial} sunting={sunting} lagi={beranda.lagi.sosial} />
         <TanyaJawab faq={beranda.faq} sunting={sunting} />
         <Kontak G={G} kontak={beranda.kontak} sunting={sunting} />
         <CekDokumen />
