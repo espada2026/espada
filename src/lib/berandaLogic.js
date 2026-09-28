@@ -33,25 +33,33 @@ const POLA_TAUTAN = /^https:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}([/?#][^ ]*)?$/;
 export const tautanSah = (s) => POLA_TAUTAN.test(String(s ?? ''));
 
 const HOST_DRIVE_GAMBAR = new Set(['drive.google.com', 'drive.usercontent.google.com']);
+// Halaman (bukan berkas gambar): tidak akan pernah tampil di <img>, jadi tidak dicoba sama sekali (kartu memakai gambar pengganti).
+const HOST_HALAMAN_SAJA = new Set(['photos.app.goo.gl', 'photos.google.com', 'goo.gl', 'g.co', 'share.google']);
 
 /**
- * Alamat gambar yang dapat dipasang langsung pada <img>, dari tautan yang ditempel pengurus pada sampulUrl/gambarUrl (Kelola Beranda).
- * Tautan BERBAGI Google Drive (drive.google.com/file/d/ID/view, .../open?id=ID, .../uc?id=ID) hanya menuju HALAMAN, bukan berkas gambar,
- * sehingga tampil kosong bila dipasang langsung; diubah ke alamat thumbnail Drive yang boleh dihotlink. Tautan lain (mis. Google Photos yang
- * disalin lewat "Salin alamat gambar", berupa alamat googleusercontent.com) sudah berupa alamat gambar langsung, dipakai apa adanya.
- * '' bila tautan tidak sah (kosong, bukan https, dsb.).
+ * Daftar alamat yang dicoba berurutan untuk <img>, dari tautan yang ditempel pengurus pada sampulUrl/gambarUrl (Kelola Beranda); [] bila tidak ada yang
+ * mungkin tampil (kosong, bukan https, tautan folder, atau tautan halaman berbagi Google Photos, yang hanya menuju HALAMAN, bukan berkas gambar).
+ * Tautan BERBAGI Google Drive (drive.google.com/file/d/ID/view, .../open?id=ID, .../uc?id=ID) juga hanya menuju halaman; berkas yang dibagikan
+ * "Siapa saja yang memiliki link" diubah ke alamat gambar langsung: lh3.googleusercontent.com/d/ID (lebih andal dipasang di situs lain) lalu thumbnail Drive
+ * sebagai cadangan. Tautan lain (mis. alamat googleusercontent.com hasil "Salin alamat gambar" di Google Photos) dipakai apa adanya.
  */
-export function urlGambar(mentah) {
+export function kandidatGambar(mentah) {
   const s = rapikan(mentah);
-  if (!tautanSah(s)) return '';
+  if (!tautanSah(s)) return [];
   let url;
-  try { url = new URL(s); } catch { return s; }
-  if (HOST_DRIVE_GAMBAR.has(url.hostname.toLowerCase())) {
+  try { url = new URL(s); } catch { return []; }
+  const host = url.hostname.toLowerCase();
+  if (HOST_HALAMAN_SAJA.has(host)) return [];
+  if (HOST_DRIVE_GAMBAR.has(host)) {
     const id = url.pathname.match(/\/d\/([A-Za-z0-9_-]{15,120})/)?.[1] ?? url.searchParams.get('id') ?? '';
-    if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+    if (!/^[A-Za-z0-9_-]{15,120}$/.test(id)) return [];
+    return [`https://lh3.googleusercontent.com/d/${id}=w1000`, `https://drive.google.com/thumbnail?id=${id}&sz=w1000`];
   }
-  return s;
+  return [s];
 }
+
+/** Alamat gambar pertama dari kandidatGambar ('' bila tidak ada); dipakai halaman tanpa JavaScript (halaman berita statis, Open Graph). */
+export const urlGambar = (mentah) => kandidatGambar(mentah)[0] ?? '';
 
 /** Spasi ganda dan tepi dirapikan, sama dengan sigarda.rapikan di SQL. */
 export const rapikan = (s) => String(s ?? '').replace(/\s+/g, ' ').trim();
@@ -120,6 +128,31 @@ export const tautanPeta = (kontak) => (POLA_TAUTAN.test(untukForm(kontak).peta) 
  * Bentuk jawaban sg_beranda_publik yang aman dipakai halaman, apa pun isi jawabannya (server lama, galat, atau data rusak):
  * { gudep, pembina: { jabatan, nama }, kamabigus: { jabatan, nama }, kontak (lengkap, teks), agenda: [{ jenis, judul, tanggal }] }.
  */
+/** Larik berita dari server (sg_beranda_publik atau sg_berita_lagi) yang aman ditampilkan: paling banyak 6, yang tanpa judul dibuang. */
+export function susunBerita(mentah) {
+  const obj = (x) => (x && typeof x === 'object' && !Array.isArray(x) ? x : {});
+  const teks = (x) => (typeof x === 'string' ? rapikan(x) : '');
+  // isi = teks BERPARAGRAF (bukan lewat teks(), yang merapikan sebagai satu baris dan menghapus baris baru): server sudah merapikannya sendiri saat disimpan.
+  return (Array.isArray(mentah) ? mentah : [])
+    .map((b) => ({ kategori: teks(obj(b).kategori), judul: teks(obj(b).judul), ringkasan: teks(obj(b).ringkasan), isi: typeof obj(b).isi === 'string' ? obj(b).isi : '', sampulUrl: teks(obj(b).sampulUrl), terbitPada: teks(obj(b).terbitPada) }))
+    .filter((b) => b.judul).slice(0, 6);
+}
+
+/** Berita yang sudah tampil + gelombang lebih lama, tanpa kembar (judul dan waktu terbit sama; berita baru terbit di antara dua permintaan menggeser urutan). */
+export function gabungBerita(tampil, lama) {
+  const kunci = (b) => `${b.judul}|${Date.parse(b.terbitPada)}`;
+  const ada = new Set(tampil.map(kunci));
+  const hasil = [...tampil];
+  for (const b of lama) { if (!ada.has(kunci(b))) { ada.add(kunci(b)); hasil.push(b); } }
+  return hasil;
+}
+
+/** Jawaban sg_berita_lagi: { berita: [...], adaLagi } (data rusak = tidak ada berita dan tidak ada lagi). */
+export function susunBeritaLagi(mentah) {
+  const m = mentah && typeof mentah === 'object' && !Array.isArray(mentah) ? mentah : {};
+  return { berita: susunBerita(m.berita), adaLagi: m.adaLagi === true };
+}
+
 export function susunBerandaPublik(mentah) {
   const m = mentah && typeof mentah === 'object' ? mentah : {};
   const obj = (x) => (x && typeof x === 'object' && !Array.isArray(x) ? x : {});
@@ -135,10 +168,7 @@ export function susunBerandaPublik(mentah) {
     .filter((a) => a.judul && /^\d{4}-\d{2}-\d{2}$/.test(a.tanggal))
     .slice(0, 6);
   const larik = (x) => (Array.isArray(x) ? x : []);
-  // isi = teks BERPARAGRAF (bukan lewat teks(), yang merapikan sebagai satu baris dan menghapus baris baru): server sudah merapikannya sendiri saat disimpan.
-  const berita = larik(m.berita)
-    .map((b) => ({ kategori: teks(obj(b).kategori), judul: teks(obj(b).judul), ringkasan: teks(obj(b).ringkasan), isi: typeof obj(b).isi === 'string' ? obj(b).isi : '', sampulUrl: teks(obj(b).sampulUrl), terbitPada: teks(obj(b).terbitPada) }))
-    .filter((b) => b.judul).slice(0, 6);
+  const berita = susunBerita(m.berita);
   const prestasi = larik(m.prestasi)
     .map((p) => ({ judul: teks(obj(p).judul), tingkat: teks(obj(p).tingkat), peringkat: teks(obj(p).peringkat), tahun: Number(obj(p).tahun) || 0, diraihOleh: teks(obj(p).diraihOleh), fotoUrl: teks(obj(p).fotoUrl) }))
     .filter((p) => p.judul);

@@ -40,7 +40,7 @@ export function LanskapPerkemahan({ className = '' }) {
 }
 
 const IKON = {
-  tenda: <><path d="M3 20 12 4l9 16z" /><path d="M12 20v-6" /></>,
+  tenda: <><path d="M3 20 12 4l9 16z" /><path d="M9 20l3-5 3 5" /></>,
   kompas: <><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5z" /></>,
   bintang: <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" />,
   simpul: <><circle cx="9" cy="12" r="5" /><circle cx="15" cy="12" r="5" /></>,

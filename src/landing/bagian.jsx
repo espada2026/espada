@@ -7,7 +7,7 @@ import LogoMark from '../components/LogoMark';
 import SumberPeraturan from '../components/SumberPeraturan';
 import { labelJenisAgenda } from '../lib/agendaLogic';
 import { namaAmbalan } from '../lib/gudepLogic';
-import { jaringanSosial, pecahParagraf, pecahTanggal, tautanBagikanWa, tautanPencarianPeta, tautanPeta, tautanWhatsapp, urlGambar } from '../lib/berandaLogic';
+import { jaringanSosial, pecahParagraf, pecahTanggal, tautanBagikanWa, tautanPencarianPeta, tautanPeta, tautanWhatsapp, kandidatGambar } from '../lib/berandaLogic';
 import { bolehSunting, tautanSunting } from '../lib/suntingLogic';
 import { halamanBerita } from '../lib/beritaStatisLogic';
 import { LABEL_KATEGORI_BERITA, LABEL_KELOMPOK_GALERI, LABEL_PLATFORM, LABEL_TINGKAT_PRESTASI } from '../lib/berandaKontenLogic';
@@ -18,6 +18,18 @@ const wrap = 'mx-auto w-full max-w-6xl px-5';
 const judulBagian = 'font-display text-3xl font-extrabold leading-tight sm:text-4xl';
 const eyebrow = 'flex items-center gap-2.5 text-xs font-bold uppercase tracking-[0.2em]';
 const garisEyebrow = 'h-0.5 w-7 bg-emas';
+
+/**
+ * Gambar sampul: mencoba alamat kandidat berurutan (mis. lh3.googleusercontent.com lalu thumbnail Drive); bila semuanya gagal dimuat (berkas belum dibagikan
+ * "Siapa saja yang memiliki link", tautan salah) atau tidak ada yang mungkin tampil, dipakai gambar pengganti, bukan kotak putih kosong. Tanpa Referer supaya
+ * Google tidak menolak pemasangan di situs lain. `kelasPengganti` memuat ukuran dan warna latar gambar pengganti.
+ */
+function GambarSampul({ sumber, kelas, kelasPengganti, ikon = 'tenda', ukuranIkon = 32 }) {
+  const [urut, setUrut] = useState(0);
+  const src = sumber[urut];
+  if (!src) return <div aria-hidden="true" className={`flex items-center justify-center text-emas-light ${kelasPengganti}`}><IkonBeranda nama={ikon} ukuran={ukuranIkon} /></div>;
+  return <img key={src} src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setUrut((n) => n + 1)} className={kelas} />;
+}
 
 const kelasBagikan = 'inline-flex w-fit items-center text-xs font-bold text-emas-dark no-underline hover:underline';
 
@@ -223,16 +235,14 @@ export function Perjalanan() {
 /** Kartu berita: sampul (bila ada), kategori, judul, ringkasan, isi lengkap di balik "Baca selengkapnya" (tanpa JavaScript, elemen <details>), dan tanggal terbit. */
 function KartuBerita({ b, besar = false, halaman = '' }) {
   const t = pecahTanggal(String(b.terbitPada ?? '').slice(0, 10));
-  const sampul = urlGambar(b.sampulUrl);
+  const sampul = kandidatGambar(b.sampulUrl);
   const isi = pecahParagraf(b.isi);
   return (
     <article className={`flex flex-col overflow-hidden rounded-2xl border border-pramuka-200 bg-white ${besar ? 'sm:col-span-2 sm:flex-row' : ''}`}>
-      {sampul ? (
-        <img src={sampul} alt="" loading="lazy" className={`w-full object-cover ${besar ? 'sm:w-2/5' : 'aspect-[16/10]'}`} />
+      {besar ? (
+        <GambarSampul sumber={sampul} kelas="aspect-[16/10] w-full object-cover sm:w-2/5 sm:shrink-0 sm:self-start" kelasPengganti="aspect-[16/10] w-full bg-pramuka-800 sm:w-2/5 sm:shrink-0 sm:self-start" ukuranIkon={44} />
       ) : (
-        <div aria-hidden="true" className={`flex items-center justify-center bg-pramuka-800 text-emas-light ${besar ? 'aspect-[16/10] sm:aspect-auto sm:w-2/5' : 'aspect-[16/10]'}`}>
-          <IkonBeranda nama="tenda" ukuran={besar ? 44 : 32} />
-        </div>
+        <GambarSampul sumber={sampul} kelas="aspect-[16/10] w-full object-cover" kelasPengganti="aspect-[16/10] w-full bg-pramuka-800" />
       )}
       <div className="flex flex-1 flex-col gap-2 p-5">
         <span className="inline-block w-fit rounded-full bg-emas/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-emas-dark">{LABEL_KATEGORI_BERITA[b.kategori] ?? b.kategori}</span>
@@ -262,7 +272,7 @@ function KartuBerita({ b, besar = false, halaman = '' }) {
 }
 
 /** Berita terbit dari Kelola Beranda (Fase 2). */
-export function Berita({ berita = [], memuat = false, sunting = '', halaman = {} }) {
+export function Berita({ berita = [], memuat = false, sunting = '', halaman = {}, adaLagi = false, memuatLagi = false, galatLagi = false, onMuatLagi = null }) {
   return (
     <section id="berita" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#45291a]">
       <div className={wrap}>
@@ -270,10 +280,18 @@ export function Berita({ berita = [], memuat = false, sunting = '', halaman = {}
         {berita.length === 0 ? (
           <p role="status" className="rounded-2xl border border-pramuka-200 bg-white p-6 text-pramuka-600">{memuat ? 'Memuat berita...' : 'Belum ada berita. Tengok lagi nanti.'}</p>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid items-start gap-5 sm:grid-cols-2">
             {berita.map((b, i) => <KartuBerita key={`${b.judul}|${i}`} b={b} besar={i === 0} halaman={halamanBerita(halaman, b)} />)}
           </div>
         )}
+        {berita.length > 0 && onMuatLagi && (adaLagi ? (
+          <div className="mt-8 flex flex-col items-center gap-2">
+            <button type="button" onClick={onMuatLagi} disabled={memuatLagi} className="btn btn-outline disabled:cursor-wait disabled:opacity-60">{memuatLagi ? 'Memuat...' : 'Muat berita lebih lama'}</button>
+            {galatLagi && <p role="alert" className="text-sm text-red-700">Berita lebih lama belum dapat dimuat. Periksa sambungan internet lalu coba lagi.</p>}
+          </div>
+        ) : berita.length >= 6 && (
+          <p className="mt-8 text-center text-sm text-pramuka-600">Semua berita sudah ditampilkan.</p>
+        ))}
       </div>
     </section>
   );
@@ -320,11 +338,7 @@ export function Galeri({ galeri = [], memuat = false, sunting = '' }) {
               <div key={`${g.judul}|${i}`} className="flex flex-col overflow-hidden rounded-2xl border border-pramuka-200 bg-white">
                 <a href={g.tautan} target="_blank" rel="noopener noreferrer" className="group block flex-1 no-underline">
                   <div className="overflow-hidden">
-                    {urlGambar(g.sampulUrl) ? (
-                      <img src={urlGambar(g.sampulUrl)} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover transition group-hover:scale-105" />
-                    ) : (
-                      <div aria-hidden="true" className="flex aspect-[4/3] items-center justify-center bg-pramuka-800 text-emas-light"><IkonBeranda nama="tenda" ukuran={36} /></div>
-                    )}
+                    <GambarSampul sumber={kandidatGambar(g.sampulUrl)} kelas="aspect-[4/3] w-full object-cover transition group-hover:scale-105" kelasPengganti="aspect-[4/3] w-full bg-pramuka-800" ukuranIkon={36} />
                   </div>
                   <div className="p-4 pb-2">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-emas-dark">{LABEL_KELOMPOK_GALERI[g.kelompok] ?? g.kelompok}</span>
@@ -389,11 +403,7 @@ export function MediaSosial({ sosial = [], sunting = '' }) {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sosial.map((s, i) => (
             <a key={`${s.tautan}|${i}`} href={s.tautan} target="_blank" rel="noopener noreferrer" className="flex flex-col overflow-hidden rounded-2xl bg-pramuka-50 text-pramuka-900 no-underline">
-              {urlGambar(s.gambarUrl) ? (
-                <img src={urlGambar(s.gambarUrl)} alt="" loading="lazy" className="aspect-square w-full object-cover" />
-              ) : (
-                <div aria-hidden="true" className="flex aspect-square items-center justify-center bg-pramuka-700 text-emas-light"><IkonBeranda nama="kompas" ukuran={36} /></div>
-              )}
+              <GambarSampul sumber={kandidatGambar(s.gambarUrl)} kelas="aspect-square w-full object-cover" kelasPengganti="aspect-square w-full bg-pramuka-700" ikon="kompas" ukuranIkon={36} />
               <div className="p-4">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-emas-dark">{LABEL_PLATFORM[s.platform] ?? s.platform}</span>
                 {s.keterangan && <p className="text-sm text-pramuka-700">{s.keterangan}</p>}

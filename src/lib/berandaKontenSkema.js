@@ -19,7 +19,7 @@ export const SKEMA_BERITA = {
     { kunci: 'judul', label: 'Judul' },
     { kunci: 'ringkasan', label: 'Ringkasan (tampil di kartu)' },
     { kunci: 'isi', label: 'Isi berita', jenis: 'textarea', baris: 6 },
-    { kunci: 'sampulUrl', label: 'Gambar sampul (tautan Google Drive atau Photos, opsional)', placeholder: 'https://...' },
+    { kunci: 'sampulUrl', label: 'Gambar sampul (tautan Google Drive atau Photos, opsional)', placeholder: 'https://...', bantuan: 'Google Drive: buka file foto, Bagikan > "Siapa saja yang memiliki link", salin tautannya. Google Photos: buka fotonya, klik kanan, "Salin alamat gambar" (bukan tautan Bagikan album). Bila gambar tidak dapat dimuat, beranda menampilkan gambar pengganti.' },
   ],
 };
 
@@ -49,6 +49,6 @@ export const SKEMA_GALERI = {
     { kunci: 'judul', label: 'Nama album' },
     { kunci: 'tautan', label: 'Tautan album (Google Drive atau Google Photos)', placeholder: 'https://photos.app.goo.gl/... atau drive.google.com/...' },
     { kunci: 'kelompok', label: 'Tampilkan sebagai kelompok', jenis: 'select', opsi: KELOMPOK_GALERI.map((k) => [k, LABEL_KELOMPOK_GALERI[k]]) },
-    { kunci: 'sampulUrl', label: 'Gambar sampul (opsional; hanya bila tautan album tidak menampilkan sampul otomatis)', placeholder: 'https://...' },
+    { kunci: 'sampulUrl', label: 'Gambar sampul album (satu foto dari album, opsional)', placeholder: 'https://...', bantuan: 'Google Drive: buka file foto, Bagikan > "Siapa saja yang memiliki link", salin tautannya. Google Photos: buka fotonya, klik kanan, "Salin alamat gambar" (bukan tautan Bagikan album). Bila gambar tidak dapat dimuat, beranda menampilkan gambar pengganti.' },
   ],
 };

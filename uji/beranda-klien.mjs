@@ -6,7 +6,7 @@ import { siapkanPg, buatKlienFake, sqlSebagai } from '../src/lokal/klienFake.js'
 import { isiDataContoh } from '../src/lokal/seedLokal.js';
 import { PIN_DEMO } from '../src/lokal/pinDemo.js';
 import { buatApi } from '../src/lib/api.js';
-import { BATAS, KOLOM_PARAGRAF, KOLOM_TAUTAN, SEMUA_KOLOM, jaringanSosial, pecahParagraf, pecahTanggal, periksaKontak, rapikan, rapikanParagraf, samaKontak, tautanPencarianPeta, tautanPeta, tautanWhatsapp, untukForm, untukKirim } from '../src/lib/berandaLogic.js';
+import { BATAS, KOLOM_PARAGRAF, KOLOM_TAUTAN, SEMUA_KOLOM, jaringanSosial, kandidatGambar, pecahParagraf, pecahTanggal, periksaKontak, rapikan, rapikanParagraf, samaKontak, tautanPencarianPeta, tautanPeta, tautanWhatsapp, untukForm, untukKirim, urlGambar, susunBerita, susunBeritaLagi, gabungBerita } from '../src/lib/berandaLogic.js';
 
 const P = process.cwd().replace(/\\/g, '/');
 let gagal = 0, lulus = 0;
@@ -82,6 +82,25 @@ console.log('\n--- Tampilan murni ---');
   ok(jaringanSosial(kontak).map((s) => s.kunci).join() === 'instagram,tiktok', 'jaringanSosial hanya memuat tautan https yang sah (javascript: dan kosong dibuang)');
   ok(tautanPeta(kontak) === '' && tautanPeta({ peta: 'https://maps.app.goo.gl/x' }) === 'https://maps.app.goo.gl/x', 'tautanPeta: hanya https yang sah');
   ok(tautanPencarianPeta('SMA Negeri 1 Bukateja', 'Bukateja') === 'https://www.google.com/maps/search/?api=1&query=SMA%20Negeri%201%20Bukateja%20Bukateja', 'tautan pencarian peta bawaan');
+}
+
+console.log('\n--- Gambar sampul dan berita lebih lama ---');
+{
+  const id = '1AbCdEfGhIjKlMnOpQrStUvWxYz0123456';
+  const lh3 = `https://lh3.googleusercontent.com/d/${id}=w1000`, mini = `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+  ok(JSON.stringify(kandidatGambar(`https://drive.google.com/file/d/${id}/view?usp=sharing`)) === JSON.stringify([lh3, mini]), 'tautan berbagi Drive (/file/d/ID/view): lh3 lebih dulu, thumbnail Drive sebagai cadangan');
+  ok(kandidatGambar(`https://drive.google.com/open?id=${id}`)[0] === lh3 && kandidatGambar(`https://drive.google.com/uc?export=view&id=${id}`)[0] === lh3, 'bentuk open?id= dan uc?id= dikenali');
+  ok(urlGambar(`https://drive.google.com/file/d/${id}/view`) === lh3 && urlGambar('') === '' && urlGambar('javascript:alert(1)') === '' && urlGambar('http://contoh.com/a.jpg') === '', 'urlGambar = kandidat pertama; kosong, javascript:, dan http ditolak');
+  ok(JSON.stringify(kandidatGambar('https://lh3.googleusercontent.com/pw/AbCd=w800')) === '["https://lh3.googleusercontent.com/pw/AbCd=w800"]' && kandidatGambar('https://contoh.com/foto.jpg').length === 1, 'alamat gambar langsung (Photos "Salin alamat gambar", situs lain) dipakai apa adanya');
+  ok(kandidatGambar('https://photos.app.goo.gl/AbCdEf123').length === 0 && kandidatGambar('https://photos.google.com/share/AF1Qip').length === 0, 'tautan halaman berbagi Google Photos tidak mungkin tampil di <img>: tanpa kandidat (gambar pengganti)');
+  ok(kandidatGambar(`https://drive.google.com/drive/folders/${id}`).length === 0 && kandidatGambar('https://drive.google.com/file/d/pendek/view').length === 0, 'tautan folder Drive dan ID rusak: tanpa kandidat');
+
+  const satu = (i) => ({ kategori: 'kegiatan', judul: `Berita ${i}`, ringkasan: 'r', isi: 'a\n\nb', sampulUrl: '', terbitPada: '2026-09-01T00:00:00+00:00' });
+  ok(susunBerita(Array.from({ length: 9 }, (_, i) => satu(i))).length === 6 && susunBerita('x').length === 0 && susunBerita([{ judul: '' }]).length === 0, 'susunBerita: paling banyak 6, tanpa judul dibuang, bukan larik = kosong');
+  ok(susunBerita([satu(1)])[0].isi === 'a\n\nb', 'susunBerita mempertahankan baris kosong pemisah paragraf pada isi');
+  const lagi = susunBeritaLagi({ berita: [satu(1), satu(2)], adaLagi: true });
+  ok(gabungBerita([satu(1), satu(2)], [satu(2), satu(3), satu(3)]).map((b) => b.judul).join() === 'Berita 1,Berita 2,Berita 3' && gabungBerita([], [satu(1)]).length === 1 && gabungBerita([satu(1)], []).length === 1, 'gabungBerita: urutan dipertahankan, kembar (judul dan waktu sama) dibuang');
+  ok(lagi.berita.length === 2 && lagi.adaLagi === true && susunBeritaLagi({ berita: [], adaLagi: 'ya' }).adaLagi === false && susunBeritaLagi(null).berita.length === 0, 'susunBeritaLagi: adaLagi hanya true bila benar true; data rusak = kosong dan tidak ada lagi');
 }
 
 console.log(`\nRINGKASAN BERANDA-KLIEN: ${lulus} lulus, ${gagal} GAGAL.`);

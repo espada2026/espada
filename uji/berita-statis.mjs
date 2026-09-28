@@ -114,7 +114,7 @@ console.log('\n--- Pembangun halaman statis (fetch palsu, folder hasil build sem
   const ld = JSON.parse(jsonLd);
   ok(ld['@type'] === 'NewsArticle' && ld.mainEntityOfPage['@id'] === 'https://situs.uji/berita/7-perkemahan-b-jumat-b-agung-seru/' && ld.publisher.name === 'Gugus Depan Uji', 'JSON-LD sah dan menyebut penerbit dari data gudep publik');
   ok(!jsonLd.includes('</') && (p7.match(/<script/g) ?? []).length === 1, 'isi tidak dapat menutup tag skrip JSON-LD (hanya satu tag skrip)');
-  ok(ld.image[0] === 'https://drive.google.com/thumbnail?id=1AbCdEfGhIjKlMnOpQrStUv&sz=w1000' && p7.includes('property="og:image" content="https://drive.google.com/thumbnail?id=1AbCdEfGhIjKlMnOpQrStUv&amp;sz=w1000"'), 'sampul Google Drive diubah ke alamat gambar langsung untuk JSON-LD dan Open Graph');
+  ok(ld.image[0] === 'https://lh3.googleusercontent.com/d/1AbCdEfGhIjKlMnOpQrStUv=w1000' && p7.includes('property="og:image" content="https://lh3.googleusercontent.com/d/1AbCdEfGhIjKlMnOpQrStUv=w1000"'), 'sampul Google Drive diubah ke alamat gambar langsung untuk JSON-LD dan Open Graph');
   const p8 = readFileSync(`${dist}/berita/8-pengumuman-tanpa-sampul/index.html`, 'utf8');
   ok(p8.includes('property="og:image" content="https://situs.uji/og-gudep.png"') && !('image' in JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(p8)[1])), 'tanpa sampul: Open Graph memakai og-gudep.png; JSON-LD tanpa gambar');
   ok(p7.includes('href="https://situs.uji/#berita"') && p7.includes('href="https://situs.uji/#masuk"') && p7.includes('wa.me/?text='), 'tautan kembali, Masuk, dan Bagikan memakai alamat utama (jalan dari alamat bersarang)');

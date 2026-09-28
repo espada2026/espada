@@ -180,6 +180,40 @@ console.log('\n--- sg_beranda_publik: whitelist ketat (tidak membocorkan data in
   ok(!anon.ok, 'anon tidak dapat memanggil sg_berita_simpan (dan fungsi tulis lain)');
 }
 
+console.log('\n--- sg_berita_lagi: berita lebih lama (tombol "Muat berita lebih lama") ---');
+{
+  await q('delete from public.beranda_berita');
+  const simpan = (judul, status, waktu) => sebagai(K.pembina.id, "select public.sg_berita_simpan(null, 'kegiatan', $1, 'ringkas', $2, '', $3, $4::timestamptz) as id", [judul, `Isi ${judul}`, status, waktu]);
+  // 14 berita terbit dengan waktu terbit menurun (B1 terbaru ... B14 terlama), 1 draf, 1 terjadwal di masa depan
+  for (let i = 1; i <= 14; i++) await simpan(`B${i}`, 'terbit', `2026-08-${String(30 - i).padStart(2, '0')} 08:00:00+07`);
+  await simpan('DRAF-RAHASIA', 'draf', null);
+  await simpan('JADWAL-DEPAN', 'terbit', '2999-01-01 08:00:00+07');
+  const lagi = async (n) => (await sebagai(null, 'select public.sg_berita_lagi($1) as d', [n]));
+  const judul = (r) => r.rows[0].d.berita.map((b) => b.judul);
+
+  ok((await publik()).berita.map((b) => b.judul).join() === 'B1,B2,B3,B4,B5,B6', 'prasyarat: beranda memuat 6 terbaru (B1..B6), tanpa draf dan tanpa yang terjadwal');
+  let r = await lagi(6);
+  ok(r.ok && judul(r).join() === 'B7,B8,B9,B10,B11,B12' && r.rows[0].d.adaLagi === true, 'anon (tanpa login): sesudah 6 yang tampil, datang B7..B12 dan adaLagi = true');
+  r = await lagi(12);
+  ok(judul(r).join() === 'B13,B14' && r.rows[0].d.adaLagi === false, 'gelombang terakhir: hanya sisa B13..B14 dan adaLagi = false');
+  r = await lagi(14);
+  ok(judul(r).length === 0 && r.rows[0].d.adaLagi === false, 'sudah habis: larik kosong dan adaLagi = false');
+  r = await lagi(8);
+  ok(judul(r).join() === 'B9,B10,B11,B12,B13,B14' && r.rows[0].d.adaLagi === false, 'tepat 6 tersisa: adaLagi = false (berita ke-7 tidak ada, jadi tombol hilang)');
+  r = await lagi(null);
+  ok(judul(r).join() === 'B1,B2,B3,B4,B5,B6' && r.rows[0].d.adaLagi === true, 'p_lewati kosong dianggap 0');
+  r = await lagi(-5);
+  ok(judul(r).join() === 'B1,B2,B3,B4,B5,B6', 'p_lewati negatif dianggap 0');
+  r = await lagi(999999);
+  ok(r.ok && judul(r).length === 0 && r.rows[0].d.adaLagi === false, 'p_lewati sangat besar dibatasi (tidak galat, tidak memindai tanpa batas)');
+  const semua = JSON.stringify([await lagi(0), await lagi(6), await lagi(12)].map((x) => x.rows[0].d));
+  ok(!semua.includes('DRAF-RAHASIA') && !semua.includes('JADWAL-DEPAN'), 'draf dan berita terjadwal (belum waktunya) tidak pernah keluar');
+  ok((await lagi(0)).rows[0].d.berita.every((b) => Object.keys(b).sort().join() === 'isi,judul,kategori,ringkasan,sampulUrl,terbitPada'), 'hanya kolom yang diizinkan (tanpa id, penulis, peninjau, catatan tinjauan)');
+  ok((await lagi(0)).rows[0].d.berita[0].isi === 'Isi B1', 'isi lengkap ikut dikirim (untuk "Baca selengkapnya")');
+  const dijalankanAnon = await sebagai(null, 'select public.sg_berita_lagi(0) as d');
+  ok(dijalankanAnon.ok, 'anon boleh memanggil sg_berita_lagi (hanya membaca)');
+}
+
 console.log('\n--- Cadangan ---');
 {
   const c = (await sebagai(K.admin.id, 'select public.sg_cadangan_admin() as d')).rows[0].d;
