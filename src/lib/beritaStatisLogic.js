@@ -108,6 +108,23 @@ ${kepalaTambahan}
 `;
 }
 
+const POLA_PATH = /^berita\/[0-9]+-[a-z0-9-]+\/$/;
+/** Kunci pencocokan kartu berita di halaman muka dengan halaman statisnya: judul dan waktu terbit (sg_beranda_publik tidak memuat id). */
+export const kunciBerita = (judul, terbitPada) => `${rapikan(judul)}|${Date.parse(String(terbitPada ?? ''))}`;
+/** Isi dist/berita/index.json: halaman yang BENAR-BENAR ada pada hasil build ini (dibaca halaman muka agar tidak menaut ke alamat yang belum ada). */
+export const indeksHalamanBerita = (daftar) => daftar.map((b) => ({ path: pathBerita(b), judul: b.judul, terbitPada: b.terbitPada }));
+/** Indeks dari server statis menjadi peta kunci -> alamat relatif; entri tak sah (alamat di luar berita/<id>-<slug>/, waktu rusak) dibuang. Tidak pernah melempar galat. */
+export function petaHalamanBerita(indeks) {
+  const peta = {};
+  for (const x of Array.isArray(indeks) ? indeks : []) {
+    if (!x || typeof x.path !== 'string' || !POLA_PATH.test(x.path) || typeof x.judul !== 'string' || !Number.isFinite(Date.parse(String(x.terbitPada ?? '')))) continue;
+    peta[kunciBerita(x.judul, x.terbitPada)] = x.path;
+  }
+  return peta;
+}
+/** Alamat relatif halaman sebuah berita di halaman muka, atau '' bila halamannya belum ada di hasil build. */
+export const halamanBerita = (peta, b) => (Number.isFinite(Date.parse(String(b?.terbitPada ?? ''))) ? peta?.[kunciBerita(b.judul, b.terbitPada)] ?? '' : '');
+
 /** sitemap.xml: halaman muka dan setiap berita (lastmod = tanggal diubah, UTC). */
 export function susunSitemap(alamatSitus, daftar) {
   const dasar = denganGarisMiring(alamatSitus);

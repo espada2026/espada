@@ -8,6 +8,19 @@
 
 const LOKAL = import.meta.env?.VITE_BACKEND === 'lokal';
 
+/**
+ * Indeks halaman berita statis (berita/index.json, ditulis build; lihat scripts/berita-statis.mjs): larik { path, judul, terbitPada }. Berkas statis biasa di
+ * situs yang sama, bukan fungsi basis data. Kosong bila belum ada (situs belum dibangun dengan halaman berita, mode lokal, jaringan putus). Tidak melempar galat.
+ */
+export async function ambilIndeksHalamanBerita({ ambil = globalThis.fetch, dasar = import.meta.env?.BASE_URL ?? './' } = {}) {
+  try {
+    const r = await ambil(`${dasar}berita/index.json`, { headers: { Accept: 'application/json' } });
+    if (!r.ok) return [];
+    const data = await r.json();
+    return Array.isArray(data) ? data : [];
+  } catch { return []; }
+}
+
 /** Alamat REST sebuah fungsi dari alamat proyek: garis miring ganda dibuang. */
 export const alamatRpc = (url, nama) => `${String(url ?? '').trim().replace(/\/+$/, '')}/rest/v1/rpc/${nama}`;
 

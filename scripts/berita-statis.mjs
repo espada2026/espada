@@ -67,6 +67,7 @@ export async function bangunBeritaStatis({ dist, url, kunci, ambil = globalThis.
     await mkdir(folder, { recursive: true });
     await writeFile(path.join(folder, 'index.html'), modul.renderHalamanBerita({ b, namaGudep: gudep.nama, alamatSitus, gambarCadangan, kepalaTambahan }));
   }
+  if (daftar.length) await writeFile(path.join(dist, 'berita', 'index.json'), JSON.stringify(modul.indeksHalamanBerita(daftar))); // dibaca halaman muka agar hanya menaut ke halaman yang ada
   await writeFile(path.join(dist, 'sitemap.xml'), modul.susunSitemap(alamatSitus, daftar));
   return { jumlah: daftar.length, pesan: `${daftar.length} halaman berita dan sitemap dibuat.` };
 }

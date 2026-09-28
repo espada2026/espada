@@ -9,6 +9,7 @@ import { labelJenisAgenda } from '../lib/agendaLogic';
 import { namaAmbalan } from '../lib/gudepLogic';
 import { jaringanSosial, pecahParagraf, pecahTanggal, tautanBagikanWa, tautanPencarianPeta, tautanPeta, tautanWhatsapp, urlGambar } from '../lib/berandaLogic';
 import { bolehSunting, tautanSunting } from '../lib/suntingLogic';
+import { halamanBerita } from '../lib/beritaStatisLogic';
 import { LABEL_KATEGORI_BERITA, LABEL_KELOMPOK_GALERI, LABEL_PLATFORM, LABEL_TINGKAT_PRESTASI } from '../lib/berandaKontenLogic';
 import { ALAMAT_SITUS, DASA_DARMA, MENU, PERJALANAN, PROGRAM, TANYA_JAWAB, TRI_SATYA } from './landingData';
 import { IkonBeranda, LanskapPerkemahan, PetaBergaya } from './ilustrasi';
@@ -220,7 +221,7 @@ export function Perjalanan() {
 }
 
 /** Kartu berita: sampul (bila ada), kategori, judul, ringkasan, isi lengkap di balik "Baca selengkapnya" (tanpa JavaScript, elemen <details>), dan tanggal terbit. */
-function KartuBerita({ b, besar = false }) {
+function KartuBerita({ b, besar = false, halaman = '' }) {
   const t = pecahTanggal(String(b.terbitPada ?? '').slice(0, 10));
   const sampul = urlGambar(b.sampulUrl);
   const isi = pecahParagraf(b.isi);
@@ -250,7 +251,10 @@ function KartuBerita({ b, besar = false }) {
         )}
         <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pt-1">
           {t ? <p className="text-xs text-pramuka-500">{t.namaHari}, {t.hari} {t.bulan} {t.tahun}</p> : <span />}
-          <a href={tautanBagikanWa(b.judul, `${ALAMAT_SITUS}#berita`)} target="_blank" rel="noopener noreferrer" className={kelasBagikan}>Bagikan lewat WhatsApp ↗</a>
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            {halaman && <a href={`./${halaman}`} className={kelasBagikan}>Halaman berita →</a>}
+            <a href={tautanBagikanWa(b.judul, halaman ? `${ALAMAT_SITUS}${halaman}` : `${ALAMAT_SITUS}#berita`)} target="_blank" rel="noopener noreferrer" className={kelasBagikan}>Bagikan lewat WhatsApp ↗</a>
+          </span>
         </div>
       </div>
     </article>
@@ -258,7 +262,7 @@ function KartuBerita({ b, besar = false }) {
 }
 
 /** Berita terbit dari Kelola Beranda (Fase 2). */
-export function Berita({ berita = [], memuat = false, sunting = '' }) {
+export function Berita({ berita = [], memuat = false, sunting = '', halaman = {} }) {
   return (
     <section id="berita" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#45291a]">
       <div className={wrap}>
@@ -267,7 +271,7 @@ export function Berita({ berita = [], memuat = false, sunting = '' }) {
           <p role="status" className="rounded-2xl border border-pramuka-200 bg-white p-6 text-pramuka-600">{memuat ? 'Memuat berita...' : 'Belum ada berita. Tengok lagi nanti.'}</p>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2">
-            {berita.map((b, i) => <KartuBerita key={`${b.judul}|${i}`} b={b} besar={i === 0} />)}
+            {berita.map((b, i) => <KartuBerita key={`${b.judul}|${i}`} b={b} besar={i === 0} halaman={halamanBerita(halaman, b)} />)}
           </div>
         )}
       </div>
