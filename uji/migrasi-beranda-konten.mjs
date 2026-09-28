@@ -35,7 +35,7 @@ const potret = async (db) => {
   };
 };
 
-const A = await baru('supabase/skema.sql'); // migrasi ini yang paling baru: skema.sql terbaru = keadaan sesudahnya
+const A = await baru('git:a0baf15'); // keadaan TEPAT sesudah migrasi ini (main sesudah PR #43); skema.sql terbaru kini juga memuat Fase 3 (beranda-notifikasi)
 const pa = await potret(A);
 
 console.log('--- Database berisi data: kesetaraan, data utuh, idempoten ---');
