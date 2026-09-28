@@ -25,7 +25,7 @@ function Isian({ f, nilai, ubah, galat }) {
     <Field label={f.label} htmlFor={id} bantuan={f.bantuan}>
       {f.jenis === 'textarea' ? <textarea rows={f.baris ?? 4} {...umum} />
         : f.jenis === 'select' ? <select {...umum}>{f.opsi.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
-        : <input type={f.jenis === 'number' ? 'number' : 'text'} {...umum} />}
+        : <input type={f.jenis === 'number' ? 'number' : f.jenis === 'date' ? 'date' : 'text'} {...umum} />}
       {galat && <p role="alert" className="mt-1 text-xs font-medium text-red-700">{galat}</p>}
       {f.pratinjau && <PratinjauSampul nilai={nilai} rasio={f.pratinjau} />}
     </Field>
@@ -43,6 +43,7 @@ export default function PanelKontenTinjau({ skema }) {
   const [daftar, setDaftar] = useState(null);
   const [galatMuat, setGalatMuat] = useState('');
   const [id, setId] = useState(null); // null = formulir tambah baru
+  const [aslinya, setAslinya] = useState(null); // item yang sedang diubah (untuk waktu terbit semula)
   const [form, setForm] = useState(() => skema.untukForm(null));
   const [dicoba, setDicoba] = useState(false);
   const [sibuk, setSibuk] = useState('');
@@ -53,16 +54,16 @@ export default function PanelKontenTinjau({ skema }) {
   }, [api, skema]);
   useEffect(() => { muat(); }, [muat]);
 
-  const bukaBaru = () => { setId(null); setForm(skema.untukForm(null)); setDicoba(false); };
-  const bukaUbah = (item) => { setId(item.id); setForm(skema.untukForm(item)); setDicoba(false); window.scrollTo({ top: document.getElementById(`konten-${skema.fields[0].kunci}`)?.offsetTop ?? 0, behavior: 'smooth' }); };
+  const bukaBaru = () => { setId(null); setAslinya(null); setForm(skema.untukForm(null)); setDicoba(false); };
+  const bukaUbah = (item) => { setId(item.id); setAslinya(item); setForm(skema.untukForm(item)); setDicoba(false); window.scrollTo({ top: document.getElementById(`konten-${skema.fields[0].kunci}`)?.offsetTop ?? 0, behavior: 'smooth' }); };
   const ubahIsian = (kunci, nilai) => setForm((f) => ({ ...f, [kunci]: nilai }));
 
-  const simpan = async (status, terbitPada = null) => {
+  const simpan = async (status) => {
     setDicoba(true);
     const galat = skema.periksa(form, status, bolehTerbit);
     if (Object.keys(galat).length || sibuk) return;
     setSibuk('simpan');
-    const r = await api()[skema.fnSimpan]({ ...form, id }, status, terbitPada);
+    const r = await api()[skema.fnSimpan]({ ...form, id }, status, skema.terbitPada ? skema.terbitPada(form, aslinya) : null);
     setSibuk('');
     if (!r.ok) { notify(r.pesan, 'err'); return; }
     notify(status === 'terbit' ? `${skema.labelSatuan[0].toUpperCase()}${skema.labelSatuan.slice(1)} diterbitkan.` : status === 'menunggu' ? 'Diajukan ke Pembina.' : 'Draf tersimpan.');
