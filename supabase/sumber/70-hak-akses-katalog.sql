@@ -71,7 +71,8 @@ grant execute on function
   public.sg_prestasi_simpan(bigint, text, text, text, integer, text, text, text), public.sg_prestasi_hapus(bigint), public.sg_prestasi_tinjau(bigint, text, text),
   public.sg_galeri_simpan(bigint, text, text, text, text, text), public.sg_galeri_hapus(bigint), public.sg_galeri_tinjau(bigint, text, text),
   public.sg_sosial_simpan(bigint, text, text, text, text, boolean), public.sg_sosial_hapus(bigint),
-  public.sg_faq_simpan(bigint, text, text), public.sg_faq_hapus(bigint), public.sg_faq_geser(bigint, integer)
+  public.sg_faq_simpan(bigint, text, text), public.sg_faq_hapus(bigint), public.sg_faq_geser(bigint, integer),
+  public.sg_terbit_ulang_status(), public.sg_terbit_ulang_minta()
   to authenticated;
 -- Fungsi yang boleh dipanggil tanpa login (hanya membaca): verifikasi keaslian dokumen, identitas gudep di halaman masuk, dan
 -- tautan berbagi baca-saja Berkas Calon Garuda (tahap L7), dan isi beranda publik (Fase 1 landing page: hanya membaca)

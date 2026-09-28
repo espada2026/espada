@@ -202,7 +202,7 @@ console.log('\n--- Penyambungan di alur build dan deploy ---');
 {
   const deploy = readFileSync(`${P}/.github/workflows/deploy.yml`, 'utf8');
   const vite = readFileSync(`${P}/vite.config.js`, 'utf8');
-  ok(/schedule:\s*\n\s*- cron: '0 22 \* \* \*'/.test(deploy), 'deploy: terbit ulang tiap hari 05.00 WIB (22.00 UTC) agar berita baru ikut menjadi halaman statis');
+  ok(!/^\s*schedule:/m.test(deploy) && /terbit-ulang\.sql/.test(deploy), 'deploy: TANPA jadwal harian (keputusan pemilik); terbit ulang dipicu basis data saat berita terbit (29-terbit-ulang.sql)');
   ok(/workflow_dispatch:/.test(deploy) && /SIGARDA_BERITA_STATIS: '1'/.test(deploy.slice(deploy.indexOf('npm run build'))), 'deploy: dapat dijalankan manual; SIGARDA_BERITA_STATIS=1 hanya pada langkah build');
   ok(/process\.env\.SIGARDA_BERITA_STATIS === '1'/.test(vite) && /mode !== 'lokal'/.test(vite.slice(vite.indexOf('beritaStatis(command'))), 'vite: pembuat halaman berita hanya aktif bila SIGARDA_BERITA_STATIS=1 dan bukan mode lokal (uji dan profil tidak menyentuh jaringan)');
   ok(/catch \(e\)/.test(vite.slice(vite.indexOf('closeBundle'))) && /::warning::/.test(vite), 'vite: galat pembuat halaman berita hanya peringatan, tidak menggagalkan build');

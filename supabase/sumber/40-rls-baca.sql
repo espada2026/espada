@@ -69,6 +69,7 @@ alter table public.notifikasi enable row level security;   -- baca: pemilik; tul
 alter table public.push_langganan enable row level security;   -- tanpa kebijakan: hanya lewat fungsi
 alter table public.push_konfigurasi enable row level security; -- tanpa kebijakan: hanya lewat fungsi
 alter table public.keepalive_konfigurasi enable row level security; -- tanpa kebijakan: hanya lewat fungsi (SQL Editor)
+alter table public.terbit_ulang_konfigurasi enable row level security; -- tanpa kebijakan: memuat kunci akses GitHub; hanya lewat fungsi
 alter table public.login_gagal enable row level security;   -- tanpa kebijakan: hanya service_role
 
 -- Penegak melihat dirinya sendiri dan daftar penguji/admin; pengurus melihat semua.
