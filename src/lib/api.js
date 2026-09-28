@@ -256,6 +256,19 @@ export function buatApi(klien) {
     simpanGaleri: (g, status) =>
       rpc('sg_galeri_simpan', { p_id: g.id ?? null, p_judul: g.judul, p_tautan: g.tautan, p_sampul_url: g.sampulUrl, p_kelompok: g.kelompok, p_status: status }),
     hapusGaleri: (id) => rpc('sg_galeri_hapus', { p_id: id }),
+    /**
+     * Foto sampul dan nama album Google Photos lewat Edge Function `galeri-sampul` (Kelola Beranda > Galeri). Belum dipasang / tak terjangkau = pesan yang menuntun;
+     * sampul tetap dapat diisi manual. Hanya membaca: tidak menyimpan apa pun.
+     */
+    async ambilSampulAlbum(tautan) {
+      try {
+        const { data, error } = await klien.functions.invoke('galeri-sampul', { body: { tautan } });
+        if (error) return { ok: false, pesan: error?.context?.status === 404 ? 'Sampul otomatis belum dipasang di server (minta pemilik memasang fungsi "galeri-sampul", lihat README). Sampul masih dapat diisi manual.' : pesanGalat(error) };
+        return data?.ok ? { ok: true, sampul: data.sampul, judul: data.judul ?? '' } : { ok: false, pesan: data?.pesan ?? 'Sampul album tidak dapat diambil.', sesiBerakhir: !!data?.sesiBerakhir };
+      } catch (e) {
+        return { ok: false, pesan: pesanGalat(e) };
+      }
+    },
     tinjauGaleri: (id, keputusan, catatan = '') => rpc('sg_galeri_tinjau', { p_id: id, p_keputusan: keputusan, p_catatan: catatan }),
 
     /** Media sosial: tanpa alur tinjauan, langsung tampil (tampil boleh dimatikan untuk menyembunyikan tanpa menghapus). */

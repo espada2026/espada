@@ -49,6 +49,6 @@ export const SKEMA_GALERI = {
     { kunci: 'judul', label: 'Nama album' },
     { kunci: 'tautan', label: 'Tautan album (Google Drive atau Google Photos)', placeholder: 'https://photos.app.goo.gl/... atau drive.google.com/...' },
     { kunci: 'kelompok', label: 'Tampilkan sebagai kelompok', jenis: 'select', opsi: KELOMPOK_GALERI.map((k) => [k, LABEL_KELOMPOK_GALERI[k]]) },
-    { kunci: 'sampulUrl', label: 'Gambar sampul album (tautan satu file foto di Google Drive, opsional)', placeholder: 'https://...', bantuan: 'Cara termudah (juga dari ponsel): unggah fotonya ke Google Drive, ketuk titik tiga (⋮) > Bagikan > ubah akses menjadi "Siapa saja yang memiliki link" > Salin link, lalu tempel di sini. Tautan halaman Google Photos (photos.google.com, photos.app.goo.gl) dan folder Drive tidak dapat dipakai sebagai gambar. Pratinjau di bawah kolom ini menunjukkan apakah fotonya benar-benar tampil.', pratinjau: 'galeri' },
+    { kunci: 'sampulUrl', label: 'Gambar sampul album (opsional)', placeholder: 'https://...', bantuan: 'Album Google Photos: tempel tautan albumnya di kolom atas, sampulnya terisi otomatis dari foto sampul album di Google Photos (sudah berganti sampul di Google Photos? tekan "Ambil ulang sampul"). Album lain, mis. folder Drive: unggah satu foto ke Google Drive, ketuk titik tiga (⋮) > Bagikan > ubah akses menjadi "Siapa saja yang memiliki link" > Salin link, lalu tempel di sini. Pratinjau di bawah kolom ini menunjukkan apakah fotonya benar-benar tampil.', pratinjau: 'galeri', dariAlbum: 'tautan' },
   ],
 };

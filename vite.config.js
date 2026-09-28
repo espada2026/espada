@@ -32,7 +32,8 @@ const backendLokal = (aktif) => ({
  * Versi terbit: tiap build punya ID unik (juga tertanam di kode sebagai __BUILD_ID__) dan menerbitkan version.json berisi ID itu. Aplikasi yang
  * masih terbuka memeriksanya berkala dan menawarkan "Muat ulang" (lihat src/lib/versi.js). Hanya untuk build produksi.
  */
-const ID_BUILD = (process.env.GITHUB_SHA || '').slice(0, 8) + Date.now().toString(36);
+// Di GitHub hanya commit yang menentukan ID: terbit ulang harian dari commit yang sama tidak boleh memunculkan ajakan "Muat ulang" setiap hari.
+const ID_BUILD = process.env.GITHUB_SHA ? process.env.GITHUB_SHA.slice(0, 12) : Date.now().toString(36);
 const versiTerbit = (aktif) => ({
   name: 'sigarda-versi',
   generateBundle() {

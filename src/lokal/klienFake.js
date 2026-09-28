@@ -223,7 +223,8 @@ export function buatKlienFake(pg, penyimpan = null) {
     functions: {
       // Backend lokal hanya punya satu fungsi, jadi nama apa pun dilayani. Nama sengaja tidak dicek: .env.local
       // (VITE_NAMA_FUNGSI=nama-acak-dari-dashboard) ikut terbaca di mode lokal dan tidak boleh membuat login gagal.
-      async invoke(_nama, { body } = {}) {
+      async invoke(nama, { body } = {}) {
+        if (nama === 'galeri-sampul') return { data: { ok: false, pesan: 'Sampul otomatis album Google Photos tidak tersedia di mode lokal.' }, error: null };
         const hasil = await tangani(JSON.parse(JSON.stringify(body ?? {})), sesi?.access_token ? `Bearer ${sesi.access_token}` : 'Bearer anon', deps);
         return { data: JSON.parse(JSON.stringify(hasil)), error: null };
       },
