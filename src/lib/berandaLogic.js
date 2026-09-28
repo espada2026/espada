@@ -167,5 +167,8 @@ export function pecahTanggal(iso) {
   return { hari: h, bulan: BULAN[b - 1], bulanPendek: BULAN[b - 1].slice(0, 3), tahun: y, namaHari: HARI[d.getUTCDay()] };
 }
 
+/** Tautan "Bagikan lewat WhatsApp" (tanpa nomor: pengguna memilih kontak sendiri). Teks dan alamat digabung satu pesan; bekerja tanpa JavaScript. */
+export const tautanBagikanWa = (teks, alamat) => `https://wa.me/?text=${encodeURIComponent(`${rapikan(teks)}\n${alamat}`)}`;
+
 /** Tautan pencarian Google Maps untuk sekolah, dipakai bila tautan peta belum diisi pengurus. */
 export const tautanPencarianPeta = (sekolah, kota) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(rapikan(`${sekolah} ${kota}`))}`;

@@ -3,6 +3,9 @@
  * (src/lib/berandaLogic.js); sisanya di sini. Tidak memuat data pribadi: halaman ini juga dirender ke HTML saat build (prarender) dan dibaca mesin pencari.
  */
 
+/** Alamat utama situs untuk tautan bagikan (halaman muka dirender saat build tanpa window). Harus sama dengan canonical di index.html (dijaga uji/landing.mjs). */
+export const ALAMAT_SITUS = 'https://sigarda.smabukateja.sch.id/';
+
 export const MENU = [
   { href: '#tentang', label: 'Tentang' },
   { href: '#program', label: 'Program' },
