@@ -1,5 +1,5 @@
-// Migrasi "tanggal terbit berita" (sg_berita_simpan dan sg_berita_tinjau menyimpan/memakai tanggal terbit pilihan penulis): kesetaraan dengan skema baru
-// (fungsi dan hak), data utuh, idempoten, perilaku baru, dan gagal jelas bila prasyarat (migrasi 2026-09-berita-lagi.sql) belum ada.
+// Migrasi "terbit ulang situs saat berita terbit" (tabel terbit_ulang_konfigurasi, pemicu pada beranda_berita, fungsi sigarda.terbit_ulang_* dan sg_terbit_ulang_*):
+// kesetaraan dengan skema baru (fungsi, hak, kolom, pemicu, RLS), data utuh, idempoten, perilaku baru, dan gagal jelas bila prasyarat (berita-publik) belum ada.
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
 import { skemaLama } from '../scripts/skema-lama.mjs';
@@ -13,7 +13,7 @@ let g = 0, l = 0;
 const ok = (c, m) => { if (c) { l++; console.log('ok   :', m); } else { g++; console.log('GAGAL:', m); } };
 const stub = readFileSync(`${P}/supabase/lokal/stub.sql`, 'utf8');
 const bersih = (s) => s.replace(/^﻿/, '').replace(/\r\n/g, '\n');
-const MP = bersih(readFileSync(`${P}/supabase/migrasi/2026-09-tanggal-terbit-berita.sql`, 'utf8'));
+const MP = bersih(readFileSync(`${P}/supabase/migrasi/2026-09-terbit-ulang.sql`, 'utf8'));
 
 const skemaDari = (ref) => (ref.startsWith('git:') ? skemaLama(ref.slice(4), P) : readFileSync(ref, 'utf8'));
 const baru = async (skemaFile) => { const db = new PGlite(); await siapkanPg(db, { sqlStub: stub, sqlSkema: bersih(skemaDari(skemaFile)) }); return db; };
@@ -25,27 +25,25 @@ const potret = async (db) => {
       from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname in ('public', 'sigarda') and p.prokind = 'f' order by 1, 2, 3`),
     hakFungsi: await q(`select routine_schema, routine_name, grantee, privilege_type from information_schema.role_routine_grants
       where routine_schema in ('public', 'sigarda') and grantee in ('anon','authenticated','service_role') order by 1, 2, 3, 4`),
+    kolom: await q(`select column_name, data_type, is_nullable, column_default from information_schema.columns where table_schema = 'public' and table_name = 'terbit_ulang_konfigurasi' order by ordinal_position`),
+    batasan: await q(`select conname, pg_get_constraintdef(oid) def from pg_constraint where conrelid = 'public.terbit_ulang_konfigurasi'::regclass order by 1`),
+    pemicu: await q(`select tgname, pg_get_triggerdef(oid) def from pg_trigger where tgrelid = 'public.beranda_berita'::regclass and not tgisinternal order by 1`),
+    rls: await q(`select relrowsecurity r, has_table_privilege('authenticated', c.oid, 'select') s, has_table_privilege('anon', c.oid, 'select') a,
+      (select count(*) from pg_policies where tablename = 'terbit_ulang_konfigurasi')::int k from pg_class c where relname = 'terbit_ulang_konfigurasi' and relnamespace = 'public'::regnamespace`),
   };
 };
 
-const A = await baru('git:da16a3f'); // keadaan TEPAT sesudah migrasi ini (main sesudah PR #54); skema.sql terbaru kini juga memuat terbit-ulang
+const A = await baru(`${P}/supabase/skema.sql`);
 const pa = await potret(A);
 
 console.log('--- Database berisi data: kesetaraan, data utuh, idempoten ---');
-const B1 = await baru('git:bbb21bf'); // commit TEPAT sebelum migrasi ini (main sesudah PR #52)
+const B1 = await baru('git:da16a3f'); // commit TEPAT sebelum migrasi ini (main sesudah PR #54)
 await isiDataContoh(B1);
 await B1.query('update public.profiles set wajib_ganti_pin = false');
 const masuk = async (username) => { const k = buatKlienFake(B1); const a = buatApi(k); const r = await a.masuk(username, PIN_DEMO[username] ?? PIN_DEMO.penegak); return { k, a, id: r.id }; };
 const pembina = await masuk('pembina');
-const dewan = await masuk('dewan');
-const sql = (id, teks, arg = []) => sqlSebagai(B1, id, teks, arg);
-const simpan = (id, judul, status, waktu) => sql(id, "select public.sg_berita_simpan(null, 'kegiatan', $1, '', 'Isi', '', $2, $3::timestamptz) as id", [judul, status, waktu]);
-const tgl = async (id) => (await B1.query("select to_char(terbit_pada at time zone 'Asia/Jakarta', 'YYYY-MM-DD') d from public.beranda_berita where id = $1", [id])).rows[0].d;
-const lalu = (await B1.query("select (sigarda.hari_ini() - 20)::text d")).rows[0].d;
-
-await simpan(pembina.id, 'Berita lama', 'terbit', `${lalu}T00:00:00+07:00`);
-const idMenunggu = (await simpan(dewan.id, 'Pengajuan lama', 'menunggu', `${lalu}T00:00:00+07:00`)).rows[0].id;
-ok((await B1.query('select terbit_pada from public.beranda_berita where id = $1', [idMenunggu])).rows[0].terbit_pada === null, 'prasyarat: skema lama membuang tanggal pilihan pengajuan (terbit_pada null selama belum terbit)');
+await sqlSebagai(B1, pembina.id, "select public.sg_berita_simpan(null, 'kegiatan', 'Berita lama', 'Ringkas', 'Isi.', '', 'terbit', null) as id");
+ok((await B1.query(`select to_regclass('public.terbit_ulang_konfigurasi') as t`)).rows[0].t === null, 'prasyarat: skema lama belum punya tabel terbit_ulang_konfigurasi');
 const sebelum = await cacah(B1);
 await B1.exec(MP);
 ok(JSON.stringify(await cacah(B1)) === JSON.stringify(sebelum), 'jumlah data tidak berubah oleh migrasi: ' + JSON.stringify(sebelum));
@@ -60,26 +58,24 @@ for (const k of Object.keys(pa)) {
     console.log('   hanya di skema baru =', [...a].filter((x) => !b.has(x)).slice(0, 5), '\n   hanya di migrasi =', [...b].filter((x) => !a.has(x)).slice(0, 5));
   }
 }
-ok(pb.hakFungsi.some((h) => h.routine_name === 'sg_beranda_publik' && h.grantee === 'anon') && !pb.hakFungsi.some((h) => h.routine_name === 'sg_berita_simpan' && h.grantee === 'anon'), 'hak fungsi tidak berubah: anon tetap hanya untuk fungsi publik, tidak untuk sg_berita_simpan');
 
 console.log('\n--- Sesudah migrasi: perilaku baru ---');
 {
-  const id2 = (await simpan(dewan.id, 'Pengajuan baru', 'menunggu', `${lalu}T00:00:00+07:00`)).rows[0].id;
-  ok((await tgl(id2)) === lalu, 'pengajuan menyimpan tanggal pilihan penulis');
-  await sql(pembina.id, `select public.sg_berita_tinjau(${id2}, 'terbit', '') as x`);
-  ok((await tgl(id2)) === lalu, 'disetujui: berita terbit dengan tanggal pilihan penulis, bukan tanggal persetujuan');
-  await sql(pembina.id, `select public.sg_berita_tinjau(${idMenunggu}, 'terbit', '') as x`);
-  ok((await tgl(idMenunggu)) === (await B1.query('select sigarda.hari_ini()::text d')).rows[0].d, 'pengajuan lama tanpa tanggal: disetujui memakai saat persetujuan (tidak rusak)');
-  const tolak = await simpan(pembina.id, 'Terlalu jauh', 'draf', '2999-01-01T00:00:00Z').then(() => false, (e) => /Tanggal terbit tidak sah/.test(e.message));
-  ok(tolak, 'tanggal di luar batas ditolak');
+  ok(pb.rls[0].r && !pb.rls[0].s && !pb.rls[0].a && pb.rls[0].k === 0, 'tabel kunci: RLS aktif, tanpa kebijakan, tanpa hak baca (persis skema baru)');
+  const tanpa = (await sqlSebagai(B1, pembina.id, 'select public.sg_terbit_ulang_status() as d').catch((e) => ({ galat: e.message })));
+  ok(tanpa.rows?.[0].d.diatur === false, 'Pembina melihat keadaan "belum diatur" tanpa galat');
+  await B1.exec(`select sigarda.terbit_ulang_atur('tribudi3267/sigarda', 'github_pat_11ABCDEFG0123456789_abcdefghijklmnopqrstuvwxyz')`);
+  await B1.exec('update public.terbit_ulang_konfigurasi set perlu = false');
+  await sqlSebagai(B1, pembina.id, "select public.sg_berita_simpan(null, 'kegiatan', 'Berita baru', 'Ringkas', 'Isi.', '', 'terbit', null) as id");
+  ok((await B1.query('select perlu from public.terbit_ulang_konfigurasi')).rows[0].perlu === true, 'pemicu terpasang: berita terbit baru menandai "perlu"');
 }
 
 console.log('\n--- Tanpa migrasi sebelumnya: gagal jelas ---');
-const B3 = await baru('git:bab5bfd'); // sebelum migrasi 2026-09-berita-lagi.sql
+const B3 = await baru('git:bab5bfd'); // sebelum migrasi 2026-09-beranda-konten.sql dan 2026-09-berita-publik.sql
 let galat = null;
 try { await B3.exec(MP); } catch (e) { galat = e.message; await B3.exec('rollback'); }
-ok(/Jalankan lebih dulu migrasi 2026-09-berita-lagi\.sql/.test(galat ?? ''), 'pesan yang menuntun: ' + (galat ?? 'TIDAK GAGAL').slice(0, 100));
-ok((await B3.query(`select to_regprocedure('public.sg_berita_simpan(bigint,text,text,text,text,text,text,timestamptz)') as f`)).rows[0].f === null, 'kegagalan membatalkan seluruh migrasi (fungsi tidak dibuat)');
+ok(/Jalankan lebih dulu migrasi 2026-09-berita-publik\.sql/.test(galat ?? ''), 'pesan yang menuntun: ' + (galat ?? 'TIDAK GAGAL').slice(0, 100));
+ok((await B3.query(`select to_regclass('public.terbit_ulang_konfigurasi') as t`)).rows[0].t === null, 'kegagalan membatalkan seluruh migrasi (tabel tidak dibuat)');
 
-console.log(`\nRINGKASAN MIGRASI TANGGAL-TERBIT-BERITA: ${l} lulus, ${g} GAGAL`);
+console.log(`\nRINGKASAN MIGRASI TERBIT-ULANG: ${l} lulus, ${g} GAGAL`);
 process.exit(g ? 1 : 0);

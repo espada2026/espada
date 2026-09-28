@@ -84,6 +84,7 @@ from (
     ('Katalog TKK (data referensi)',   (select count(*) from public.tkk_katalog)),
     ('Catatan Safe From Harm milik Admin Gudep', (select count(*) from public.sfh_catatan s where exists (select 1 from public.profiles a where a.id = s.anggota_id and a.role = 'admin'))),
     ('Konfigurasi Web Push server',     (select count(*) from public.push_konfigurasi)),
+    ('Kunci terbit ulang situs (GitHub)', (select count(*) from public.terbit_ulang_konfigurasi)),
     ('Langganan push milik Admin Gudep', (select count(*) from public.push_langganan p where exists (select 1 from public.profiles a where a.id = p.penerima_id and a.role = 'admin')))
   ) as x(keterangan, jumlah)
 

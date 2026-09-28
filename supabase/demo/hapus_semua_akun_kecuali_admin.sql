@@ -34,7 +34,7 @@
 --
 -- YANG TIDAK DISENTUH (apa pun pilihannya)
 --   Kedua akun Admin Gudep (login, PIN, dan profilnya), struktur tabel, fungsi, kebijakan akses, pemicu, katalog butir SKU dan
---   dokumen portofolio dan katalog TKK (data referensi, bukan isian), konfigurasi Web Push server (push_konfigurasi), keep-alive,
+--   dokumen portofolio dan katalog TKK (data referensi, bukan isian), konfigurasi Web Push server (push_konfigurasi), keep-alive, kunci terbit ulang situs (terbit_ulang_konfigurasi),
 --   catatan Safe From Harm milik Admin Gudep sendiri, dan langganan notifikasi
 --   perangkat milik Admin (agar tidak perlu mengaktifkan ulang notifikasi di perangkat Admin).
 --   Tidak ada tabel, kolom, atau fungsi yang diubah atau dihapus.
@@ -81,7 +81,7 @@ declare
   v_tabel_materi text[] := array['materi'];
   v_tabel_instrumen text[] := array['instrumen', 'instrumen_kriteria', 'instrumen_penguji', 'instrumen_panduan'];
   v_tabel_guru text[] := array['guru_agama'];
-  v_dipertahankan text[] := array['profiles', 'sku_butir', 'sku_unit', 'pf_item', 'tkk_katalog', 'push_konfigurasi', 'push_langganan', 'keepalive_konfigurasi', 'sfh_catatan'];
+  v_dipertahankan text[] := array['profiles', 'sku_butir', 'sku_unit', 'pf_item', 'tkk_katalog', 'push_konfigurasi', 'push_langganan', 'keepalive_konfigurasi', 'terbit_ulang_konfigurasi', 'sfh_catatan'];
   v_tak_dikenal text[];
   v_t text;
   v_n bigint;

@@ -2,7 +2,8 @@
 // satu berkas SQL yang dapat dijalankan ulang untuk memulihkan. Dipakai cadangkan.mjs (interaktif, klik dua kali) dan otomatis.mjs (mingguan lewat
 // GitHub Actions); tidak mengimpor pg agar dapat diuji dengan PGlite (uji/cadangan-otomatis.mjs memulihkan hasilnya ke database kosong).
 
-export const TABEL_DILEWATI = new Set(['public.login_gagal']); // penghitung kunci sementara; tidak perlu dipulihkan
+// login_gagal = penghitung kunci sementara. terbit_ulang_konfigurasi = kunci akses GitHub (RAHASIA, tidak boleh ikut cadangan; pemilik cukup menjalankan ulang sigarda.terbit_ulang_atur)
+export const TABEL_DILEWATI = new Set(['public.login_gagal', 'public.terbit_ulang_konfigurasi']);
 export const TABEL_AKUN = ['auth.users', 'auth.identities'];
 
 
