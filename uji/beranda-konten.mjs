@@ -180,6 +180,52 @@ console.log('\n--- sg_beranda_publik: whitelist ketat (tidak membocorkan data in
   ok(!anon.ok, 'anon tidak dapat memanggil sg_berita_simpan (dan fungsi tulis lain)');
 }
 
+console.log('\n--- Tanggal terbit berita (dipilih penulis) ---');
+{
+  await q('delete from public.beranda_berita');
+  const hari = async (n) => (await q('select (sigarda.hari_ini() + $1::int)::text d', [n]))[0].d;
+  const tglWib = async (id) => (await q("select to_char(terbit_pada at time zone 'Asia/Jakarta', 'YYYY-MM-DD') d, status from public.beranda_berita where id = $1", [id]))[0];
+  const simpanB = (pelaku, judul, status, waktu, id = null) => sebagai(pelaku, "select public.sg_berita_simpan($4::bigint, 'kegiatan', $1, '', 'Isi', '', $2, $3::timestamptz) as id", [judul, status, waktu, id]);
+  const lalu = await hari(-20), lebihLalu = await hari(-40);
+
+  let r = await simpanB(K.pembina.id, 'Berita lama', 'terbit', `${lalu}T00:00:00+07:00`);
+  const idLama = r.rows[0].id;
+  ok(r.ok && (await tglWib(idLama)).d === lalu, 'Pembina menerbitkan berita dengan tanggal lampau (terlambat ditulis): terbit_pada = tanggal pilihan, bukan saat klik');
+  r = await simpanB(K.pembina.id, 'Berita baru', 'terbit', null);
+  ok(r.ok && (await tglWib(r.rows[0].id)).d === (await hari(0)), 'tanpa tanggal: berita terbit memakai saat ini (perilaku lama tetap)');
+  ok((await publik()).berita.map((b) => b.judul).join() === 'Berita baru,Berita lama', 'beranda mengurutkan menurut tanggal terbit (yang baru dulu), bukan menurut kapan ditulis');
+  r = await simpanB(K.pembina.id, 'Berita lama', 'terbit', `${lebihLalu}T00:00:00+07:00`, idLama);
+  ok(r.ok && (await tglWib(idLama)).d === lebihLalu, 'mengubah berita terbit dapat mengganti tanggal terbitnya');
+
+  r = await simpanB(K.sekretaris.id, 'Dewan telat menulis', 'menunggu', `${lalu}T00:00:00+07:00`);
+  const idDewan = r.rows[0].id;
+  ok(r.ok && (await tglWib(idDewan)).d === lalu && (await tglWib(idDewan)).status === 'menunggu', 'Dewan mengajukan dengan tanggal lampau: tanggal pilihan tersimpan sejak pengajuan');
+  ok(!(await publik()).berita.some((b) => b.judul === 'Dewan telat menulis'), 'pengajuan yang belum disetujui tidak tampil, walau tanggalnya sudah lewat');
+  r = await sebagai(K.pembina.id, `select public.sg_berita_tinjau(${idDewan}, 'terbit', '') as x`);
+  ok(r.ok && (await tglWib(idDewan)).d === lalu && (await tglWib(idDewan)).status === 'terbit', 'Pembina menyetujui: berita terbit dengan tanggal pilihan Dewan, bukan tanggal persetujuan');
+  ok((await publik()).berita.map((b) => b.judul).join() === 'Berita baru,Dewan telat menulis,Berita lama', 'urutan di beranda mengikuti tanggal terbit yang dipilih (Dewan telat menulis berada di antaranya)');
+
+  r = await simpanB(K.sekretaris.id, 'Dewan tanpa tanggal', 'menunggu', null);
+  const idTanpa = r.rows[0].id;
+  await sebagai(K.pembina.id, `select public.sg_berita_tinjau(${idTanpa}, 'terbit', '') as x`);
+  ok((await tglWib(idTanpa)).d === (await hari(0)), 'pengajuan tanpa tanggal: saat disetujui memakai saat persetujuan (perilaku lama tetap)');
+
+  r = await simpanB(K.sekretaris.id, 'Dewan ditolak', 'menunggu', `${lalu}T00:00:00+07:00`);
+  const idTolak = r.rows[0].id;
+  await sebagai(K.pembina.id, `select public.sg_berita_tinjau(${idTolak}, 'ditolak', 'Foto belum ada') as x`);
+  ok((await tglWib(idTolak)).status === 'ditolak' && (await tglWib(idTolak)).d === lalu, 'ditolak: tanggal pilihan penulis tetap tersimpan (muncul lagi saat diperbaiki)');
+
+  r = await simpanB(K.sekretaris.id, 'Dewan terjadwal', 'draf', `${await hari(30)}T00:00:00+07:00`);
+  ok(r.ok && (await tglWib(r.rows[0].id)).d === await hari(30), 'draf menyimpan tanggal pilihan (bahkan di masa depan)');
+
+  console.log('  - Batas tanggal');
+  const tolak = async (waktu, judul) => cocok(await simpanB(K.pembina.id, judul, 'draf', waktu), /Tanggal terbit tidak sah/);
+  ok(await tolak(`${await hari(367)}T00:00:00+07:00`, 'lewat batas depan'), 'lebih dari 366 hari ke depan ditolak');
+  ok((await simpanB(K.pembina.id, 'tepat batas depan', 'draf', `${await hari(366)}T00:00:00+07:00`)).ok, 'tepat 366 hari ke depan diterima');
+  ok(await tolak('2014-12-31T00:00:00+07:00', 'sebelum 2015'), 'sebelum 2015 ditolak');
+  ok((await simpanB(K.pembina.id, 'tepat 2015', 'draf', '2015-01-01T00:00:00+07:00')).ok, 'tepat 1 Januari 2015 diterima');
+}
+
 console.log('\n--- sg_berita_lagi: berita lebih lama (tombol "Muat berita lebih lama") ---');
 {
   await q('delete from public.beranda_berita');
@@ -187,7 +233,7 @@ console.log('\n--- sg_berita_lagi: berita lebih lama (tombol "Muat berita lebih 
   // 14 berita terbit dengan waktu terbit menurun (B1 terbaru ... B14 terlama), 1 draf, 1 terjadwal di masa depan
   for (let i = 1; i <= 14; i++) await simpan(`B${i}`, 'terbit', `2026-08-${String(30 - i).padStart(2, '0')} 08:00:00+07`);
   await simpan('DRAF-RAHASIA', 'draf', null);
-  await simpan('JADWAL-DEPAN', 'terbit', '2999-01-01 08:00:00+07');
+  await simpan('JADWAL-DEPAN', 'terbit', new Date(Date.now() + 200 * 864e5).toISOString());
   const lagi = async (n) => (await sebagai(null, 'select public.sg_berita_lagi($1) as d', [n]));
   const judul = (r) => r.rows[0].d.berita.map((b) => b.judul);
 

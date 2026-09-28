@@ -12,7 +12,7 @@ create table public.beranda_berita (
   isi text not null check (char_length(btrim(isi)) between 1 and 4000),
   sampul_url text not null default '' check (sampul_url = '' or sampul_url ~ '^https://[A-Za-z0-9.-]+\.[A-Za-z]{2,}([/?#][^ ]*)?$'),
   status text not null default 'draf' check (status in ('draf', 'menunggu', 'terbit', 'ditolak')),
-  terbit_pada timestamptz,  -- kapan tampil publik; boleh masa depan (terjadwal). Null selama belum berstatus terbit.
+  terbit_pada timestamptz,  -- kapan tampil publik; boleh masa lalu (berita terlambat ditulis) atau masa depan (terjadwal). Draf/pengajuan menyimpan tanggal pilihan penulis (boleh null = saat diterbitkan).
   catatan_tinjauan text not null default '' check (char_length(catatan_tinjauan) <= 500),
   dibuat_oleh uuid references public.profiles(id) on delete set null,
   dibuat_oleh_nama text not null default '',

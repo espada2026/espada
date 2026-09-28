@@ -56,8 +56,8 @@ export default function PanelFaq() {
   const galat = dicoba ? periksaFaq(form) : {};
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-      <div>
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="min-w-0">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-bold text-pramuka-900">Pertanyaan umum</h3>
           {id !== null && <button type="button" className="btn btn-outline btn-sm" onClick={bukaBaru}>+ Pertanyaan baru</button>}
@@ -70,7 +70,7 @@ export default function PanelFaq() {
             {daftar.map((f, i) => (
               <div key={f.id} className="flex flex-wrap items-start justify-between gap-2 p-3">
                 <div className="min-w-0">
-                  <p className="font-semibold text-pramuka-900">{f.pertanyaan}</p>
+                  <p className="font-semibold text-pramuka-900 [overflow-wrap:anywhere]">{f.pertanyaan}</p>
                   <p className="text-xs text-pramuka-600">Urutan {i + 1}</p>
                 </div>
                 <div className="flex shrink-0 flex-wrap items-center gap-1.5">
@@ -85,7 +85,7 @@ export default function PanelFaq() {
         )}
       </div>
 
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
+      <form className="min-w-0 space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
         <h3 className="text-base font-bold text-pramuka-900">{id !== null ? 'Ubah pertanyaan' : 'Tambah pertanyaan'}</h3>
         <Field label="Pertanyaan" htmlFor="faq-t">
           <input id="faq-t" className={`input ${galat.pertanyaan ? 'border-red-500' : ''}`} value={form.pertanyaan} placeholder="Tulis seperti pertanyaan calon Penegak atau orang tua" onChange={(e) => setForm((f) => ({ ...f, pertanyaan: e.target.value }))} />

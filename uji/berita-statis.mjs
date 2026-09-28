@@ -63,7 +63,7 @@ console.log('\n--- Server: sg_berita_publik ---');
   const simpan = (id, judul, status, terbit = null) => sebagai(id, "select public.sg_berita_simpan(null, 'kegiatan', $1, 'Ringkas', 'Isi lengkap', '', $2, $3::timestamptz) as id", [judul, status, terbit]).then((r) => r[0].id);
   const idLama = await simpan(pembina.id, 'Terbit lama', 'terbit', '2026-01-01T00:00:00Z');
   const idBaru = await simpan(pembina.id, 'Terbit baru', 'terbit', '2026-06-01T00:00:00Z');
-  await simpan(pembina.id, 'Terjadwal depan', 'terbit', '2999-01-01T00:00:00Z');
+  await simpan(pembina.id, 'Terjadwal depan', 'terbit', new Date(Date.now() + 200 * 864e5).toISOString());
   await simpan(pembina.id, 'Masih draf', 'draf');
   await simpan(dewan.id, 'Menunggu Pembina', 'menunggu');
   const idTolak = await simpan(dewan.id, 'Akan ditolak', 'menunggu');
@@ -202,7 +202,7 @@ console.log('\n--- Penyambungan di alur build dan deploy ---');
 {
   const deploy = readFileSync(`${P}/.github/workflows/deploy.yml`, 'utf8');
   const vite = readFileSync(`${P}/vite.config.js`, 'utf8');
-  ok(/schedule:\s*\n\s*- cron: '0 22 \* \* \*'/.test(deploy), 'deploy: terbit ulang tiap hari 05.00 WIB (22.00 UTC) agar berita baru ikut menjadi halaman statis');
+  ok(!/^\s*schedule:/m.test(deploy) && /terbit-ulang\.sql/.test(deploy), 'deploy: TANPA jadwal harian (keputusan pemilik); terbit ulang dipicu basis data saat berita terbit (29-terbit-ulang.sql)');
   ok(/workflow_dispatch:/.test(deploy) && /SIGARDA_BERITA_STATIS: '1'/.test(deploy.slice(deploy.indexOf('npm run build'))), 'deploy: dapat dijalankan manual; SIGARDA_BERITA_STATIS=1 hanya pada langkah build');
   ok(/process\.env\.SIGARDA_BERITA_STATIS === '1'/.test(vite) && /mode !== 'lokal'/.test(vite.slice(vite.indexOf('beritaStatis(command'))), 'vite: pembuat halaman berita hanya aktif bila SIGARDA_BERITA_STATIS=1 dan bukan mode lokal (uji dan profil tidak menyentuh jaringan)');
   ok(/catch \(e\)/.test(vite.slice(vite.indexOf('closeBundle'))) && /::warning::/.test(vite), 'vite: galat pembuat halaman berita hanya peringatan, tidak menggagalkan build');

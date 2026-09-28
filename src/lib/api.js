@@ -243,6 +243,10 @@ export function buatApi(klien) {
     simpanBerita: (b, status, terbitPada = null) =>
       rpc('sg_berita_simpan', { p_id: b.id ?? null, p_kategori: b.kategori, p_judul: b.judul, p_ringkasan: b.ringkasan, p_isi: b.isi, p_sampul_url: b.sampulUrl, p_status: status, p_terbit_pada: terbitPada }),
     hapusBerita: (id) => rpc('sg_berita_hapus', { p_id: id }),
+    /** Keadaan penerbitan ulang halaman berita statis (Pembina dan Admin): { diatur, perlu, kirimTerakhir, status, pesan, gagalBeruntun, menyerah }, tanpa kunci GitHub. */
+    statusTerbitUlang: () => rpc('sg_terbit_ulang_status'),
+    /** Meminta situs diterbitkan ulang sekarang (paling cepat tiap 2 menit). */
+    mintaTerbitUlang: () => rpc('sg_terbit_ulang_minta'),
     /** keputusan: 'terbit' atau 'ditolak' (catatan wajib bila ditolak). */
     tinjauBerita: (id, keputusan, catatan = '') => rpc('sg_berita_tinjau', { p_id: id, p_keputusan: keputusan, p_catatan: catatan }),
 

@@ -5,17 +5,30 @@
  */
 import {
   KATEGORI_BERITA, LABEL_KATEGORI_BERITA, TINGKAT_PRESTASI, LABEL_TINGKAT_PRESTASI, KELOMPOK_GALERI, LABEL_KELOMPOK_GALERI,
-  periksaBerita, periksaPrestasi, periksaGaleri, untukFormBerita, untukFormPrestasi, untukFormGaleri,
+  periksaBerita, periksaPrestasi, periksaGaleri, terbitPadaDari, untukFormBerita, untukFormPrestasi, untukFormGaleri,
 } from './berandaKontenLogic';
+import { pecahTanggal, tanggalWib } from './berandaLogic';
+import { hariIni } from './format';
+
+/** "28 Sep 2026" dari cap waktu terbit; '' bila kosong. */
+const tanggalPendek = (iso) => { const t = iso ? pecahTanggal(tanggalWib(iso)) : null; return t ? `${t.hari} ${t.bulanPendek} ${t.tahun}` : ''; };
 
 export const SKEMA_BERITA = {
   labelSatuan: 'berita', labelJamak: 'Berita',
   fnMuat: 'muatBerita', fnSimpan: 'simpanBerita', fnHapus: 'hapusBerita', fnTinjau: 'tinjauBerita',
   untukForm: untukFormBerita,
   periksa: periksaBerita,
-  ringkas: (b) => ({ judul: b.judul, meta: LABEL_KATEGORI_BERITA[b.kategori] }),
+  ringkas: (b) => {
+    const tgl = tanggalPendek(b.terbitPada);
+    const depan = b.terbitPada && tanggalWib(b.terbitPada) > hariIni();
+    const kata = b.status === 'terbit' ? (depan ? 'terjadwal' : 'terbit') : 'tanggal terbit';
+    return { judul: b.judul, meta: `${LABEL_KATEGORI_BERITA[b.kategori]}${tgl ? ` · ${kata} ${tgl}` : ''}` };
+  },
+  // Waktu terbit yang dikirim ke server (p_terbit_pada) dari tanggal pilihan penulis; `item` = berita yang sedang diubah (jamnya tidak bergeser bila tanggal tetap).
+  terbitPada: (form, item) => terbitPadaDari(form.terbitTanggal, item?.terbitPada ?? null),
   fields: [
     { kunci: 'kategori', label: 'Kategori', jenis: 'select', opsi: KATEGORI_BERITA.map((k) => [k, LABEL_KATEGORI_BERITA[k]]) },
+    { kunci: 'terbitTanggal', label: 'Tanggal terbit', jenis: 'date', bantuan: 'Pilih tanggal berita ini dianggap terbit, tidak harus hari ini: berita yang terlambat ditulis memakai tanggal kejadiannya, dan beberapa berita sekaligus dapat diberi tanggal berbeda. Tanggal yang akan datang = terjadwal (baru tampil pada tanggal itu). Bagi Dewan Ambalan, tanggal ini dipakai saat Pembina menyetujui.' },
     { kunci: 'judul', label: 'Judul' },
     { kunci: 'ringkasan', label: 'Ringkasan (tampil di kartu)' },
     { kunci: 'isi', label: 'Isi berita', jenis: 'textarea', baris: 6 },

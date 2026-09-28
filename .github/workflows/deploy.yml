@@ -2,10 +2,8 @@ name: Deploy ke GitHub Pages
 on:
   push:
     branches: [main]
-  # Terbit ulang tiap hari pukul 05.00 WIB (22.00 UTC) supaya berita yang baru terbit ikut menjadi halaman statis dan masuk sitemap (lihat scripts/berita-statis.mjs).
-  # Berita terjadwal (terbit_pada di masa depan) juga baru masuk pada terbit ulang berikutnya. Untuk memaksa sekarang: Actions > Deploy ke GitHub Pages > Run workflow.
-  schedule:
-    - cron: '0 22 * * *'
+  # TANPA jadwal harian. Halaman berita statis dan sitemap (scripts/berita-statis.mjs) diterbitkan ulang saat berita terbit: basis data (pg_cron + pg_net, supabase/sumber/29-terbit-ulang.sql)
+  # meminta alur ini dijalankan lewat workflow_dispatch di bawah, HANYA bila ada berita terbit yang berubah atau yang jadwalnya tiba. Manual: Actions > Deploy ke GitHub Pages > Run workflow.
   workflow_dispatch:
 permissions:
   contents: read

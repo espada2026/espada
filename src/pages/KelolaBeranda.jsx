@@ -6,6 +6,7 @@ import PanelKontakBeranda from '../components/PanelKontakBeranda';
 import PanelKontenTinjau from '../components/PanelKontenTinjau';
 import PanelSosial from '../components/PanelSosial';
 import PanelFaq from '../components/PanelFaq';
+import PanelTerbitUlang from '../components/PanelTerbitUlang';
 
 /**
  * Kelola Beranda (Pembina, Admin Gudep, dan Dewan Ambalan): isi halaman muka publik yang dapat dilihat siapa saja tanpa masuk. Berita,
@@ -52,7 +53,12 @@ export default function KelolaBeranda({ tabAwal = null }) {
 
       <div className="panel p-4">
         {tabAktif === 'kontak' && <PanelKontakBeranda />}
-        {tabAktif === 'berita' && <PanelKontenTinjau skema={SKEMA_BERITA} />}
+        {tabAktif === 'berita' && (
+          <>
+            {bolehTerbit && <PanelTerbitUlang />}
+            <PanelKontenTinjau skema={SKEMA_BERITA} />
+          </>
+        )}
         {tabAktif === 'prestasi' && <PanelKontenTinjau skema={SKEMA_PRESTASI} />}
         {tabAktif === 'galeri' && <PanelKontenTinjau skema={SKEMA_GALERI} />}
         {tabAktif === 'sosial' && <PanelSosial />}

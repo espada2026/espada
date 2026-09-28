@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import LogoMark from '../components/LogoMark';
-import { pecahParagraf, pecahTanggal, tautanBagikanWa, urlGambar } from '../lib/berandaLogic';
+import { pecahParagraf, pecahTanggal, tanggalWib, tautanBagikanWa, urlGambar } from '../lib/berandaLogic';
 import { LABEL_KATEGORI_BERITA } from '../lib/berandaKontenLogic';
 import { susunDokumenBerita, urlBerita } from '../lib/beritaStatisLogic';
 
@@ -10,7 +10,7 @@ import { susunDokumenBerita, urlBerita } from '../lib/beritaStatisLogic';
  */
 export default function HalamanBerita({ b, namaGudep, alamatSitus }) {
   const dasar = `${String(alamatSitus).replace(/\/+$/, '')}/`;
-  const t = pecahTanggal(b.terbitPada.slice(0, 10));
+  const t = pecahTanggal(tanggalWib(b.terbitPada));
   const sampul = urlGambar(b.sampulUrl);
   const isi = pecahParagraf(b.isi);
   return (

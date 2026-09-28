@@ -26,7 +26,7 @@ function Isian({ f, nilai, ubah, galat, aksi = null }) {
     <Field label={f.label} htmlFor={id} bantuan={f.bantuan}>
       {f.jenis === 'textarea' ? <textarea rows={f.baris ?? 4} {...umum} />
         : f.jenis === 'select' ? <select {...umum}>{f.opsi.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
-        : <input type={f.jenis === 'number' ? 'number' : 'text'} {...umum} />}
+        : <input type={f.jenis === 'number' ? 'number' : f.jenis === 'date' ? 'date' : 'text'} {...umum} />}
       {galat && <p role="alert" className="mt-1 text-xs font-medium text-red-700">{galat}</p>}
       {aksi}
       {f.pratinjau && <PratinjauSampul nilai={nilai} rasio={f.pratinjau} />}
@@ -45,6 +45,7 @@ export default function PanelKontenTinjau({ skema }) {
   const [daftar, setDaftar] = useState(null);
   const [galatMuat, setGalatMuat] = useState('');
   const [id, setId] = useState(null); // null = formulir tambah baru
+  const [aslinya, setAslinya] = useState(null); // item yang sedang diubah (untuk waktu terbit semula)
   const [form, setForm] = useState(() => skema.untukForm(null));
   const [dicoba, setDicoba] = useState(false);
   const [sibuk, setSibuk] = useState('');
@@ -59,8 +60,8 @@ export default function PanelKontenTinjau({ skema }) {
   }, [api, skema]);
   useEffect(() => { muat(); }, [muat]);
 
-  const bukaBaru = () => { setId(null); setForm(skema.untukForm(null)); setDicoba(false); sudahDicoba.current = ''; setSampulStatus({ jenis: '', teks: '' }); };
-  const bukaUbah = (item) => { setId(item.id); setForm(skema.untukForm(item)); setDicoba(false); sudahDicoba.current = ''; setSampulStatus({ jenis: '', teks: '' }); window.scrollTo({ top: document.getElementById(`konten-${skema.fields[0].kunci}`)?.offsetTop ?? 0, behavior: 'smooth' }); };
+  const bukaBaru = () => { setId(null); setAslinya(null); setForm(skema.untukForm(null)); setDicoba(false); sudahDicoba.current = ''; setSampulStatus({ jenis: '', teks: '' }); };
+  const bukaUbah = (item) => { setId(item.id); setAslinya(item); setForm(skema.untukForm(item)); setDicoba(false); sudahDicoba.current = ''; setSampulStatus({ jenis: '', teks: '' }); window.scrollTo({ top: document.getElementById(`konten-${skema.fields[0].kunci}`)?.offsetTop ?? 0, behavior: 'smooth' }); };
   const ubahIsian = (kunci, nilai) => setForm((f) => ({ ...f, [kunci]: nilai }));
 
   // Sampul otomatis album Google Photos: fungsi server membaca foto sampul dan nama album dari tautan yang dibagikan. Hanya mengisi kolom formulir (belum disimpan);
@@ -81,12 +82,12 @@ export default function PanelKontenTinjau({ skema }) {
     return () => clearTimeout(tunda);
   }, [kunciAlbum, form, ambilSampul]);
 
-  const simpan = async (status, terbitPada = null) => {
+  const simpan = async (status) => {
     setDicoba(true);
     const galat = skema.periksa(form, status, bolehTerbit);
     if (Object.keys(galat).length || sibuk) return;
     setSibuk('simpan');
-    const r = await api()[skema.fnSimpan]({ ...form, id }, status, terbitPada);
+    const r = await api()[skema.fnSimpan]({ ...form, id }, status, skema.terbitPada ? skema.terbitPada(form, aslinya) : null);
     setSibuk('');
     if (!r.ok) { notify(r.pesan, 'err'); return; }
     notify(status === 'terbit' ? `${skema.labelSatuan[0].toUpperCase()}${skema.labelSatuan.slice(1)} diterbitkan.` : status === 'menunggu' ? 'Diajukan ke Pembina.' : 'Draf tersimpan.');
@@ -123,8 +124,8 @@ export default function PanelKontenTinjau({ skema }) {
   const sedangUbah = id !== null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-      <div>
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="min-w-0">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-bold text-pramuka-900">{skema.labelJamak}</h3>
           {sedangUbah && <button type="button" className="btn btn-outline btn-sm" onClick={bukaBaru}>+ {skema.labelSatuan} baru</button>}
@@ -142,10 +143,10 @@ export default function PanelKontenTinjau({ skema }) {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <Pil status={item.status} />
-                      <span className="truncate font-semibold text-pramuka-900">{r.judul}</span>
+                      <span className="min-w-0 font-semibold text-pramuka-900 [overflow-wrap:anywhere]">{r.judul}</span>
                     </div>
-                    <p className="mt-0.5 text-xs text-pramuka-600">{r.meta} · {item.dibuatOlehNama || 'tanpa nama'} · {waktuRelatif(item.dibuatPada)}</p>
-                    {item.status === 'ditolak' && item.catatanTinjauan && <p className="mt-1 text-xs font-medium text-red-700">Catatan: {item.catatanTinjauan}</p>}
+                    <p className="mt-0.5 text-xs text-pramuka-600 [overflow-wrap:anywhere]">{r.meta} · {item.dibuatOlehNama || 'tanpa nama'} · {waktuRelatif(item.dibuatPada)}</p>
+                    {item.status === 'ditolak' && item.catatanTinjauan && <p className="mt-1 text-xs font-medium text-red-700 [overflow-wrap:anywhere]">Catatan: {item.catatanTinjauan}</p>}
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-1.5">
                     {item.status === 'menunggu' && bolehTerbit && (
@@ -164,7 +165,7 @@ export default function PanelKontenTinjau({ skema }) {
         )}
       </div>
 
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
+      <form className="min-w-0 space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
         <h3 className="text-base font-bold text-pramuka-900">{sedangUbah ? `Ubah ${skema.labelSatuan}` : `Tambah ${skema.labelSatuan}`}</h3>
         {skema.fields.map((f) => (
           <Isian key={f.kunci} f={f} nilai={form[f.kunci]} ubah={ubahIsian} galat={galat[f.kunci]}
