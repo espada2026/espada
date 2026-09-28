@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { RUJUK_LANGKAH_DRIVE, diagnosaGambar, kandidatGambar } from '../lib/berandaLogic';
 
 // Kelas ditulis utuh (bukan dirangkai) agar terbaca pemindai Tailwind; rasio sama dengan kartu di halaman muka (src/landing/bagian.jsx).
-const RASIO = { berita: 'aspect-[16/10]', galeri: 'aspect-[4/3]', sosial: 'aspect-square' };
+const RASIO = { berita: 'aspect-[16/10]', galeri: 'aspect-[4/3]', sosial: 'aspect-[4/5]' };
 const BATAS_MS = 12000;
 
 /**

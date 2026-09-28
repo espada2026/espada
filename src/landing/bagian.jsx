@@ -12,7 +12,7 @@ import { bolehSunting, tautanSunting } from '../lib/suntingLogic';
 import { halamanBerita } from '../lib/beritaStatisLogic';
 import { LABEL_KATEGORI_BERITA, LABEL_KELOMPOK_GALERI, LABEL_PLATFORM, LABEL_TINGKAT_PRESTASI } from '../lib/berandaKontenLogic';
 import { analisisSosial, LABEL_PLATFORM_SOSIAL } from '../lib/sosialLogic';
-import { ALAMAT_SITUS, DASA_DARMA, MENU, PERJALANAN, PROGRAM, TANYA_JAWAB, TRI_SATYA } from './landingData';
+import { ALAMAT_SITUS, DASA_DARMA, MENU, menuTampil, PERJALANAN, PROGRAM, TANYA_JAWAB, TRI_SATYA } from './landingData';
 import { IkonBeranda, LanskapPerkemahan, PetaBergaya } from './ilustrasi';
 
 const wrap = 'mx-auto w-full max-w-6xl px-5';
@@ -25,10 +25,17 @@ const garisEyebrow = 'h-0.5 w-7 bg-emas';
  * "Siapa saja yang memiliki link", tautan salah) atau tidak ada yang mungkin tampil, dipakai gambar pengganti, bukan kotak putih kosong. Tanpa Referer supaya
  * Google tidak menolak pemasangan di situs lain. `kelasPengganti` memuat ukuran dan warna latar gambar pengganti.
  */
-function GambarSampul({ sumber, kelas, kelasPengganti, ikon = 'tenda', ukuranIkon = 32 }) {
+function GambarSampul({ sumber, kelas, kelasPengganti, ikon = 'tenda', ukuranIkon = 32, labelPengganti = '' }) {
   const [urut, setUrut] = useState(0);
   const src = sumber[urut];
-  if (!src) return <div aria-hidden="true" className={`flex items-center justify-center text-emas-light ${kelasPengganti}`}><IkonBeranda nama={ikon} ukuran={ukuranIkon} /></div>;
+  if (!src) {
+    return (
+      <div aria-hidden="true" className={`flex items-center justify-center text-emas-light ${labelPengganti ? 'flex-col gap-2' : ''} ${kelasPengganti}`}>
+        <IkonBeranda nama={ikon} ukuran={ukuranIkon} />
+        {labelPengganti && <span className="text-sm font-bold uppercase tracking-[0.2em] text-pramuka-100">{labelPengganti}</span>}
+      </div>
+    );
+  }
   return <img key={src} src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setUrut((n) => n + 1)} className={kelas} />;
 }
 
@@ -55,8 +62,9 @@ function KepalaBagian({ label, judul, isi, gelap = false, sunting = '', tab = ''
 }
 
 /** Bilah atas: lambang, nama gudep, menu, dan tombol masuk. `sesi` = sudah ada sesi tersimpan di peramban ini (tombol menjadi "Buka SIGARDA"). */
-export function NavBeranda({ G, sesi = false }) {
+export function NavBeranda({ G, sesi = false, ada = {} }) {
   const [buka, setBuka] = useState(false);
+  const menu = menuTampil(ada);
   return (
     <header className="sticky top-0 z-50 border-b border-emas/25 bg-pramuka-900/95 text-pramuka-50 backdrop-blur">
       <div className={`${wrap} flex h-16 items-center gap-3`}>
@@ -68,8 +76,8 @@ export function NavBeranda({ G, sesi = false }) {
           </span>
         </a>
         <nav aria-label="Navigasi utama" className="ml-auto hidden items-center gap-1 lg:flex">
-          {MENU.map((m) => (
-            <a key={m.href} href={m.href} className="rounded-lg px-3 py-2 text-sm font-medium text-pramuka-200 hover:bg-white/10 hover:text-white">{m.label}</a>
+          {menu.map((m) => (
+            <a key={m.href} href={m.href} className="rounded-lg px-2.5 py-2 xl:px-3 text-sm font-medium text-pramuka-200 hover:bg-white/10 hover:text-white">{m.label}</a>
           ))}
         </nav>
         <a href="#masuk" className="btn btn-gold ml-auto shrink-0 !rounded-full !px-5 lg:ml-2">{sesi ? 'Buka SIGARDA' : 'Masuk'}</a>
@@ -85,7 +93,7 @@ export function NavBeranda({ G, sesi = false }) {
       </div>
       {buka && (
         <nav id="menu-beranda" aria-label="Menu" className="border-t border-emas/25 bg-pramuka-900 px-5 pb-4 pt-2 lg:hidden">
-          {MENU.map((m) => (
+          {menu.map((m) => (
             <a key={m.href} href={m.href} onClick={() => setBuka(false)} className="block rounded-lg px-3 py-3 text-sm font-medium text-pramuka-100 hover:bg-white/10">{m.label}</a>
           ))}
         </nav>
@@ -405,11 +413,14 @@ function KartuSosial({ s }) {
   const nama = LABEL_PLATFORM_SOSIAL[a.platform] ?? LABEL_PLATFORM[s.platform] ?? s.platform;
   const dariPengurus = kandidatGambar(s.gambarUrl);
   const sumber = dariPengurus.length ? dariPengurus : (a.thumbUrl ? [a.thumbUrl] : []);
-  const video = a.bentuk === 'video';
+  // Kotak media SAMA untuk semua platform dan semua keadaan (gambar pratinjau, tanpa gambar, tautan biasa, pemutar): rasio 4:5. Isinya menyesuaikan diri di dalam
+  // kotak: gambar landscape (YouTube) utuh dengan bilah gelap, gambar tegak memenuhi kotak, pemutar mengisi kotak dan menggulir sendiri bila postingan lebih tinggi.
+  const kelasGambar = `absolute inset-0 h-full w-full ${a.bentuk === 'video' ? 'object-contain' : 'object-cover'}`;
+  const gambar = <GambarSampul sumber={sumber} kelas={kelasGambar} kelasPengganti="absolute inset-0 bg-gradient-to-br from-pramuka-700 to-pramuka-900" ikon="kompas" ukuranIkon={36} labelPengganti={nama} />;
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl bg-pramuka-50 text-pramuka-900">
-      {a.embedUrl && putar ? (
-        <div className={`w-full bg-black ${video ? 'aspect-video' : 'h-[600px]'}`}>
+      <div className="relative aspect-[4/5] w-full bg-black">
+        {a.embedUrl && putar ? (
           <iframe
             title={`Pemutar ${nama}${s.keterangan ? `: ${s.keterangan}` : ''}`}
             src={a.embedUrl}
@@ -417,23 +428,23 @@ function KartuSosial({ s }) {
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation allow-forms"
-            className="h-full w-full border-0"
+            className="absolute inset-0 h-full w-full border-0"
           />
-        </div>
-      ) : a.embedUrl ? (
-        <button type="button" onClick={() => setPutar(true)} aria-label={`Putar postingan ${nama}${s.keterangan ? `: ${s.keterangan}` : ''}`} className="group relative block w-full text-left">
-          <GambarSampul sumber={sumber} kelas={video ? 'aspect-video w-full object-cover' : 'aspect-square w-full object-cover'} kelasPengganti={video ? 'aspect-video w-full bg-pramuka-700' : 'aspect-square w-full bg-pramuka-700'} ikon="kompas" ukuranIkon={36} />
-          <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center bg-pramuka-900/15">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-emas text-pramuka-900 shadow-lg transition group-hover:scale-105">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg>
+        ) : a.embedUrl ? (
+          <button type="button" onClick={() => setPutar(true)} aria-label={`Putar postingan ${nama}${s.keterangan ? `: ${s.keterangan}` : ''}`} className="group absolute inset-0 block h-full w-full text-left">
+            {gambar}
+            <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center bg-pramuka-900/15">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-emas text-pramuka-900 shadow-lg transition group-hover:scale-105">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg>
+              </span>
             </span>
-          </span>
-        </button>
-      ) : (
-        <a href={s.tautan} target="_blank" rel="noopener noreferrer" className="block no-underline">
-          <GambarSampul sumber={sumber} kelas="aspect-square w-full object-cover" kelasPengganti="aspect-square w-full bg-pramuka-700" ikon="kompas" ukuranIkon={36} />
-        </a>
-      )}
+          </button>
+        ) : (
+          <a href={s.tautan} target="_blank" rel="noopener noreferrer" aria-label={`Buka postingan ${nama}${s.keterangan ? `: ${s.keterangan}` : ''}`} className="absolute inset-0 block no-underline">
+            {gambar}
+          </a>
+        )}
+      </div>
       <div className="flex flex-1 flex-col gap-1 p-4">
         <span className="text-[11px] font-bold uppercase tracking-wider text-emas-dark">{nama}</span>
         {s.keterangan && <p className="text-sm text-pramuka-700 [overflow-wrap:anywhere]">{s.keterangan}</p>}

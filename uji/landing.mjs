@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { Berita, CekDokumen, Galeri, Hero, Kaki, KabarAgenda, Kontak, MediaSosial, NavBeranda, Perjalanan, Prestasi, Program, Tentang, TanyaJawab } from '../src/landing/bagian.jsx';
 import Landing from '../src/landing/Landing.jsx';
-import { DASA_DARMA, MENU, PERJALANAN, PROGRAM, TANYA_JAWAB, TRI_SATYA } from '../src/landing/landingData.js';
+import { DASA_DARMA, MENU, menuTampil, PERJALANAN, PROGRAM, TANYA_JAWAB, TRI_SATYA } from '../src/landing/landingData.js';
 import { renderBeranda } from '../src/landing/prarender.jsx';
 import { alamatRpc, panggilRpcPublik } from '../src/lib/publikClient.js';
 import { GUDEP_BAWAAN } from '../src/config.js';
@@ -24,7 +24,8 @@ const utuh = renderBeranda();
 {
   ok(utuh.length > 10000 && !/<script/i.test(utuh), `dirender ke HTML (${(utuh.length / 1024).toFixed(0)} kB) tanpa skrip`);
   ok(/<h1[^>]*>\s*Gugus Depan/.test(utuh) && (utuh.match(/<h1/g) ?? []).length === 1, 'tepat satu <h1>, memuat nama gudep');
-  for (const m of MENU) ok(utuh.includes(`id="${m.href.slice(1)}"`), `menu ${m.label}: bagian ${m.href} ada`);
+  for (const m of MENU.filter((x) => !x.bilaAda)) ok(utuh.includes(`id="${m.href.slice(1)}"`), `menu ${m.label}: bagian ${m.href} ada`);
+  ok(!utuh.includes('id="sosial"') && !utuh.includes('href="#sosial"'), 'tanpa data server: bagian Media Sosial tidak dirender dan menunya juga tidak ada (tidak ada tautan mati)');
   ok(utuh.includes('id="atas"') && utuh.includes('id="cek"'), 'bagian atas dan cek dokumen ada');
   ok(TANYA_JAWAB.every((q) => utuh.includes(q.t)) && TRI_SATYA.every((t) => utuh.includes(t.slice(0, 30))) && DASA_DARMA.every((d) => utuh.includes(d)), 'tanya jawab, Tri Satya, dan Dasa Darma tampil utuh');
   ok(PROGRAM.every((p) => utuh.includes(p.judul)) && PERJALANAN.every((p) => utuh.includes(p.judul)), 'semua program dan pos perjalanan tampil');

@@ -58,13 +58,13 @@ console.log('\n--- Kartu di beranda: gambar pratinjau + tombol putar, tanpa ifra
   const yt = { platform: 'youtube', tautan: 'https://youtu.be/dQw4w9WgXcQ', keterangan: 'Upacara pelantikan', gambarUrl: '' };
   const t1 = teks(h(MediaSosial, { sosial: [yt] }));
   ok(!t1.includes('<iframe') && !t1.includes('<script') && !t1.includes('youtube-nocookie'), 'saat dimuat TIDAK ada iframe, skrip, maupun alamat pemutar (halaman tetap ringan dan tanpa pihak ketiga)');
-  ok(t1.includes('src="https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"') && t1.includes('aspect-video'), 'YouTube: gambar pratinjau otomatis (rasio 16:9) tanpa gambar dari pengurus');
+  ok(t1.includes('src="https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"') && t1.includes('aspect-[4/5]') && t1.includes('object-contain'), 'YouTube: gambar pratinjau otomatis tanpa gambar dari pengurus; landscape utuh di kotak 4:5 (object-contain)');
   ok(t1.includes('aria-label="Putar postingan YouTube: Upacara pelantikan"') && t1.includes('Ketuk gambar untuk memutar') && /<button type="button"/.test(t1), 'tombol putar dapat diakses (label jelas) dan ada petunjuk "Ketuk gambar untuk memutar"');
   ok(t1.includes('>Buka di YouTube ↗<') && t1.includes('href="https://youtu.be/dQw4w9WgXcQ"'), 'tautan "Buka di YouTube" tetap ada (jalan keluar bila pemutar tidak dapat dimuat)');
 
   const ig = { platform: 'instagram', tautan: 'https://www.instagram.com/reel/C8xYz12AbCd/', keterangan: '', gambarUrl: 'https://lh3.googleusercontent.com/d/1AbCdEfGhIjKlMnOpQrStUvWxYz0123456=w1000' };
   const t2 = teks(h(MediaSosial, { sosial: [ig] }));
-  ok(t2.includes('googleusercontent.com/d/1AbCdEf') && t2.includes('aspect-square') && t2.includes('aria-label="Putar postingan Instagram"') && !t2.includes('<iframe'), 'Instagram: memakai gambar pratinjau dari pengurus (persegi) dengan tombol putar, tanpa iframe');
+  ok(t2.includes('googleusercontent.com/d/1AbCdEf') && t2.includes('aspect-[4/5]') && t2.includes('object-cover') && t2.includes('aria-label="Putar postingan Instagram"') && !t2.includes('<iframe'), 'Instagram: memakai gambar pratinjau dari pengurus (memenuhi kotak 4:5) dengan tombol putar, tanpa iframe');
   const t3 = teks(h(MediaSosial, { sosial: [{ platform: 'facebook', tautan: 'https://fb.watch/abcDEF/', keterangan: 'Kegiatan', gambarUrl: '' }, { platform: 'instagram', tautan: 'https://www.instagram.com/gudepsmanbukateja/', keterangan: 'Profil lama', gambarUrl: '' }] }));
   ok(!t3.includes('<button') && !t3.includes('Ketuk gambar') && (t3.match(/target="_blank"/g) ?? []).length === 4, 'tautan pendek dan data lama berupa profil: tetap kartu tautan (membuka platform), tanpa tombol putar');
   ok(teks(h(MediaSosial, { sosial: [] })) === '', 'tanpa kiriman: bagian tidak tampil sama sekali');
