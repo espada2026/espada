@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { pembinaAtauAdmin } from '../lib/hakLogic';
 import { bolehUbah, LABEL_STATUS } from '../lib/berandaKontenLogic';
+import { albumGooglePhotos, perluAmbilSampul } from '../lib/galeriSampulLogic';
 import { waktuRelatif } from '../lib/notifikasiLogic';
 import { Field, Kosong } from './ui';
 import PratinjauSampul from './PratinjauSampul';
@@ -13,7 +14,7 @@ function Pil({ status }) {
 }
 
 /** Satu isian formulir menurut deklarasi skema.fields (lihat src/lib/berandaKontenSkema.js). */
-function Isian({ f, nilai, ubah, galat }) {
+function Isian({ f, nilai, ubah, galat, aksi = null }) {
   const id = `konten-${f.kunci}`;
   const umum = {
     id, value: nilai, placeholder: f.placeholder,
@@ -27,6 +28,7 @@ function Isian({ f, nilai, ubah, galat }) {
         : f.jenis === 'select' ? <select {...umum}>{f.opsi.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
         : <input type={f.jenis === 'number' ? 'number' : f.jenis === 'date' ? 'date' : 'text'} {...umum} />}
       {galat && <p role="alert" className="mt-1 text-xs font-medium text-red-700">{galat}</p>}
+      {aksi}
       {f.pratinjau && <PratinjauSampul nilai={nilai} rasio={f.pratinjau} />}
     </Field>
   );
@@ -47,6 +49,10 @@ export default function PanelKontenTinjau({ skema }) {
   const [form, setForm] = useState(() => skema.untukForm(null));
   const [dicoba, setDicoba] = useState(false);
   const [sibuk, setSibuk] = useState('');
+  const [sampulStatus, setSampulStatus] = useState({ jenis: '', teks: '' }); // pengambilan sampul otomatis album Google Photos (skema.dariAlbum)
+  const sudahDicoba = useRef(''); // tautan terakhir yang sudah diminta ke fungsi galeri-sampul
+  const apiTerbaru = useRef(api); // api() dibuat ulang tiap render konteks; ref menjaga ambilSampul (dan penundaan di efek) tetap stabil
+  apiTerbaru.current = api;
 
   const muat = useCallback(async () => {
     const r = await api()[skema.fnMuat]();
@@ -54,9 +60,27 @@ export default function PanelKontenTinjau({ skema }) {
   }, [api, skema]);
   useEffect(() => { muat(); }, [muat]);
 
-  const bukaBaru = () => { setId(null); setAslinya(null); setForm(skema.untukForm(null)); setDicoba(false); };
-  const bukaUbah = (item) => { setId(item.id); setAslinya(item); setForm(skema.untukForm(item)); setDicoba(false); window.scrollTo({ top: document.getElementById(`konten-${skema.fields[0].kunci}`)?.offsetTop ?? 0, behavior: 'smooth' }); };
+  const bukaBaru = () => { setId(null); setAslinya(null); setForm(skema.untukForm(null)); setDicoba(false); sudahDicoba.current = ''; setSampulStatus({ jenis: '', teks: '' }); };
+  const bukaUbah = (item) => { setId(item.id); setAslinya(item); setForm(skema.untukForm(item)); setDicoba(false); sudahDicoba.current = ''; setSampulStatus({ jenis: '', teks: '' }); window.scrollTo({ top: document.getElementById(`konten-${skema.fields[0].kunci}`)?.offsetTop ?? 0, behavior: 'smooth' }); };
   const ubahIsian = (kunci, nilai) => setForm((f) => ({ ...f, [kunci]: nilai }));
+
+  // Sampul otomatis album Google Photos: fungsi server membaca foto sampul dan nama album dari tautan yang dibagikan. Hanya mengisi kolom formulir (belum disimpan);
+  // hasil untuk tautan yang sudah diganti sementara itu dibuang. Gagal = pesan, sampul tetap dapat diisi manual.
+  const ambilSampul = useCallback(async (tautan) => {
+    const t = String(tautan).trim();
+    sudahDicoba.current = t;
+    setSampulStatus({ jenis: 'tunggu', teks: 'Mengambil sampul dari album...' });
+    const r = await apiTerbaru.current().ambilSampulAlbum(t);
+    if (!r.ok) { setSampulStatus({ jenis: 'galat', teks: r.pesan }); return; }
+    setForm((f) => (String(f.tautan).trim() !== t ? f : { ...f, sampulUrl: r.sampul, judul: String(f.judul).trim() ? f.judul : r.judul }));
+    setSampulStatus({ jenis: 'ok', teks: 'Sampul diambil dari album. Periksa pratinjau di bawah.' });
+  }, []);
+  const kunciAlbum = skema.fields.find((f) => f.dariAlbum)?.dariAlbum;
+  useEffect(() => {
+    if (!kunciAlbum || !perluAmbilSampul(form, sudahDicoba.current)) return undefined;
+    const tunda = setTimeout(() => ambilSampul(form[kunciAlbum]), 800);
+    return () => clearTimeout(tunda);
+  }, [kunciAlbum, form, ambilSampul]);
 
   const simpan = async (status) => {
     setDicoba(true);
@@ -143,7 +167,15 @@ export default function PanelKontenTinjau({ skema }) {
 
       <form className="min-w-0 space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
         <h3 className="text-base font-bold text-pramuka-900">{sedangUbah ? `Ubah ${skema.labelSatuan}` : `Tambah ${skema.labelSatuan}`}</h3>
-        {skema.fields.map((f) => <Isian key={f.kunci} f={f} nilai={form[f.kunci]} ubah={ubahIsian} galat={galat[f.kunci]} />)}
+        {skema.fields.map((f) => (
+          <Isian key={f.kunci} f={f} nilai={form[f.kunci]} ubah={ubahIsian} galat={galat[f.kunci]}
+            aksi={f.dariAlbum && albumGooglePhotos(form[f.dariAlbum]) ? (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <button type="button" className="btn btn-outline btn-sm" disabled={sampulStatus.jenis === 'tunggu'} onClick={() => ambilSampul(form[f.dariAlbum])}>Ambil ulang sampul dari album</button>
+                {sampulStatus.teks && <span role="status" className={`text-xs font-medium ${sampulStatus.jenis === 'galat' ? 'text-red-700' : 'text-pramuka-600'}`}>{sampulStatus.teks}</span>}
+              </div>
+            ) : null} />
+        ))}
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className="btn btn-outline" disabled={!!sibuk} onClick={() => simpan('draf')}>Simpan draf</button>
           {bolehTerbit
