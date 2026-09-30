@@ -61,7 +61,7 @@ export async function bacaExcelNaikKelas(buffer) {
 export async function buatBerkasNaikKelas(baris, tahunAjaran = '') {
   const { default: ExcelJS } = await import('exceljs');
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'SIGARDA';
+  wb.creator = 'SIGASI';
   const ws = wb.addWorksheet(NAMA_LEMBAR_NAIK_KELAS, { views: [{ state: 'frozen', ySplit: 1 }] });
   ws.columns = [
     { header: 'NIS', key: 'nis', width: 14 },
@@ -97,7 +97,7 @@ export async function buatBerkasNaikKelas(baris, tahunAjaran = '') {
   const petunjuk = wb.addWorksheet('Petunjuk');
   petunjuk.getColumn(1).width = 110;
   [
-    `Petunjuk naik kelas SIGARDA${tahunAjaran ? ` (tahun ajaran ${tahunAjaran})` : ''}`,
+    `Petunjuk naik kelas SIGASI${tahunAjaran ? ` (tahun ajaran ${tahunAjaran})` : ''}`,
     '',
     'Yang dibaca hanya kolom NIS, Rombel Baru, dan Aksi. Jangan mengubah NIS. Nama, Rombel Sekarang, dan Status Sekarang hanya sebagai petunjuk.',
     'Aksi: Lanjut = tetap aktif mengikuti Pramuka di rombel baru (Rombel Baru wajib diisi). Tidak lanjut = nonaktif (tidak melanjutkan Pramuka, masih siswa; Rombel Baru boleh kosong).',

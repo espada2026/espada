@@ -22,7 +22,7 @@ export const normalisasiJenisKelamin = (teks) => ALIAS[String(teks ?? '').toLowe
 export const labelJenisKelamin = (kode) => JENIS_KELAMIN.find((j) => j.kode === kode)?.label ?? '';
 
 /** Anggota yang jenis kelaminnya belum diisi (semua peran; akun Admin Gudep ikut). */
-export const anggotaTanpaJk = (users) => users.filter((u) => !u.jenisKelamin);
+export const anggotaTanpaJk = (users) => users.filter((u) => !u.jenisKelamin && !u.tanpaAkun);
 
 const URUT_PERAN = { peserta: 0, penguji: 1, admin: 2 };
 export const labelPeranAnggota = (u) => (u.role === 'peserta' ? 'Penegak' : u.role === 'admin' ? 'Admin Gudep' : u.jabatan ?? 'Pembina');

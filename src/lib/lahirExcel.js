@@ -52,7 +52,7 @@ export async function buatBerkasLahir(users, lahir) {
   const { default: ExcelJS } = await import('exceljs');
   const daftar = pesertaTanpaLahir(users, lahir);
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'SIGARDA';
+  wb.creator = 'SIGASI';
   const ws = wb.addWorksheet(NAMA_LEMBAR_LAHIR, { views: [{ state: 'frozen', ySplit: 1 }] });
   ws.columns = [
     { header: 'NIS', key: 'nis', width: 16 },
@@ -76,7 +76,7 @@ export async function buatBerkasLahir(users, lahir) {
   const petunjuk = wb.addWorksheet('Petunjuk');
   petunjuk.getColumn(1).width = 100;
   [
-    'Petunjuk lengkapi tanggal lahir SIGARDA',
+    'Petunjuk lengkapi tanggal lahir SIGASI',
     '',
     'Isi kolom Tanggal Lahir pada lembar "Tanggal Lahir" untuk tiap Penegak: tulis tanggal/bulan/tahun, mis. 15/03/2008 (atau 15 Maret 2008, atau 2008-03-15).',
     'Jangan mengubah kolom NIS. Nama dan Rombel hanya sebagai petunjuk; yang dibaca hanya NIS dan Tanggal Lahir.',

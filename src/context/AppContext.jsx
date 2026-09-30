@@ -1105,6 +1105,22 @@ export function AppProvider({ children }) {
     await Promise.all([segarkan.users(), segarkan.progress?.()].filter(Boolean));
     return r;
   };
+  /* Anggota Siaga tanpa akun (Pembina dan Admin): tambah banyak, ubah, hapus, dan tempatkan ke perindukan/barung. */
+  const aksiSiaga = async (panggil, pesanOk) => {
+    if (!pembinaAtauAdmin(user)) return ditolak(notify, 'Hanya Pembina dan Admin Gudep yang dapat mengelola anggota Siaga.');
+    const r = await panggil();
+    if (!r.ok) {
+      if (r.sesiBerakhir) await sesiBerakhir();
+      return { ok: false, pesan: r.pesan };
+    }
+    await segarkan.users();
+    if (pesanOk) notify(pesanOk(r.data));
+    return r;
+  };
+  const tambahSiaga = (daftar) => aksiSiaga(() => api().tambahSiaga(daftar), (n) => `${n} anggota Siaga ditambahkan.`);
+  const ubahSiaga = (id, d) => aksiSiaga(() => api().ubahSiaga(id, d), () => 'Data anggota Siaga disimpan.');
+  const hapusSiaga = (id) => aksiSiaga(() => api().hapusSiaga(id), () => 'Anggota Siaga dihapus.');
+  const aturBarung = (ids, perindukan, barung) => aksiSiaga(() => api().aturBarung(ids, perindukan, barung), (n) => `${n} anggota dipindahkan.`);
   /** Arsipkan (aktifkan = false) atau aktifkan kembali akun Dewan LAMA (Admin). */
   const arsipkanDewanLama = async (ids, aktifkan = false) => {
     if (user?.role !== 'admin') return ditolak(notify, 'Hanya Admin Gudep yang dapat mengarsipkan akun Dewan Ambalan lama.');
@@ -1376,7 +1392,7 @@ export function AppProvider({ children }) {
     penugasan: db.penugasan, penugasanPeserta: db.penugasanPeserta, guruAgama: db.guruAgama, muatPenugasan, muatLogPenugasan, aturPenugasan, aturPenugasanPeserta, salinPenugasan, simpanGuruAgama, hapusGuruAgama, bolehAturPenugasan,
     praUjiAktif, pastikanPraUji, praUjiPeserta, muatAntrianPraUji, muatPraUjiMenunggu, catatPraUji, lewatiPraUji, aturSakelarPraUji,
     pendampingan, muatBinaDamping, aturBinaDamping, muatSanggaRombel, aturSangga, calonPinsa, tugaskanPinsa, cabutPinsa,
-    bolehKepengurusan, terapkanKepengurusan, aturJabatanDewan, arsipkanDewanLama, muatLogKepengurusan, muatPengukuhanDewan, simpanPengukuhanDewan, hapusPengukuhanDewan,
+    bolehKepengurusan, terapkanKepengurusan, aturJabatanDewan, tambahSiaga, ubahSiaga, hapusSiaga, aturBarung, arsipkanDewanLama, muatLogKepengurusan, muatPengukuhanDewan, simpanPengukuhanDewan, hapusPengukuhanDewan,
     muatUlang: muatSemua,
     notifikasi: db.notifikasi, belumDibaca: jumlahBelumDibaca(db.notifikasi), segarkanNotifikasi, tandaiNotifikasi, api,
     notify, toast,

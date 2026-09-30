@@ -16,7 +16,10 @@ import { suratAgamaAktif } from './dokumenLogic';
 
 export const KELAS_ROMBEL = ['X', 'XI', 'XII'];
 export const ROMBEL_PER_KELAS = 10;
-export const POLA_ROMBEL = /^(X|XI|XII)-(0[1-9]|10)$/;
+export const POLA_ROMBEL_SMA = /^(X|XI|XII)-(0[1-9]|10)$/;
+/** Kelas SD untuk anggota Siaga: angka 1-6 dengan satu huruf paralel opsional (1, 4A, 5B). Sama dengan sigarda.rombel_sah. */
+export const POLA_KELAS_SD = /^[1-6][A-Z]?$/;
+export const POLA_ROMBEL = /^((X|XI|XII)-(0[1-9]|10)|[1-6][A-Z]?)$/;
 export const PESAN_ROMBEL = 'Rombel harus X-01 sampai X-10, XI-01 sampai XI-10, atau XII-01 sampai XII-10.';
 
 /** Rombel satu kelas: daftarRombelKelas('XI') = ['XI-01', ..., 'XI-10']. */
@@ -24,7 +27,7 @@ export const daftarRombelKelas = (kelas) => Array.from({ length: ROMBEL_PER_KELA
 export const SEMUA_ROMBEL = KELAS_ROMBEL.flatMap(daftarRombelKelas);
 
 export const rombelSah = (r) => POLA_ROMBEL.test(String(r ?? ''));
-export const kelasDariRombel = (r) => (rombelSah(r) ? String(r).split('-')[0] : null);
+export const kelasDariRombel = (r) => (POLA_ROMBEL_SMA.test(String(r ?? '')) ? String(r).split('-')[0] : null);
 
 /**
  * Membakukan isian rombel yang ditulis bebas: "xi 3", "XI-3", "xi.03", "XI03" menjadi "XI-03".
@@ -32,6 +35,8 @@ export const kelasDariRombel = (r) => (rombelSah(r) ? String(r).split('-')[0] : 
  */
 export function normalisasiRombel(teks) {
   const t = String(teks ?? '').toUpperCase().replace(/\s+/g, '');
+  const sd = /^([1-6])[-._/]?([A-Z]?)$/.exec(t);
+  if (sd) return sd[1] + sd[2];
   const m = /^(XII|XI|X)[-._/]?(\d{1,2})$/.exec(t);
   if (!m) return '';
   const r = `${m[1]}-${m[2].padStart(2, '0')}`;

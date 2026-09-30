@@ -61,7 +61,7 @@ function KepalaBagian({ label, judul, isi, gelap = false, sunting = '', tab = ''
   );
 }
 
-/** Bilah atas: lambang, nama gudep, menu, dan tombol masuk. `sesi` = sudah ada sesi tersimpan di peramban ini (tombol menjadi "Buka SIGARDA"). */
+/** Bilah atas: lambang, nama gudep, menu, dan tombol masuk. `sesi` = sudah ada sesi tersimpan di peramban ini (tombol menjadi "Buka SIGASI"). */
 export function NavBeranda({ G, sesi = false, ada = {} }) {
   const [buka, setBuka] = useState(false);
   const menu = menuTampil(ada);
@@ -69,9 +69,9 @@ export function NavBeranda({ G, sesi = false, ada = {} }) {
     <header className="sticky top-0 z-50 border-b border-emas/25 bg-pramuka-900/95 text-pramuka-50 backdrop-blur">
       <div className={`${wrap} flex h-16 items-center gap-3`}>
         <a href="#atas" className="flex min-w-0 items-center gap-3 no-underline">
-          <LogoMark size={38} judul="Lambang SIGARDA" />
+          <LogoMark size={38} judul="Lambang SIGASI" />
           <span className="min-w-0 leading-tight">
-            <span className="block truncate font-display text-[15px] font-bold tracking-wide">SIGARDA</span>
+            <span className="block truncate font-display text-[15px] font-bold tracking-wide">SIGASI</span>
             <span className="hidden truncate text-[11.5px] text-pramuka-200 min-[420px]:block">{G.nama}</span>
           </span>
         </a>
@@ -80,7 +80,7 @@ export function NavBeranda({ G, sesi = false, ada = {} }) {
             <a key={m.href} href={m.href} className="rounded-lg px-2.5 py-2 xl:px-3 text-sm font-medium text-pramuka-200 hover:bg-white/10 hover:text-white">{m.label}</a>
           ))}
         </nav>
-        <a href="#masuk" className="btn btn-gold ml-auto shrink-0 !rounded-full !px-5 lg:ml-2">{sesi ? 'Buka SIGARDA' : 'Masuk'}</a>
+        <a href="#masuk" className="btn btn-gold ml-auto shrink-0 !rounded-full !px-5 lg:ml-2">{sesi ? 'Buka SIGASI' : 'Masuk'}</a>
         <button
           type="button"
           className="rounded-lg border border-emas/50 px-3 py-2 text-sm font-medium lg:hidden"
@@ -123,7 +123,7 @@ export function Hero({ G, agendaTerdekat = null }) {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a href="#tentang" className="btn btn-gold !rounded-full !px-6 !py-3 !text-[15px]">Kenali kami</a>
-            <a href="#masuk" className="btn !rounded-full !px-6 !py-3 !text-[15px] text-pramuka-50 ring-1 ring-inset ring-pramuka-50/50 hover:bg-pramuka-50/10">Masuk ke SIGARDA</a>
+            <a href="#masuk" className="btn !rounded-full !px-6 !py-3 !text-[15px] text-pramuka-50 ring-1 ring-inset ring-pramuka-50/50 hover:bg-pramuka-50/10">Masuk ke SIGASI</a>
           </div>
         </div>
         {agendaTerdekat && t && (
@@ -163,7 +163,7 @@ export function Tentang({ G, kontak, pembina, kamabigus, sunting = '' }) {
             {cerita.length > 0 ? cerita.map((p, i) => <p key={i}>{p}</p>) : (
               <p>
                 Dewan Ambalan yang dipilih sesama Penegak menjalankan kegiatan sehari-hari, dengan bimbingan Pembina dan dukungan sekolah. Catatan kemajuan
-                disimpan di SIGARDA, jadi tidak hilang di antara satu angkatan dan angkatan berikutnya.
+                disimpan di SIGASI, jadi tidak hilang di antara satu angkatan dan angkatan berikutnya.
               </p>
             )}
           </div>
@@ -202,7 +202,7 @@ export function Program() {
   return (
     <section id="program" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:#f8f2e4]">
       <div className={wrap}>
-        <KepalaBagian label="Program" judul="Lima jalan untuk tumbuh di gudep ini" isi="Setiap program punya catatan di SIGARDA, dari kehadiran sampai berkas akhir." />
+        <KepalaBagian label="Program" judul="Lima jalan untuk tumbuh di gudep ini" isi="Setiap program punya catatan di SIGASI, dari kehadiran sampai berkas akhir." />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
           {PROGRAM.map((p) => (
             <article key={p.id} className={`flex flex-col gap-3 rounded-2xl border p-6 ${p.besar ? 'border-transparent bg-pramuka-800 text-pramuka-50 lg:col-span-3' : 'border-pramuka-200 bg-pramuka-50 lg:col-span-2'}`}>
@@ -585,7 +585,7 @@ export function Kaki({ G }) {
           <h4 className="mb-3 font-sans text-xs font-bold uppercase tracking-[0.14em] text-emas-light">Jelajah</h4>
           <ul className="space-y-2">
             {MENU.slice(0, 4).map((m) => <li key={m.href}><a className="hover:text-white hover:underline" href={m.href}>{m.label}</a></li>)}
-            <li><a className="hover:text-white hover:underline" href="#masuk">Masuk SIGARDA</a></li>
+            <li><a className="hover:text-white hover:underline" href="#masuk">Masuk SIGASI</a></li>
           </ul>
         </div>
         <div>
@@ -596,7 +596,7 @@ export function Kaki({ G }) {
           </ul>
         </div>
         <p className="flex flex-wrap justify-between gap-x-6 gap-y-1 border-t border-emas/20 pt-5 text-xs text-pramuka-400 md:col-span-3">
-          <span>© {new Date().getFullYear()} Gugus Depan {G.sekolah}</span><span>Dibangun dengan SIGARDA</span>
+          <span>© {new Date().getFullYear()} Gugus Depan {G.sekolah}</span><span>Dibangun dengan SIGASI</span>
         </p>
       </div>
     </footer>

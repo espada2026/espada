@@ -48,7 +48,7 @@ export async function bootLokal() {
       document.title = 'Menyiapkan data sekolah penuh...';
       const ringkas = await isiSekolahPenuh(pg, { kemajuan: (teks) => console.info('[data penuh]', teks) });
       console.info('[data penuh] selesai', ringkas);
-      document.title = 'SIGARDA';
+      document.title = 'SIGASI';
     }
   }
 

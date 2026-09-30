@@ -232,7 +232,7 @@ export function buatKlienFake(pg, penyimpan = null) {
   };
 }
 
-/** Menjalankan stub Supabase lalu skema SIGARDA pada database PGlite yang masih kosong. */
+/** Menjalankan stub Supabase lalu skema SIGASI pada database PGlite yang masih kosong. */
 export async function siapkanPg(pg, { sqlStub, sqlSkema }) {
   await pg.exec(sqlStub);
   await pg.exec(sqlSkema);

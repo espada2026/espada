@@ -5,7 +5,7 @@ import { ITEM_PORTOFOLIO } from '../data/portofolioData';
 import { LogoSigarda } from './LogoMark';
 import SumberPeraturan from './SumberPeraturan';
 
-// Jalur SIGARDA: tiga tahap yang diwadahi aplikasi. Jumlah diambil dari data resmi, bukan angka tetap.
+// Jalur SIGASI: tiga tahap yang diwadahi aplikasi. Jumlah diambil dari data resmi, bukan angka tetap.
 const JALUR = [
   { no: 1, judul: 'SKU Bantara', ket: `${TINGKAT.Bantara.butir.length} butir diuji Dewan Ambalan dan Pembina` },
   { no: 2, judul: 'SKU Laksana', ket: `${TINGKAT.Laksana.butir.length} butir, terbuka setelah Bantara lulus` },
@@ -32,7 +32,7 @@ export default function Footer({ ciut = false }) {
           </div>
 
           <div>
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-emas-light">Jalur SIGARDA</h2>
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-emas-light">Jalur SIGASI</h2>
             <ol className="space-y-3">
               {JALUR.map((j, i) => (
                 <li key={j.no} className="relative flex gap-3">

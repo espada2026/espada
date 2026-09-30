@@ -102,11 +102,11 @@ export default function PerangkatNotifikasi() {
       <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-pramuka-600">
         {server === 'belum' && <li>Notifikasi ke perangkat belum diatur di server oleh Admin. Pemberitahuan tetap muncul di daftar di bawah.</li>}
         {server === 'galat' && <li>Status server tidak dapat diperiksa. Periksa koneksi lalu muat ulang.</li>}
-        {keadaan.perluPasang && <li><b>iPhone dan iPad:</b> notifikasi hanya bekerja bila aplikasi dipasang. Buka SIGARDA di Safari, ketuk tombol Bagikan, pilih "Tambah ke Layar Utama", lalu buka dari layar utama dan aktifkan di sini (iOS 16.4 ke atas).</li>}
+        {keadaan.perluPasang && <li><b>iPhone dan iPad:</b> notifikasi hanya bekerja bila aplikasi dipasang. Buka SIGASI di Safari, ketuk tombol Bagikan, pilih "Tambah ke Layar Utama", lalu buka dari layar utama dan aktifkan di sini (iOS 16.4 ke atas).</li>}
         {!keadaan.punyaApi && !keadaan.perluPasang && <li>Peramban ini belum mendukung notifikasi. Coba Chrome atau Edge terbaru.</li>}
         {keadaan.izin === 'denied' && <li>Untuk mengaktifkan lagi: buka pengaturan situs di peramban, izinkan Notifikasi, lalu muat ulang halaman ini.</li>}
         <li>Menekan <b>Keluar</b> menghentikan notifikasi di perangkat ini. Bila memakai HP bersama, selalu tekan Keluar setelah selesai.</li>
-        <li>Isi notifikasi singkat dan tidak menyebut hasil penilaian. Di sebagian HP Android, penghemat baterai dapat menunda notifikasi; izinkan SIGARDA berjalan di latar belakang bila ada yang terlambat.</li>
+        <li>Isi notifikasi singkat dan tidak menyebut hasil penilaian. Di sebagian HP Android, penghemat baterai dapat menunda notifikasi; izinkan SIGASI berjalan di latar belakang bila ada yang terlambat.</li>
       </ul>
     </section>
   );

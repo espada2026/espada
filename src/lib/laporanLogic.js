@@ -9,7 +9,7 @@ import { rentangPeriode } from './absensiLogic';
 import { pesertaDenganPeran, tanggalLulusTingkat } from './skuLogic';
 import { tingkatRombel } from './naikKelasLogic';
 
-/** Dua jenis periode yang dapat dipilih pengguna (bukan salah satu tetap): tahun ajaran (konsisten dengan data SIGARDA lain) atau tahun kalender (kebiasaan registrasi ulang Kwarcab). */
+/** Dua jenis periode yang dapat dipilih pengguna (bukan salah satu tetap): tahun ajaran (konsisten dengan data SIGASI lain) atau tahun kalender (kebiasaan registrasi ulang Kwarcab). */
 export const JENIS_PERIODE = [
   { id: 'ajaran', label: 'Tahun Ajaran (Juli-Juni)' },
   { id: 'kalender', label: 'Tahun Kalender (Januari-Desember)' },

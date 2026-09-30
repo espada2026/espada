@@ -67,6 +67,6 @@ export const TANYA_JAWAB = [
   { t: 'Siapa yang menjadi anggota?', j: 'Penegak adalah siswa kelas X sampai XII. Pendaftaran dan pembagian rombel diurus Admin gudep bersama Pembina.' },
   { t: 'Perlu seragam dan perlengkapan apa?', j: 'Seragam Pramuka Penegak dan perlengkapan dasar. Daftar lengkapnya diberikan Pembina pada pertemuan pertama.' },
   { t: 'Apakah ada iuran?', j: 'Ada iuran bumbung kepramukaan yang dicatat rapi di aplikasi dan dapat dilihat Penegak sendiri. Nominal dan aturannya disampaikan Pembina.' },
-  { t: 'Bagaimana kemajuan Penegak dipantau?', j: 'Kemajuan SKU, kehadiran, dan portofolio dicatat di SIGARDA. Penegak dapat menunjukkan catatannya kepada orang tua, atau orang tua dapat menghubungi Pembina.' },
+  { t: 'Bagaimana kemajuan Penegak dipantau?', j: 'Kemajuan SKU, kehadiran, dan portofolio dicatat di SIGASI. Penegak dapat menunjukkan catatannya kepada orang tua, atau orang tua dapat menghubungi Pembina.' },
   { t: 'Bagaimana memeriksa keaslian surat atau sertifikat dari gudep?', j: 'Masukkan kode yang tercetak di dokumen pada kotak "Cek keaslian dokumen" di bawah, atau pindai kode QR-nya.' },
 ];

@@ -1,10 +1,14 @@
-// Identitas aplikasi. SIGARDA = Sistem Informasi Garuda dan SKU Penegak.
+// Identitas aplikasi. SIGASI = Sistem Informasi Gudep Siaga (NAMA SEMENTARA; pemilik belum memutuskan nama akhir, ganti di sini).
 export const APP = {
-  nama: 'SIGARDA',
-  kepanjangan: 'Sistem Informasi Garuda dan SKU Penegak',
-  tagline: 'Wadah pengujian SKU Bantara dan Laksana serta penyusunan portofolio Penegak Garuda',
-  versi: '2.0',
+  nama: 'SIGASI',
+  kepanjangan: 'Sistem Informasi Gudep Siaga',
+  tagline: 'Wadah pencatatan SKU, TKK, dan kegiatan Pramuka Siaga',
+  versi: '0.1',
 };
+
+// Fase 0 rencana Pramuka Siaga: menu modul Penegak yang DIBUANG dari aplikasi Siaga. Baru DISEMBUNYIKAN (kode, SQL, dan uji masih ada; dihapus bertahap
+// di fase berikut). `buatNav` (App.jsx) menyaring id ini dari semua peran.
+export const MENU_TIDAK_DIPAKAI = ['pra-uji', 'sangga', 'kepengurusan', 'sidang', 'spg', 'kelayakan', 'portofolio', 'pelantikan', 'naikkelas'];
 
 // Identitas Gugus Depan BAWAAN. Admin Gudep mengubahnya di menu "Data Gudep" (disimpan di basis data, pengaturan gudep.data); nilai di sini
 // hanya dipakai selama belum ada data tersimpan atau bila sebuah isian dikosongkan. Bacalah lewat useGudep() / ambilGudep() (src/lib/gudepStore.js),
@@ -13,18 +17,18 @@ export const APP = {
 //   kamabigus = Kepala Sekolah / Kamabigus (penanda tangan surat keluar sekolah)
 // Pradana dan Pradani TIDAK diatur di sini: diambil dari anggota Dewan Ambalan yang berjabatan itu (src/lib/dewanLogic.js).
 export const GUDEP_BAWAAN = {
-  nama: 'Gugus Depan SMAN 1 Bukateja',
-  singkat: 'Ambalan Gajah Mada/Christina M.T',
-  sekolah: 'SMA Negeri 1 Bukateja',
-  alamat: 'Bukateja, Kabupaten Purbalingga, Jawa Tengah',
-  kota: 'Bukateja',
-  nomorGudep: '10.701/10.702',
-  kwarran: 'Kwartir Ranting Bukateja',
-  kwarcab: 'Kwartir Cabang Purbalingga',
-  kodeSurat: 'GD-SMAN1-BKT',
+  nama: 'Gugus Depan Pramuka Siaga',
+  singkat: 'Perindukan Siaga',
+  sekolah: 'Sekolah Dasar',
+  alamat: '',
+  kota: 'Isi kota',
+  nomorGudep: '',
+  kwarran: '',
+  kwarcab: '',
+  kodeSurat: 'GD-SIAGA',
   telepon: '',
   email: '',
-  pembina: { jabatan: 'Pembina Gudep', nama: 'Diana Udhi Hendriyanto, S.Pd.M.Pd', nta: '11.03.10.701.02365', nip: '' },
+  pembina: { jabatan: 'Pembina Gudep', nama: 'Isi nama Pembina', nta: '', nip: '' },
   kamabigus: { jabatan: 'Kepala Sekolah / Kamabigus', nama: '', nta: '', nip: '' },
 };
 

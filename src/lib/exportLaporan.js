@@ -234,7 +234,7 @@ export const unduhRaportXlsx = (data) =>
 
 export function susunPortofolioXlsx({ rekap, portofolio, filter }) {
   const judul = [
-    'Rekap Kesiapan Portofolio Penegak Garuda (SIGARDA)',
+    'Rekap Kesiapan Portofolio Penegak Garuda (SIGASI)',
     `${ambilGudep().nama}. Filter: ${teksFilter(filter)}. Dicetak ${fmtTanggal(hariIni())}`,
   ];
   const label = { siap: 'Ada', proses: 'Proses', belum: 'Tidak' };

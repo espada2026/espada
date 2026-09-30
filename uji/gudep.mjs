@@ -35,7 +35,7 @@ const contoh = {
 };
 
 console.log('--- Nilai bawaan dan keadaan awal ---');
-ok(GUDEP_BAWAAN.nama === 'Gugus Depan SMAN 1 Bukateja' && GUDEP_BAWAAN.pembina.nama.length > 0 && !('ketuaAmbalan' in GUDEP_BAWAAN), 'GUDEP_BAWAAN memuat identitas dan pejabat baru (tanpa ketuaAmbalan lama)');
+ok(GUDEP_BAWAAN.nama === 'Gugus Depan Pramuka Siaga' && GUDEP_BAWAAN.pembina.nama.length > 0 && !('ketuaAmbalan' in GUDEP_BAWAAN), 'GUDEP_BAWAAN memuat identitas dan pejabat baru (tanpa ketuaAmbalan lama)');
 ok(KOLOM_ORANG.join() === 'pembina,kamabigus' && KOLOM_TEKS.every((k) => k in GUDEP_BAWAAN), 'semua kolom teks ada pada nilai bawaan');
 ok(Object.keys(periksaGudep(GUDEP_BAWAAN)).length === 0, 'nilai bawaan lolos pemeriksaan');
 ok((await K.admin.a.muatGudep()).ok && (await K.admin.a.muatGudep()).data === null, 'belum pernah disimpan: muatGudep mengembalikan null');

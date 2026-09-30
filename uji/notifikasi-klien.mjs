@@ -183,7 +183,7 @@ console.log('\n--- Pemasangan PWA dan aplikasi ---');
   ok(/buka-notifikasi/.test(sw) && /notifikasi-baru/.test(sw) && /\?buka=notifikasi/.test(sw), 'sw.js: pesan ke aplikasi terbuka dan alamat ?buka=notifikasi saat aplikasi tertutup');
   ok(!/lulus|ulang/i.test(sw.replace(/ulang\(/g, '')), 'sw.js tidak memuat teks hasil penilaian');
   const m = JSON.parse(sumber('public/manifest.webmanifest'));
-  ok(m.name && m.short_name === 'SIGARDA' && m.display === 'standalone' && m.start_url === './' && m.scope === './' && /^#[0-9a-f]{6}$/i.test(m.theme_color) && /^#[0-9a-f]{6}$/i.test(m.background_color), 'manifest: nama, standalone, alamat relatif (jalan di alamat dasar mana pun), warna');
+  ok(m.name && m.short_name === 'SIGASI' && m.display === 'standalone' && m.start_url === './' && m.scope === './' && /^#[0-9a-f]{6}$/i.test(m.theme_color) && /^#[0-9a-f]{6}$/i.test(m.background_color), 'manifest: nama, standalone, alamat relatif (jalan di alamat dasar mana pun), warna');
   const png = (f) => { const b = readFileSync(`${P}/public/${f}`); return { ok: b.slice(1, 4).toString() === 'PNG', w: b.readUInt32BE(16), h: b.readUInt32BE(20) }; };
   for (const i of m.icons) {
     const [w, hh] = i.sizes.split('x').map(Number); const info = existsSync(`${P}/public/${i.src}`) ? png(i.src) : {};
