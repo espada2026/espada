@@ -24,7 +24,7 @@
  *   calon-laksana : SKU Bantara lulus, mengerjakan SKU Laksana
  *   calon-garuda  : SKU Bantara dan Laksana lulus, lalu mendaftarkan diri (user.calonGaruda)
  */
-import { TINGKAT, INDEKS_POIN, unitButir } from '../data/skuData';
+import { SEMUA_TINGKAT, INDEKS_POIN, unitButir } from '../data/skuData';
 import { kodeVerifikasi } from './format';
 import { pengujiPeranOk, pengujiSah } from './rombelLogic';
 
@@ -53,7 +53,7 @@ export function butirPeserta(tingkat, agama = '') {
   if (!cacheButir.has(kunci)) {
     cacheButir.set(
       kunci,
-      TINGKAT[tingkat].butir.map((b) => ({ ...b, unit: unitButir(tingkat, b, agama) }))
+      SEMUA_TINGKAT[tingkat].butir.map((b) => ({ ...b, unit: unitButir(tingkat, b, agama) }))
     );
   }
   return cacheButir.get(kunci);
@@ -97,6 +97,19 @@ export const tingkatSelesai = (progress, peserta, tingkat) => {
 };
 
 export const laksanaTerbuka = (progress, peserta) => tingkatSelesai(progress, peserta, 'Bantara');
+
+/**
+ * Tingkat yang harus selesai lebih dulu: Laksana menunggu Bantara; pada Pramuka Siaga (SK Kwarnas 119/2011) Bantu menunggu Mula dan Tata menunggu Bantu.
+ * Dicerminkan sigarda.prasyarat_tingkat (server; dibandingkan langsung oleh uji/sku-siaga.mjs). Bantara dan Mula tidak punya prasyarat.
+ */
+export const PRASYARAT_TINGKAT = { Laksana: 'Bantara', Bantu: 'Mula', Tata: 'Bantu' };
+export const prasyaratTingkat = (tingkat) => PRASYARAT_TINGKAT[tingkat] ?? null;
+/** { ok: true } atau { ok: false, prasyarat } bila tingkat butir ini baru terbuka setelah tingkat prasyaratnya selesai. */
+export function prasyaratTerpenuhi(progress, peserta, tingkat) {
+  const pra = prasyaratTingkat(tingkat);
+  if (!pra || tingkatSelesai(progress, peserta, pra)) return { ok: true };
+  return { ok: false, prasyarat: pra };
+}
 
 /**
  * Butir agama (sub-butir Butir 1, `poin.agama` terisi) hanya dinilai Pembina; butir Laksana dinilai Pembina atau penguji yang ditugaskan untuk
@@ -158,8 +171,8 @@ export function bisaDiajukan(progress, peserta, skuId) {
   if (status === 'lulus') return { ok: false, alasan: 'Poin ini sudah lulus.' };
   if (status === 'diajukan' || status === 'proses')
     return { ok: false, alasan: 'Poin ini sedang menunggu atau dalam pengujian.' };
-  if (poin.tingkat === 'Laksana' && !laksanaTerbuka(progress, peserta))
-    return { ok: false, alasan: 'Selesaikan seluruh butir Bantara lebih dulu.' };
+  const pra = prasyaratTerpenuhi(progress, peserta, poin.tingkat);
+  if (!pra.ok) return { ok: false, alasan: `Selesaikan seluruh butir ${pra.prasyarat} lebih dulu.` };
   return { ok: true };
 }
 
@@ -202,8 +215,8 @@ export function catatHasilUji(progress, { peserta, skuId, pengujiId, hasil, tang
   const poin = cariPoin(skuId);
   if (!poin) throw new Error('Poin SKU tidak ditemukan.');
   if (hasil !== 'reset' && !tanggalUji) throw new Error('Tanggal uji wajib diisi.');
-  if (hasil !== 'reset' && poin.tingkat === 'Laksana' && !laksanaTerbuka(progress, peserta))
-    throw new Error('Peserta belum menyelesaikan seluruh butir Bantara.');
+  const pra = prasyaratTerpenuhi(progress, peserta, poin.tingkat);
+  if (hasil !== 'reset' && !pra.ok) throw new Error(`Peserta belum menyelesaikan seluruh butir ${pra.prasyarat}.`);
 
   const catatanBersih = catatan.trim();
 

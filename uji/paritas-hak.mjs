@@ -149,8 +149,8 @@ console.log('--- Selesai tingkat SKU dan layak Garuda: skuLogic klien = sigarda.
     dilihat.add(u.agama);
     await q('delete from public.sku_progress where peserta_id = $1', [u.id]);
     await banding('kosong ' + u.agama, u.id);
-    const unit = await q('select id from public.sku_unit where agama is null or agama = $1 order by id', [u.agama]);
-    await q("insert into public.sku_progress (peserta_id, sku_id, status) select $1, id, 'lulus' from public.sku_unit where agama is null or agama = $2", [u.id, u.agama]);
+    const unit = await q("select id from public.sku_unit where tingkat in ('Bantara', 'Laksana') and (agama is null or agama = $1) order by id", [u.agama]);
+    await q("insert into public.sku_progress (peserta_id, sku_id, status) select $1, id, 'lulus' from public.sku_unit where tingkat in ('Bantara', 'Laksana') and (agama is null or agama = $2)", [u.id, u.agama]);
     const penuh = await banding('semua lulus ' + u.agama, u.id);
     ok(penuh.g === true, 'semua butir lulus = layak Garuda (' + u.agama + ')');
     for (const x of [unit[0], unit[Math.floor(unit.length / 2)], unit[unit.length - 1]]) {

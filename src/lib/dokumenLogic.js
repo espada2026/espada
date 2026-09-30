@@ -23,11 +23,14 @@ export const JENIS_DOKUMEN = { [JENIS_SURAT_AGAMA]: { label: 'Surat pengantar ke
 export const suratAgamaAktif = (dokumen, pesertaId, skuId) =>
   (dokumen ?? []).some((d) => d.jenis === JENIS_SURAT_AGAMA && d.pesertaId === pesertaId && !d.dicabutPada && (d.butir ?? []).includes(skuId));
 
-/** Semua unit butir agama milik agama Penegak ini (Bantara dan Laksana), urut tingkat lalu butir. */
+const URUTAN_TINGKAT = { Bantara: 0, Laksana: 1, Mula: 0, Bantu: 1, Tata: 2 };
+const TINGKAT_SIAGA = ['Mula', 'Bantu', 'Tata'];
+
+/** Semua unit butir agama milik agama anggota ini, urut tingkat lalu butir: Bantara dan Laksana untuk Penegak, Mula, Bantu, dan Tata untuk anak Siaga (tanpa akun). */
 export const unitAgamaPeserta = (peserta) =>
   Object.values(INDEKS_POIN)
-    .filter((p) => p.agama && p.agama === peserta?.agama)
-    .sort((a, b) => (a.tingkat === b.tingkat ? 0 : a.tingkat === 'Bantara' ? -1 : 1) || a.butirNo - b.butirNo || (a.sub ?? 0) - (b.sub ?? 0));
+    .filter((p) => p.agama && p.agama === peserta?.agama && TINGKAT_SIAGA.includes(p.tingkat) === !!peserta?.tanpaAkun)
+    .sort((a, b) => (URUTAN_TINGKAT[a.tingkat] ?? 9) - (URUTAN_TINGKAT[b.tingkat] ?? 9) || a.butirNo - b.butirNo || (a.sub ?? 0) - (b.sub ?? 0));
 
 /** Tidak ada Pembina yang agamanya sama dengan Penegak: butir agamanya perlu surat pengantar ke guru agama. */
 export const perluSuratAgama = (users, peserta) =>

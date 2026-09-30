@@ -113,6 +113,13 @@ begin
   return next;
 end $$;
 
+-- ===== SKU Siaga (Pramuka Siaga, Fase 2): prasyarat tingkat =====
+-- Tingkat yang harus selesai lebih dulu: Laksana menunggu Bantara; Bantu menunggu Mula; Tata menunggu Bantu (SK Kwarnas 119/2011). Bantara dan Mula tanpa prasyarat.
+-- Dicerminkan src/lib/skuLogic.js (PRASYARAT_TINGKAT) dan dibandingkan langsung oleh uji/sku-siaga.mjs.
+create function sigarda.prasyarat_tingkat(p_tingkat text) returns text language sql immutable as
+$$ select case p_tingkat when 'Laksana' then 'Bantara' when 'Bantu' then 'Mula' when 'Tata' then 'Bantu' end $$;
+-- ===== akhir prasyarat tingkat =====
+
 -- Seluruh unit SKU tingkat ini yang berlaku bagi peserta (sesuai agamanya) sudah lulus.
 create function sigarda.tingkat_selesai(p_peserta uuid, p_tingkat text) returns boolean
 language plpgsql stable security definer set search_path = public as

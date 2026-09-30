@@ -17,7 +17,8 @@ const KELAS_STATUS = {
   ditetapkan: 'bg-emerald-100 text-emerald-900 ring-emerald-300',
 };
 const LABEL_STATUS = { kosong: 'Belum ada', ...STATUS_INSTRUMEN };
-const UNIT = daftarUnitInstrumen(INDEKS_POIN, hurufSub);
+// Instrumen penilaian hanya untuk SKU Penegak (Bantara, Laksana); SKU Siaga diuji informal menurut SK 119/2011 tanpa instrumen.
+const UNIT = daftarUnitInstrumen(Object.fromEntries(Object.entries(INDEKS_POIN).filter(([, p]) => p.tingkat === 'Bantara' || p.tingkat === 'Laksana')), hurufSub);
 const BATAS_DAFTAR = 40;
 
 /* ============================== Editor satu instrumen ============================== */

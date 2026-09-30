@@ -47,7 +47,7 @@ create unique index profil_pinsa_unik on public.profiles (kelas, lower(sangga)) 
 -- Katalog (diisi otomatis di bagian akhir berkas ini dari data aplikasi)
 create table public.sku_butir (
   id text primary key,                     -- BAN-05
-  tingkat text not null check (tingkat in ('Bantara','Laksana')),
+  tingkat text not null check (tingkat in ('Bantara','Laksana','Mula','Bantu','Tata')),   -- Bantara/Laksana = Penegak; Mula/Bantu/Tata = Siaga (SK Kwarnas 119/2011)
   no int not null,
   teks text not null
 );

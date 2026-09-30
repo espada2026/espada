@@ -14,6 +14,16 @@
  * Jangan ubah id setelah ada data progres, karena id dipakai sebagai kunci penyimpanan.
  */
 
+/** Area pengembangan Pramuka Siaga (label tampilan); urutan kunci = urutan pada SK Kwarnas 119/2011. Dipakai butir Siaga (skuSiagaData.js). */
+export const AREA_SIAGA = {
+  spiritual: 'Spiritual',
+  emosional: 'Emosional',
+  sosial: 'Sosial',
+  intelektual: 'Intelektual',
+  fisik: 'Fisik',
+};
+export const URUTAN_AREA_SIAGA = Object.keys(AREA_SIAGA);
+
 export const AGAMA = ['Islam', 'Katolik', 'Protestan', 'Hindu', 'Buddha', 'Khonghucu'];
 
 const KODE_AGAMA = { Islam: 'ISL', Katolik: 'KAT', Protestan: 'PRO', Hindu: 'HIN', Buddha: 'BUD', Khonghucu: 'KHO' };
@@ -150,7 +160,7 @@ const BUTIR_LAKSANA = [
 
 const p2 = (n) => String(n).padStart(2, '0');
 
-function bangun(kode, judul, daftar) {
+export function bangun(kode, judul, daftar) {
   return {
     kode,
     judul,
@@ -166,6 +176,12 @@ export const TINGKAT = {
 export const DAFTAR_TINGKAT = Object.keys(TINGKAT);
 
 /**
+ * Semua tingkat SKU yang terdaftar: Penegak (selalu) dan Siaga (didaftarkan src/data/skuSiaga.js saat halaman Siaga dimuat, supaya katalog Siaga tidak
+ * menambah ukuran JS awal). Kunci = nama tingkat seperti tersimpan di sku_unit.tingkat. Objek ini dan INDEKS_POIN bertambah menurut pendaftaran.
+ */
+export const SEMUA_TINGKAT = { ...TINGKAT };
+
+/**
  * Unit yang diuji untuk satu butir. Butir biasa = 1 unit. Butir agama = satu unit per sub-butir
  * sesuai agama peserta. Bentuk unit: { id, tingkat, butirNo, sub (1..n atau null), agama, teks }.
  */
@@ -174,7 +190,7 @@ export function unitButir(tingkat, butir, agama) {
     return [{ id: butir.id, tingkat, butirNo: butir.no, sub: null, agama: null, teks: butir.teks }];
   }
   const kode = kodeAgama(agama);
-  const teks = butir.agama[agama] ?? AGAMA_LAIN;
+  const teks = butir.agama[agama] ?? butir.agamaLain ?? AGAMA_LAIN;
   return teks.map((t, i) => ({
     id: `${butir.id}-${kode}-${i + 1}`,
     tingkat,
@@ -192,10 +208,14 @@ export const labelPoin = (p) => `Butir ${p.butirNo}${p.sub ? hurufSub(p.sub) : '
 
 // Indeks id -> unit untuk seluruh agama, agar pencarian cepat tanpa tahu agama pesertanya
 export const INDEKS_POIN = {};
-for (const [tingkat, t] of Object.entries(TINGKAT)) {
+
+/** Mendaftarkan satu tingkat ke SEMUA_TINGKAT dan INDEKS_POIN (semua agama). Dipakai untuk Penegak di bawah dan untuk Siaga (skuSiaga.js). */
+export function daftarkanTingkat(tingkat, t) {
+  SEMUA_TINGKAT[tingkat] = t;
   for (const b of t.butir) {
     for (const agama of [...AGAMA, '']) {
       for (const u of unitButir(tingkat, b, agama)) INDEKS_POIN[u.id] = u;
     }
   }
 }
+for (const [tingkat, t] of Object.entries(TINGKAT)) daftarkanTingkat(tingkat, t);
