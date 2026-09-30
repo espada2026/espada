@@ -2,7 +2,7 @@
 -- 1. Tabel
 -- ---------------------------------------------------------------------------
 create table public.profiles (
-  id uuid primary key references auth.users on delete cascade,
+  id uuid primary key default gen_random_uuid(),                 -- sama dengan auth.users.id untuk akun yang dapat masuk; anggota tanpa akun (anak Siaga) memakai id acak. Tanpa FK ke auth.users: hapus akun menghapus profil lewat pemicu profil_hapus_bersama_akun
   username text not null unique check (username ~ '^[a-z0-9][a-z0-9._-]{2,31}$'),  -- NIS untuk Penegak
   role text not null check (role in ('peserta','penguji','admin')),
   nama text not null check (char_length(btrim(nama)) between 1 and 120),
@@ -18,13 +18,18 @@ create table public.profiles (
   status_pada date,                                                -- sejak kapan status ini berlaku
   lulus_ta text check (lulus_ta is null or lulus_ta ~ '^[0-9]{4}/[0-9]{4}$'),   -- tahun ajaran kelulusan (angkatan), hanya alumni
   pinsa boolean not null default false,                           -- Pimpinan Sangga (Penegak Calon Laksana ke atas, dipilih Bina Damping rombelnya); satu Pinsa per sangga per rombel; hilang sendiri bila pindah rombel/sangga atau tidak aktif
+  tanpa_akun boolean not null default false,                      -- anggota Siaga yang datanya dikelola Pembina (tanpa auth.users, PIN, WhatsApp, atau isian mandiri)
+  perindukan text check (perindukan is null or (char_length(perindukan) between 1 and 40 and perindukan !~ '[[:cntrl:]<>]')),   -- Siaga: kelompok besar (3-4 barung)
+  barung text check (barung is null or (char_length(barung) between 1 and 40 and barung !~ '[[:cntrl:]<>]')),                   -- Siaga: kelompok 6-8 anak di dalam perindukan
   wajib_ganti_pin boolean not null default true,
   pin_direset_oleh uuid references public.profiles(id) on delete set null,
   pin_direset_pada timestamptz,
   pin_diubah timestamptz,
   dibuat date not null default sigarda.hari_ini(),
   -- Penegak: hanya NIS dan rombel yang wajib sejak akun dibuat; sangga (dibagi Pembina/Bina Damping) dan agama (diisi Penegak sendiri, dijaga pemicu tolak_peserta_tak_aktif: tanpa agama tidak ada progres SKU) boleh kosong.
-  constraint profil_peserta check (role <> 'peserta' or (nis is not null and kelas is not null and jabatan is null)),
+  constraint profil_peserta check (role <> 'peserta' or (kelas is not null and jabatan is null and (nis is not null or tanpa_akun))),
+  constraint profil_tanpa_akun check (not tanpa_akun or (role = 'peserta' and jabatan_dewan is null and not pinsa)),
+  constraint profil_barung check (barung is null or perindukan is not null),
   constraint profil_penguji check (role <> 'penguji' or jabatan in ('Dewan Ambalan','Pembina')),
   constraint profil_admin check (role <> 'admin' or jabatan = 'Admin Gudep'),
   constraint profil_nta check (nta is null or nta ~ '^[0-9A-Za-z./ -]{1,40}$'),

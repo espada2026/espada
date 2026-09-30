@@ -514,6 +514,16 @@ export function buatApi(klien) {
         p_agama: u.agama ?? null, p_calon_garuda: u.calonGaruda === undefined ? null : !!u.calonGaruda,
       }),
 
+    /* ------------------------------ Anggota Siaga (tanpa akun) ------------------------------ */
+    /** Menambah anggota Siaga (Pembina dan Admin). `daftar` = [{ nama, kelas, jk, agama, nis, perindukan, barung }]; semua atau tidak sama sekali. Mengembalikan jumlah yang ditambah. */
+    tambahSiaga: (daftar) => rpc('sg_siaga_tambah', { p_data: daftar }),
+    /** Mengubah satu anggota Siaga; `d` = { nama, kelas, jk, agama, nis, perindukan, barung } (kosong = dikosongkan). */
+    ubahSiaga: (id, d) => rpc('sg_siaga_ubah', { p_id: id, p_data: d }),
+    /** Menghapus anggota Siaga yang salah dimasukkan (hanya bila belum punya catatan apa pun). */
+    hapusSiaga: (id) => rpc('sg_siaga_hapus', { p_id: id }),
+    /** Menempatkan anggota Siaga ke perindukan dan barung (kosong = dikeluarkan). Mengembalikan jumlah yang diubah. */
+    aturBarung: (ids, perindukan, barung) => rpc('sg_barung_atur', { p_ids: ids, p_perindukan: perindukan || null, p_barung: barung || null }),
+
     /** NTA anggota (Admin). `daftar` = [{ username, nta }]; nta kosong menghapus. Mengembalikan jumlah anggota yang diperbarui. */
     aturNta: (daftar) => rpc('sg_anggota_nta_atur', { p_data: daftar }),
     /** Agama Pembina (Admin). `daftar` = [{ username, agama }]; agama kosong menghapus. Hanya berlaku untuk Pembina. Mengembalikan jumlah yang diperbarui. */

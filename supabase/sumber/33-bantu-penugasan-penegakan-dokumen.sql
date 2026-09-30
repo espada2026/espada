@@ -4,7 +4,7 @@ create function sigarda.rombel_baku(p_teks text) returns text language sql immut
 $$ select upper(regexp_replace(coalesce(p_teks, ''), '\s+', '', 'g')) $$;
 
 create function sigarda.rombel_sah(p_rombel text) returns boolean language sql immutable as
-$$ select coalesce(p_rombel ~ '^(X|XI|XII)-(0[1-9]|10)$', false) $$;
+$$ select coalesce(p_rombel ~ '^((X|XI|XII)-(0[1-9]|10)|[1-6][A-Z]?)$', false) $$;
 
 -- Tahun ajaran berbentuk 2026/2027 (tahun kedua = tahun pertama + 1).
 create function sigarda.tahun_ajaran_sah(p_ta text) returns boolean language sql immutable as

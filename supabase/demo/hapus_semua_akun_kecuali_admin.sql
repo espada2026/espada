@@ -134,6 +134,7 @@ begin
   -- 3. Hapus akun. Profil dan seluruh data yang masih tersisa milik akun itu ikut terhapus (ON DELETE CASCADE);
   --    kolom "dibuat oleh" atau "diubah oleh" pada data lain otomatis dikosongkan (ON DELETE SET NULL).
   delete from auth.users where id = any (v_ids);
+  delete from public.profiles where id = any (v_ids);     -- anggota Siaga tanpa akun tidak punya baris di auth.users; yang berakun sudah terhapus oleh pemicu
 
   -- 4. Konten pengaturan (opsional). Instrumen: kriteria, panduan, dan cara uji ikut terhapus (ON DELETE CASCADE).
   if v_hapus_pengaturan then

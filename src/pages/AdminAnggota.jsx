@@ -303,7 +303,7 @@ export default function AdminAnggota() {
       penugasan
         ? []
         : kelompok === 'peserta'
-        ? terapkanFilter(daftarPesertaSemua, filter)
+        ? terapkanFilter(daftarPesertaSemua.filter((u) => !u.tanpaAkun), filter)
         : users.filter((u) => cocokKelompok(aktif, u) && (!kata || normalisasiNama(u.nama).includes(kata)));
     return dasar.slice().sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
   }, [kelompok, aktif, daftarPesertaSemua, users, filter, cari]);
