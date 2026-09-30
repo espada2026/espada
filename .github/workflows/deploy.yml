@@ -102,6 +102,8 @@ jobs:
           path: dist
   deploy:
     needs: build
+    # Tanpa ini, job yang bergantung pada rantai berisi migrasi yang dilewati ikut dilewati (success() implisit menuntut semua leluhur sukses).
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
