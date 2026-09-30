@@ -94,7 +94,7 @@ jobs:
         env:
           # Situs dilayani dari akar domain khusus (sigarda.smabukateja.sch.id), jadi base "/".
           # Tanpa domain khusus (tribudi3267.github.io/sigarda/) ganti menjadi: /${{ github.event.repository.name }}/
-          VITE_BASE: /
+          VITE_BASE: /${{ github.event.repository.name }}/
           # Membuat satu halaman HTML per berita terbit + sitemap dari data publik (sg_berita_publik). Gagal = peringatan, situs tetap terbit.
           SIGARDA_BERITA_STATIS: '1'
       - uses: actions/upload-pages-artifact@v3

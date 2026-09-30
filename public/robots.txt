@@ -4,4 +4,4 @@ Allow: /
 Disallow: /*?v=
 Disallow: /*?berkas=
 
-Sitemap: https://sigarda.smabukateja.sch.id/sitemap.xml
+Sitemap: https://espada2026.github.io/espada/sitemap.xml

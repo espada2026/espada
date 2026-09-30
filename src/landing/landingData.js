@@ -4,7 +4,7 @@
  */
 
 /** Alamat utama situs untuk tautan bagikan (halaman muka dirender saat build tanpa window). Harus sama dengan canonical di index.html (dijaga uji/landing.mjs). */
-export const ALAMAT_SITUS = 'https://sigarda.smabukateja.sch.id/';
+export const ALAMAT_SITUS = 'https://espada2026.github.io/espada/';
 
 /** `bilaAda` = bagian itu hanya dirender bila ada isinya (Media Sosial), jadi tautannya juga hanya tampil bila ada; lihat menuTampil. Empat butir pertama dipakai pula di kaki halaman. */
 export const MENU = [
