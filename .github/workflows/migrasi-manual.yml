@@ -1,0 +1,39 @@
+name: Migrasi manual
+# Dijalankan tangan: Actions > Migrasi manual > Run workflow. Dua aksi:
+#   tandai   : SEKALI saat pemasangan. Menandai semua migrasi di README sebagai "sudah diterapkan" (tanpa menjalankannya), hanya bila pelacak masih kosong
+#              dan pemeriksaan pemasangan bersih. Pakai bila migrasi selama ini dijalankan tangan di SQL Editor.
+#   terapkan : menjalankan migrasi yang belum tercatat (mis. sesudah alur otomatis di deploy.yml terlewat karena dibatalkan).
+# Keduanya memakai kunci sambungan tulis di lingkungan "produksi" (perlu persetujuan pemilik) dan tidak pernah berjalan untuk pull request.
+# Panduan: docs/penerapan-otomatis.md.
+on:
+  workflow_dispatch:
+    inputs:
+      aksi:
+        description: 'tandai = penandaan awal (sekali); terapkan = jalankan migrasi tertunda'
+        type: choice
+        options: [tandai, terapkan]
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: migrasi-produksi
+  cancel-in-progress: false
+jobs:
+  jalankan:
+    if: github.repository == 'tribudi3267/sigarda'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: produksi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: scripts/cadangan/package-lock.json
+      - run: npm ci --prefix scripts/cadangan
+      - name: Jalankan aksi
+        env:
+          SIGARDA_DB_URL_TULIS: ${{ secrets.SIGARDA_DB_URL_TULIS }}
+          AKSI: ${{ inputs.aksi }}
+        run: node scripts/penerapan/jalankan.mjs "$AKSI"

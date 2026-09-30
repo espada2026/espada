@@ -13,7 +13,61 @@ concurrency:
   group: pages
   cancel-in-progress: true
 jobs:
+  # Migrasi SQL diterapkan OTOMATIS sebelum situs terbit, hanya bila push ini menambah/mengubah berkas di supabase/migrasi, dan HANYA sesudah pemilik
+  # menyetujui di lingkungan "produksi" (GitHub: Settings > Environments > produksi > Required reviewers). Kunci sambungan tulis SIGARDA_DB_URL_TULIS
+  # disimpan di lingkungan itu, bukan di rahasia repositori, dan alur ini tidak pernah berjalan untuk pull request. Migrasi gagal = situs TIDAK terbit
+  # (aplikasi tidak pernah lebih baru dari basis datanya). Belum dipasang (rahasia kosong) = dilewati dan cara manual lama tetap berlaku.
+  # Panduan: docs/penerapan-otomatis.md. Alur manual (tandai awal, atau terapkan tanpa push): migrasi-manual.yml.
+  cek:
+    runs-on: ubuntu-latest
+    outputs:
+      ada: ${{ steps.diff.outputs.ada }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        env:
+          SEBELUM: ${{ github.event.before }}
+          SESUDAH: ${{ github.sha }}
+          KEJADIAN: ${{ github.event_name }}
+        run: |
+          ada=false
+          if [ "$KEJADIAN" = "push" ]; then
+            # Push pertama, riwayat ditulis ulang, atau commit lama tak ditemukan: anggap ada (penerapan bersifat idempoten dan berpelacak).
+            if [ -z "$SEBELUM" ] || [ "$SEBELUM" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$SEBELUM^{commit}" 2>/dev/null; then
+              ada=true
+            elif [ -n "$(git diff --name-only "$SEBELUM" "$SESUDAH" -- supabase/migrasi)" ]; then
+              ada=true
+            fi
+          fi
+          echo "ada=$ada" >> "$GITHUB_OUTPUT"
+          echo "Migrasi berubah pada push ini: $ada"
+  migrasi:
+    needs: cek
+    if: needs.cek.outputs.ada == 'true' && github.repository == 'tribudi3267/sigarda'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: produksi
+    concurrency:
+      group: migrasi-produksi
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: scripts/cadangan/package-lock.json
+      - run: npm ci --prefix scripts/cadangan
+      - name: Terapkan migrasi yang belum tercatat
+        env:
+          SIGARDA_DB_URL_TULIS: ${{ secrets.SIGARDA_DB_URL_TULIS }}
+        run: node scripts/penerapan/jalankan.mjs terapkan --lewati-bila-kosong
   build:
+    needs: [cek, migrasi]
+    # Berjalan bila migrasi berhasil atau memang tidak diperlukan (dilewati); tidak berjalan bila migrasi gagal atau dibatalkan.
+    if: ${{ !cancelled() && needs.cek.result == 'success' && needs.migrasi.result != 'failure' }}
     runs-on: ubuntu-latest
     env:
       # Isi di GitHub: Settings > Secrets and variables > Actions > tab Variables (bukan Secrets).
