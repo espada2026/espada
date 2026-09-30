@@ -19,6 +19,15 @@ console.log('--- susunCatatanRilis ---');
   ok(r.perluTindakan && r.migrasiBaru.join() === '2026-09-b,2026-09-c', 'migrasi baru diurutkan menurut README, bukan urutan git: ' + r.migrasiBaru.join());
   ok(r.markdown.indexOf('2026-09-b.sql') < r.markdown.indexOf('2026-09-c.sql') && /periksa_pemasangan\.sql/.test(r.markdown) && /sebelum menggabungkan/.test(r.markdown), 'catatan memuat urutan, periksa pemasangan, dan "sebelum menggabungkan"');
   ok(r.peringatan.length === 0, 'migrasi baru + skema berubah + terdaftar di README: tanpa peringatan');
+  ok(/tidak perlu ditempel di SQL Editor/.test(r.markdown) && /Review deployments/.test(r.markdown) && /Approve and deploy/.test(r.markdown) && /produksi/.test(r.markdown), 'catatan menjelaskan penerapan otomatis dan persetujuan di lingkungan produksi');
+  ok(/belum dipasang.*tangan.*sebelum menggabungkan/s.test(r.markdown) && /docs\/penerapan-otomatis\.md/.test(r.markdown), 'catatan tetap memberi jalur manual bila penerapan otomatis belum dipasang');
+  ok(/Periksa pemasangan/.test(r.markdown) && !/Deploy ulang/.test(r.markdown), 'tanpa perubahan Edge Function: tidak ada langkah deploy');
+}
+{
+  const r = susunCatatanRilis({ berkas: [ub('A', 'supabase/migrasi/2026-09-b.sql'), ub('M', 'supabase/functions/sigarda/index.ts')], skemaBerubah: true, urutanReadme: URUTAN });
+  ok(/Deploy ulang.*tetap manual.*sesudah langkah migrasi hijau/.test(r.markdown), 'migrasi + Edge Function: deploy fungsi tetap manual dan sesudah migrasi hijau');
+  const s = susunCatatanRilis({ berkas: [ub('M', 'supabase/functions/notif-push/index.ts')], skemaBerubah: false, urutanReadme: URUTAN });
+  ok(/Deploy ulang.*tetap manual.*sebelum atau sesudah PR digabung/.test(s.markdown) && !/Review deployments/.test(s.markdown), 'hanya Edge Function: tanpa persetujuan migrasi, deploy boleh sebelum/sesudah merge');
 }
 {
   const r = susunCatatanRilis({ berkas: [ub('A', 'supabase/migrasi/2026-09-baru.sql'), ub('M', 'supabase/functions/sigarda/index.ts'), ub('M', 'supabase/functions/notif-push/index.ts'), ub('M', 'supabase/functions/sigarda/lain.ts')], skemaBerubah: false, urutanReadme: URUTAN });

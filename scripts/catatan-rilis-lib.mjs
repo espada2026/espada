@@ -1,8 +1,9 @@
 /**
  * Catatan rilis otomatis (P5): dari daftar berkas yang berubah pada sebuah pull request, susun apa yang HARUS dikerjakan pemilik SEBELUM
- * menggabungkannya (situs terbit otomatis saat merge ke main, jadi migrasi harus lebih dulu). Murni tanpa akses git/jaringan agar mudah diuji;
- * pengambil datanya ada di scripts/catatan-rilis.mjs. Migrasi dijalankan pemilik di SQL Editor dan Edge Function di-deploy pemilik
- * (aturan proyek); alat ini hanya mengingatkan, tidak menjalankan apa pun.
+ * menggabungkannya (situs terbit otomatis saat merge ke main). Murni tanpa akses git/jaringan agar mudah diuji;
+ * pengambil datanya ada di scripts/catatan-rilis.mjs. Migrasi diterapkan OTOMATIS sesudah merge bila penerapan otomatis dipasang (deploy.yml, job migrasi,
+ * menunggu persetujuan pemilik; docs/penerapan-otomatis.md), bila belum dipasang pemilik menjalankannya di SQL Editor SEBELUM merge; Edge Function tetap
+ * di-deploy pemilik. Alat ini hanya mengingatkan, tidak menjalankan apa pun.
  */
 
 const POLA_MIGRASI = /^supabase\/migrasi\/([^/]+)\.sql$/;
@@ -49,20 +50,21 @@ export function susunCatatanRilis({ berkas, skemaBerubah, urutanReadme }) {
   if (!perluTindakan) {
     baris.push('Tidak ada migrasi SQL baru dan tidak ada Edge Function yang berubah: **menggabungkan PR ini tidak memerlukan langkah tambahan** dari pemilik. Situs terbit otomatis setelah digabung.');
   } else {
-    baris.push('Situs terbit otomatis begitu PR ini digabung ke `main`, jadi kerjakan **sebelum menggabungkan**:', '');
     let no = 1;
     if (baru.length) {
-      baris.push(`${no++}. Jalankan di Supabase SQL Editor, **berurutan** dan sekali saja (aman untuk data yang ada):`);
+      baris.push('Migrasi SQL **tidak perlu ditempel di SQL Editor**: sesudah PR ini digabung, GitHub berhenti di langkah *migrasi* dan meminta persetujuan Anda (Actions > alur terbaru > **Review deployments** > centang `produksi` > **Approve and deploy**). Migrasi dijalankan berurutan, baru situs terbit; bila gagal, situs tidak terbit dan basis data tetap utuh.', '');
+      baris.push(`${no++}. Migrasi yang akan dijalankan otomatis (berurutan, aman untuk data yang ada):`);
       for (const n of baru) baris.push(`   - \`supabase/migrasi/${n}.sql\``);
+      baris.push('   - _Bila penerapan otomatis belum dipasang (rahasia belum diisi), langkah itu dilewati: jalankan migrasi di atas **tangan** di Supabase SQL Editor, berurutan, **sebelum menggabungkan**. Lihat `docs/penerapan-otomatis.md`._');
+    } else {
+      baris.push('Situs terbit otomatis begitu PR ini digabung ke `main`.', '');
     }
     if (fungsiBerubah.length) {
-      baris.push(`${no++}. Deploy ulang (timpa) Edge Function berikut di Dashboard > Edge Functions:`);
+      baris.push(`${no++}. Deploy ulang (timpa) Edge Function berikut di Dashboard > Edge Functions (**tetap manual**; ${baru.length ? 'kerjakan sesudah langkah migrasi hijau, karena fungsi dapat memakai fungsi SQL baru' : 'boleh sebelum atau sesudah PR digabung'}):`);
       for (const n of fungsiBerubah) baris.push(`   - \`${n}\` (\`supabase/functions/${n}/index.ts\`)`);
     }
-    if (baru.length || fungsiBerubah.length) {
-      baris.push(`${no++}. Jalankan \`supabase/demo/periksa_pemasangan.sql\`${periksaBerubah ? ' (berkas ini ikut diperbarui oleh PR ini)' : ''} dan pastikan tidak ada baris \`KURANG\`/\`BEDA\`.`);
-    }
-    baris.push(`${no}. Sesudah itu gabungkan PR; situs baru terbit otomatis.`);
+    baris.push(`${no++}. Pemeriksaan pemasangan berjalan otomatis tiap hari 06.00 WIB (terbuka issue bila ada yang kurang). Untuk memeriksa segera: Actions > **Periksa pemasangan** > Run workflow, atau tempel \`supabase/demo/periksa_pemasangan.sql\`${periksaBerubah ? ' (berkas ini ikut diperbarui oleh PR ini)' : ''} di SQL Editor dan pastikan tidak ada baris \`KURANG\`/\`BEDA\`.`);
+    baris.push(`${no}. ${baru.length ? 'Gabungkan PR bila siap; sesudah itu setujui migrasinya (di atas).' : 'Gabungkan PR; situs terbit otomatis.'}`);
   }
   if (peringatan.length) baris.push('', '**Perhatian**', ...peringatan.map((p) => `- ${p}`));
   baris.push('', '_Dibuat otomatis oleh `.github/workflows/catatan-rilis.yml` (`scripts/catatan-rilis.mjs`); diperbarui setiap PR berubah. Hanya pengingat: tidak menjalankan apa pun._');
