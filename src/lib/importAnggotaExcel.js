@@ -103,7 +103,7 @@ export async function bacaExcelAnggota(buffer, kelompok = 'peserta') {
 /* ---------- Template ---------- */
 
 const PETUNJUK_PENEGAK = (label) => [
-  [`Petunjuk pengisian template import ${label} SIGARDA`, ''],
+  [`Petunjuk pengisian template import ${label} SIGASI`, ''],
   ['', ''],
   ['1. Isi data pada lembar "Anggota"', 'Satu baris satu penegak, mulai baris 2 (di bawah judul kolom). Jangan mengubah atau menghapus judul kolom.'],
   ['2. Kolom wajib', 'HANYA tiga: Nama Lengkap, NIS, dan Rombel. NIS tidak boleh sama dengan anggota lain: NIS menjadi nama pengguna untuk masuk ke aplikasi. Kolom lain bertanda (opsional) boleh dikosongkan; data diri selebihnya (tempat dan tanggal lahir, alamat, keluarga, pendidikan, dan seterusnya) diisi Penegak sendiri di menu Akun saya untuk melengkapi dokumen portofolio Garuda.'],
@@ -133,7 +133,7 @@ const PETUNJUK_PENGURUS = (label, kelompok) => {
   }
   const n = 4 + ekstra.length;
   return [
-    [`Petunjuk pengisian template import ${label} SIGARDA`, ''],
+    [`Petunjuk pengisian template import ${label} SIGASI`, ''],
     ['', ''],
     ['1. Isi data pada lembar "Anggota"', `Satu baris satu orang, mulai baris 2 (di bawah judul kolom). Semua yang diimpor didaftarkan sebagai ${label}. Jangan mengubah atau menghapus judul kolom.`],
     ['2. Kolom wajib', 'Nama Lengkap dan Jenis Kelamin. Gelar boleh ditulis pada nama (mis. Budi Santoso, S.Pd.).'],
@@ -160,7 +160,7 @@ export async function buatTemplateAnggota(kelompok = 'peserta') {
   const nomorKolom = (key) => kolom.findIndex((k) => k.key === key) + 1;
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'SIGARDA';
+  wb.creator = 'SIGASI';
 
   const ws = wb.addWorksheet(NAMA_LEMBAR, { views: [{ state: 'frozen', ySplit: 1 }] });
   ws.columns = kolom.map((k) => ({ header: k.header, key: k.key, width: k.lebar }));

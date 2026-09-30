@@ -115,7 +115,7 @@ export default function HalamanBerkasGaruda({ token }) {
           <span>Halaman ini hanya menampilkan data yang dibagikan lewat tautan ini oleh {G.nama}.</span>
         </p>
         <a href={alamatDasar()} className="no-print mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-pramuka-800 underline">
-          <Icon nama="kembali" className="h-4 w-4" />Ke halaman masuk SIGARDA
+          <Icon nama="kembali" className="h-4 w-4" />Ke halaman masuk SIGASI
         </a>
       </main>
       <div className="no-print"><FooterRingkas /></div>

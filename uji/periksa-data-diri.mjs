@@ -86,7 +86,7 @@ ok(IDS.join() === 'whatsapp,jk,agama,lahir,tempat_lahir,alamat,ortu' && labelPok
 console.log('\n--- Teks WhatsApp dan hak menghubungi ---');
 const t = teksWaLengkapiDataDiri('Siti', ['Agama', 'Alamat'], 'https://sigarda.example/');
 ok(t.includes('Halo Siti') && t.includes('Agama, Alamat') && t.includes('Akun saya > Data diri') && t.includes('https://sigarda.example/'), 'teks ajakan memuat nama, isian yang kurang, dan tempat mengisi');
-ok(teksWaLengkapiDataDiri('Siti', ['Agama']).includes('buka SIGARDA'), 'tanpa alamat: memakai kata SIGARDA');
+ok(teksWaLengkapiDataDiri('Siti', ['Agama']).includes('buka SIGASI'), 'tanpa alamat: memakai kata SIGASI');
 ok(bolehDihubungi({ id: 'a', role: 'penguji', jabatan: 'Pembina' }, { id: 'p', peran: 'Penegak' }) && bolehDihubungi({ id: 'd', role: 'penguji', jabatan: 'Dewan Ambalan' }, { id: 'p', peran: 'Penegak' }), 'Pembina dan Dewan boleh menghubungi Penegak');
 
 console.log(`RINGKASAN PERIKSA-DATA-DIRI: ${lulus} lulus, ${gagal} gagal`);

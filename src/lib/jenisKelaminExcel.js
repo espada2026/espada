@@ -54,7 +54,7 @@ export async function buatBerkasJk(users) {
   const { default: ExcelJS } = await import('exceljs');
   const daftar = urutAnggotaJk(anggotaTanpaJk(users));
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'SIGARDA';
+  wb.creator = 'SIGASI';
   const ws = wb.addWorksheet(NAMA_LEMBAR_JK, { views: [{ state: 'frozen', ySplit: 1 }] });
   ws.columns = [
     { header: 'Nama Pengguna (NIS untuk Penegak)', key: 'id', width: 30 },
@@ -83,7 +83,7 @@ export async function buatBerkasJk(users) {
   const petunjuk = wb.addWorksheet('Petunjuk');
   petunjuk.getColumn(1).width = 100;
   [
-    'Petunjuk lengkapi jenis kelamin SIGARDA',
+    'Petunjuk lengkapi jenis kelamin SIGASI',
     '',
     'Isi kolom Jenis Kelamin pada lembar "Jenis Kelamin" untuk tiap anggota: pilih dari daftar (Laki-laki atau Perempuan). L dan P juga dikenali.',
     'Jangan mengubah kolom Nama Pengguna. Nama, Peran, dan Rombel hanya sebagai petunjuk; yang dibaca hanya Nama Pengguna dan Jenis Kelamin.',

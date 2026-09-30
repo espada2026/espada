@@ -128,7 +128,7 @@ function PanelTautan({ pesertaId, token, onUbah }) {
   return (
     <div className="no-print panel space-y-2 p-4">
       <h2 className="text-sm font-bold text-pramuka-900">Tautan berbagi (baca-saja, tanpa login)</h2>
-      <p className="text-xs text-pramuka-600">Untuk penilai kwarran/kwarcab meninjau berkas ini tanpa perlu akun SIGARDA. Berlaku sampai dicabut manual.</p>
+      <p className="text-xs text-pramuka-600">Untuk penilai kwarran/kwarcab meninjau berkas ini tanpa perlu akun SIGASI. Berlaku sampai dicabut manual.</p>
       {token ? (
         <>
           <div className="flex items-center gap-2">

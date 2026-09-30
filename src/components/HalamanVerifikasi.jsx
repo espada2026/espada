@@ -311,7 +311,7 @@ export default function HalamanVerifikasi({ awal = '' }) {
           </span>
         </p>
         <a href={alamatDasar()} className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-pramuka-800 underline">
-          <Icon nama="kembali" className="h-4 w-4" />Ke halaman masuk SIGARDA
+          <Icon nama="kembali" className="h-4 w-4" />Ke halaman masuk SIGASI
         </a>
       </main>
       <FooterRingkas />

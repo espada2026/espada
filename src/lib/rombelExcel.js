@@ -83,7 +83,7 @@ export async function buatBerkasRombel(users) {
   const { default: ExcelJS } = await import('exceljs');
   const daftar = daftarRombelLama(users);
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'SIGARDA';
+  wb.creator = 'SIGASI';
   const ws = wb.addWorksheet(NAMA_LEMBAR_ROMBEL, { views: [{ state: 'frozen', ySplit: 1 }] });
   ws.columns = [
     { header: 'NIS', key: 'nis', width: 14 },
@@ -110,7 +110,7 @@ export async function buatBerkasRombel(users) {
   const petunjuk = wb.addWorksheet('Petunjuk');
   petunjuk.getColumn(1).width = 100;
   [
-    'Petunjuk perbarui rombel SIGARDA',
+    'Petunjuk perbarui rombel SIGASI',
     '',
     'Isi kolom Rombel pada lembar "Rombel" untuk tiap Penegak: pilih dari daftar (X-01 sampai X-10, XI-01 sampai XI-10, XII-01 sampai XII-10).',
     'Jangan mengubah kolom NIS. Nama dan Kelas Sekarang hanya sebagai petunjuk; yang dibaca hanya NIS dan Rombel.',

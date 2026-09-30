@@ -65,7 +65,7 @@ export default function Bantuan() {
       <div className="no-print mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Bantuan</h1>
-          <p className="text-sm text-pramuka-600">Panduan pemakaian SIGARDA, ringkas per peran.</p>
+          <p className="text-sm text-pramuka-600">Panduan pemakaian SIGASI, ringkas per peran.</p>
         </div>
         <button className="btn btn-gold" onClick={() => window.print()}>
           <Icon nama="cetak" className="h-4 w-4" /> Cetak atau simpan PDF

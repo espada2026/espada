@@ -85,7 +85,7 @@ export default function SuratPengantarAgama({ dokumen: d }) {
 
       <p className="mt-3 text-sm leading-relaxed">
         Mohon hasil penilaian dituliskan pada kolom di atas, lalu surat ini disampaikan kembali kepada Pembina Gudep agar hasilnya dicatat
-        pada aplikasi SIGARDA. Demikian permohonan ini kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.
+        pada aplikasi SIGASI. Demikian permohonan ini kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.
       </p>
 
       <div className="mt-5 flex items-end justify-between gap-6 break-inside-avoid">

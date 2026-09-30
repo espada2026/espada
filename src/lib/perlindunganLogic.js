@@ -80,6 +80,6 @@ export function periksaGudepSfh(nilai) {
 
 /** Teks WhatsApp ajakan melengkapi catatan Safe From Harm (Periksa Data). `kurang` = daftar label jenis. */
 export function teksWaLengkapiSfh(nama, kurang = [], alamat = '') {
-  return `Halo ${nama}, ini dari pengurus SIGARDA. Catatan perlindungan anggota (Safe From Harm) milikmu masih perlu dilengkapi: ${kurang.join(', ')}. `
-    + `Bukti (mis. sertifikat pelatihan atau pakta integritas yang sudah ditandatangani) dapat diserahkan ke Pembina atau Admin Gudep untuk dicatat di ${alamat || 'SIGARDA'}. Terima kasih.`;
+  return `Halo ${nama}, ini dari pengurus SIGASI. Catatan perlindungan anggota (Safe From Harm) milikmu masih perlu dilengkapi: ${kurang.join(', ')}. `
+    + `Bukti (mis. sertifikat pelatihan atau pakta integritas yang sudah ditandatangani) dapat diserahkan ke Pembina atau Admin Gudep untuk dicatat di ${alamat || 'SIGASI'}. Terima kasih.`;
 }

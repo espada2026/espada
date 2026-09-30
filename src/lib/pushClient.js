@@ -67,7 +67,7 @@ async function langgananSaatIni(env) {
  */
 export async function aktifkanPush(api, env = globalThis) {
   const k = keadaanPush(env);
-  if (k.perluPasang) return { ok: false, pesan: 'Di iPhone atau iPad, pasang dulu aplikasinya: ketuk tombol Bagikan di Safari, pilih "Tambah ke Layar Utama", lalu buka SIGARDA dari layar utama.' };
+  if (k.perluPasang) return { ok: false, pesan: 'Di iPhone atau iPad, pasang dulu aplikasinya: ketuk tombol Bagikan di Safari, pilih "Tambah ke Layar Utama", lalu buka SIGASI dari layar utama.' };
   if (!k.dukung) return { ok: false, pesan: 'Peramban ini belum mendukung notifikasi. Coba Chrome atau Edge terbaru.' };
   if (k.izin === 'denied') return { ok: false, pesan: 'Notifikasi diblokir untuk situs ini. Buka pengaturan situs di peramban, izinkan Notifikasi, lalu coba lagi.' };
   const kunci = await api.kunciPush();

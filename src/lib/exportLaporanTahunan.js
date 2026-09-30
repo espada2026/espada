@@ -125,7 +125,7 @@ function sheetKeterangan() {
       { v: 'Rekap Keanggotaan adalah SNAPSHOT (potret) pada tanggal laporan dibuat, bukan rata-rata sepanjang periode -- sama seperti sensus keanggotaan Kwartir Cabang.' },
       { v: 'Rekap Pencapaian SKU, Rekap Kegiatan, Rekap Kehadiran, dan Rekap Keuangan dihitung untuk RENTANG TANGGAL periode laporan yang dipilih.' },
       { v: 'Seorang Penegak yang lulus SKU lalu menjadi alumni/nonaktif pada periode yang sama tetap terhitung pada Rekap Pencapaian SKU.' },
-      { v: 'Laporan ini disusun dari data yang tercatat di aplikasi SIGARDA; keakuratan bergantung pada kelengkapan pencatatan Pembina dan Dewan Ambalan.' },
+      { v: 'Laporan ini disusun dari data yang tercatat di aplikasi SIGASI; keakuratan bergantung pada kelengkapan pencatatan Pembina dan Dewan Ambalan.' },
     ],
   };
 }

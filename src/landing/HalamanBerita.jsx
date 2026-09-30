@@ -22,7 +22,7 @@ export default function HalamanBerita({ b, namaGudep, alamatSitus }) {
         <header className="border-b border-emas/25 bg-pramuka-900 text-pramuka-50">
           <div className="mx-auto flex h-16 w-full max-w-3xl items-center gap-3 px-5">
             <a href={dasar} className="flex min-w-0 items-center gap-3 no-underline">
-              <LogoMark size={38} judul="Lambang SIGARDA" />
+              <LogoMark size={38} judul="Lambang SIGASI" />
               <span className="min-w-0 truncate font-display text-[15px] font-bold tracking-wide">{namaGudep}</span>
             </a>
             <a href={`${dasar}#masuk`} className="btn btn-gold ml-auto shrink-0 !rounded-full !px-5">Masuk</a>

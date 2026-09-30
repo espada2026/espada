@@ -1,4 +1,4 @@
-/* SIGARDA service worker.
+/* SIGASI service worker.
  * Tugasnya HANYA dua: menampilkan notifikasi push dan membuka aplikasi saat notifikasi diketuk. Sengaja TIDAK ada fetch handler dan TIDAK menyimpan
  * (cache) apa pun: data (Supabase) tidak pernah tersimpan di perangkat, dan halaman selalu versi terbaru dari server.
  * Isi push dari Edge Function notif-push: { id, judul, isi } (singkat, tanpa hasil penilaian). */
@@ -11,11 +11,11 @@ self.addEventListener('push', (event) => {
   try {
     d = event.data ? event.data.json() : {};
   } catch (e) {
-    d = { judul: 'SIGARDA', isi: event.data ? event.data.text() : '' };
+    d = { judul: 'SIGASI', isi: event.data ? event.data.text() : '' };
   }
   const ikon = new URL('ikon-192.png', self.registration.scope).href;
   event.waitUntil((async () => {
-    await self.registration.showNotification(d.judul || 'SIGARDA', {
+    await self.registration.showNotification(d.judul || 'SIGASI', {
       body: d.isi || '',
       icon: ikon,
       tag: d.id ? 'sigarda-' + d.id : undefined,

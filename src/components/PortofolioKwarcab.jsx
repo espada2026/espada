@@ -274,7 +274,7 @@ export function PortofolioKwarcabDokumen({ peserta, tanggalLahir = null, capaian
         <div className="mt-2"><SumberPeraturan rujukan={[{ id: 'garuda-038-2017', bagian: 'Bab II butir 1c (13 syarat Penegak Garuda)' }]} /></div>
       </section>
 
-      {/* 5b. Daftar hadir latihan 3 bulan (12 kali) setelah dilantik Laksana; dari absensi SIGARDA, sel kosong dilengkapi tulisan tangan */}
+      {/* 5b. Daftar hadir latihan 3 bulan (12 kali) setelah dilantik Laksana; dari absensi SIGASI, sel kosong dilengkapi tulisan tangan */}
       <section className={`${HALAMAN} border border-pramuka-300 p-6 print:border-0`}>
         <h2 className="text-center font-display text-base font-bold">DAFTAR HADIR LATIHAN<br />3 BULAN ({JUMLAH_LATIHAN} KALI) SETELAH DILANTIK PENEGAK LAKSANA</h2>
         <div className="mt-3">
@@ -456,7 +456,7 @@ export default function TampilanPortofolioKwarcab({ peserta, onKembali }) {
         </button>
       </div>
       <div className="no-print panel mb-4 space-y-1 p-4 text-sm text-pramuka-700">
-        <p>Format mengikuti "02. Portofolio Penegak Garuda 2026" Kwarcab Purbalingga. Yang sudah tercatat di SIGARDA (pelantikan, TKK, Saka, Krida, SPG, tim penilai) dan yang diisi Penegak sendiri di Akun saya (tempat dan tanggal lahir, alamat, keluarga, pendidikan, prestasi, kegiatan) terisi otomatis; yang belum diisi dicetak kosong untuk ditulis tangan.</p>
+        <p>Format mengikuti "02. Portofolio Penegak Garuda 2026" Kwarcab Purbalingga. Yang sudah tercatat di SIGASI (pelantikan, TKK, Saka, Krida, SPG, tim penilai) dan yang diisi Penegak sendiri di Akun saya (tempat dan tanggal lahir, alamat, keluarga, pendidikan, prestasi, kegiatan) terisi otomatis; yang belum diisi dicetak kosong untuk ditulis tangan.</p>
         <p>Surat keterangan guru memakai rubrik dari templat di bawah. Lampiran fisik (fotokopi piagam, buku tabungan, dan sebagainya) dilampirkan terpisah.</p>
         {namaOrangTuaKosong && <p className="font-semibold text-amber-900">Nama orang tua/wali belum diisi Penegak; kolom tanda tangan orang tua dicetak kosong.</p>}
       </div>

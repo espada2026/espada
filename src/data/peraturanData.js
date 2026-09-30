@@ -32,6 +32,12 @@ export const PERATURAN = {
     url: 'https://pramuka.or.id/files/document/SK-119-2011-Panduan%20Penyelesaian-SKU-Penegak.pdf',
     catatan: 'Berdasarkan Keputusan Kwarnas Nomor 198 Tahun 2011 (SKU). Situs Kwarnas menulis nomornya 119; isi dokumen bernomor 199.',
   },
+  'sku-siaga-2011': {
+    nama: 'Panduan SKU Siaga',
+    judul: 'Keputusan Kwarnas Nomor 119 Tahun 2011 tentang Panduan Penyelesaian Syarat Kecakapan Umum (SKU) Pramuka Siaga',
+    url: 'https://kwarcabpekanbaru.or.id/media/file/SK-119-2011-Panduan%20Penyelesaian-SKU-Siaga.pdf',
+    catatan: 'Berkas dari Kwarcab Pekanbaru; PDF pada pramuka.or.id berupa pindaian yang teksnya tidak dapat dibaca mesin. Butir SKU Siaga (Mula, Bantu, Tata) bersumber dari sini.',
+  },
   'garuda-038-2017': {
     nama: 'SK Kwarnas 038/2017',
     judul: 'Keputusan Kwarnas Nomor 038 Tahun 2017 tentang Petunjuk Penyelenggaraan Pramuka Garuda',

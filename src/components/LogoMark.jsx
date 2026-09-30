@@ -1,7 +1,7 @@
 import { APP } from '../config';
 
 /**
- * Lambang SIGARDA: perisai cokelat-emas berisi elang (Garuda) bersayap tiga tingkat.
+ * Lambang SIGASI: perisai cokelat-emas berisi elang (Garuda) bersayap tiga tingkat.
  *   Tiga tingkat sayap = jenjang SKU Bantara, Laksana, dan Garuda (emas, tertinggi).
  *   Tanda centang di dada = butir SKU yang diuji dan dinyatakan lulus.
  * Sengaja dibuat abstrak, bukan Lambang Negara Garuda Pancasila.

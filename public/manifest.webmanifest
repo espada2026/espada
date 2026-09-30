@@ -1,7 +1,7 @@
 {
-  "name": "SIGARDA - Sistem Informasi Garuda dan SKU Penegak",
-  "short_name": "SIGARDA",
-  "description": "Pengujian SKU Bantara dan Laksana serta portofolio Penegak Garuda, Gugus Depan SMAN 1 Bukateja.",
+  "name": "SIGASI - Sistem Informasi Gudep Siaga",
+  "short_name": "SIGASI",
+  "description": "Pencatatan SKU, TKK, dan kegiatan Pramuka Siaga untuk Pembina gugus depan.",
   "lang": "id",
   "start_url": "./",
   "scope": "./",

@@ -55,7 +55,7 @@ export async function bacaExcelKepengurusan(buffer) {
 export async function buatBerkasKepengurusan(baris = []) {
   const { default: ExcelJS } = await import('exceljs');
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'SIGARDA';
+  wb.creator = 'SIGASI';
   const ws = wb.addWorksheet(NAMA_LEMBAR_KEPENGURUSAN, { views: [{ state: 'frozen', ySplit: 1 }] });
   ws.columns = [
     { header: 'NIS', key: 'nis', width: 14 },
@@ -82,7 +82,7 @@ export async function buatBerkasKepengurusan(baris = []) {
   const petunjuk = wb.addWorksheet('Petunjuk');
   petunjuk.getColumn(1).width = 110;
   [
-    'Petunjuk kepengurusan Dewan Ambalan SIGARDA',
+    'Petunjuk kepengurusan Dewan Ambalan SIGASI',
     '',
     'Yang dibaca hanya kolom NIS dan Jabatan Dewan Ambalan. Satu Penegak satu baris. Nama dan Rombel hanya sebagai petunjuk.',
     'Jabatan diisi bebas (mis. Pradana, Pradani, Wakil Pradana, Sekretaris, Bendahara, Ketua Bidang Kegiatan); daftar pilihan hanya saran. Pradana dan Pradani masing-masing hanya satu orang.',

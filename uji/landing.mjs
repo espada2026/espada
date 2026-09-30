@@ -75,7 +75,7 @@ console.log('\n--- Agenda dan hero ---');
   const hero = teks(h(Hero, { G, agendaTerdekat: agenda[0] }));
   ok(hero.includes('Agenda terdekat') && hero.includes('Latihan Jumat') && hero.includes('Oktober 2026'), 'hero menampilkan kartu agenda terdekat');
   ok(!teks(h(Hero, { G, agendaTerdekat: { judul: 'X', jenis: 'lainnya', tanggal: 'rusak' } })).includes('Agenda terdekat'), 'tanggal rusak: kartu agenda tidak tampil (tidak galat)');
-  ok(teks(h(NavBeranda, { G, sesi: false })).includes('>Masuk<') && teks(h(NavBeranda, { G, sesi: true })).includes('Buka SIGARDA'), 'bilah atas: "Masuk" bagi pengunjung, "Buka SIGARDA" bila ada sesi tersimpan');
+  ok(teks(h(NavBeranda, { G, sesi: false })).includes('>Masuk<') && teks(h(NavBeranda, { G, sesi: true })).includes('Buka SIGASI'), 'bilah atas: "Masuk" bagi pengunjung, "Buka SIGASI" bila ada sesi tersimpan');
   ok(teks(h(Kaki, { G })).includes('Cek keaslian dokumen') && teks(h(CekDokumen, {})).includes('Periksa'), 'kaki dan cek dokumen tampil');
   ok([Program, Perjalanan, TanyaJawab].every((K) => teks(h(K, {})).length > 500), 'Program, Perjalanan, dan Tanya Jawab dirender');
   ok(renderToStaticMarkup(h(Landing, { panggil: async () => ({ ok: false }) })).length === utuh.length, 'Landing dan renderBeranda menghasilkan HTML yang sama');

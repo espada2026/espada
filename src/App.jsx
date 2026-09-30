@@ -1,6 +1,7 @@
 import { lazy, useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import Layout from './components/Layout';
+import { APP, MENU_TIDAK_DIPAKAI } from './config';
 import Login from './components/Login';
 import PesertaBeranda from './pages/PesertaBeranda';
 import GantiPinWajib from './pages/GantiPinWajib';
@@ -72,7 +73,13 @@ const KelolaBeranda = lazy(() => import('./pages/KelolaBeranda')); // isi halama
  * Dewan Ambalan = jabatan pada akun Penegak: pemegangnya memilih tampilan Penegak atau Dewan (user.role berubah menjadi 'penguji' pada tampilan Dewan).
  * Akun saya dan Reset PIN anggota (pengurus) tidak ada di daftar ini: keduanya di menu akun (nama pengguna di menu samping atau header).
  */
-function buatNav(user, peran, belumDibaca = 0, pendampingan = null, praUjiAktif = false) {
+/** Menu untuk aplikasi Siaga: menu lengkap dikurangi modul Penegak yang dibuang (config.MENU_TIDAK_DIPAKAI). */
+function buatNav(...args) {
+  return buatNavLengkap(...args)
+    .map((g) => ({ ...g, item: g.item.filter((i) => !MENU_TIDAK_DIPAKAI.includes(i.id)) }))
+    .filter((g) => g.item.length > 0);
+}
+function buatNavLengkap(user, peran, belumDibaca = 0, pendampingan = null, praUjiAktif = false) {
   const materi = { id: 'materi', label: 'Materi', ikon: 'buku' };
   const kelola = { id: 'kelolamateri', label: 'Kelola Materi', ikon: 'pustaka' };
   const raport = { id: 'raport', label: 'Raport', ikon: 'raport' };
@@ -147,7 +154,7 @@ function Toast() {
 /** Layar penuh untuk keadaan sebelum aplikasi siap: memuat, konfigurasi belum diisi, atau galat sambungan. */
 function LayarStatus({ status, galat }) {
   const isi = {
-    memuat: { judul: 'Memuat SIGARDA...', teks: 'Menyiapkan aplikasi dan menghubungkan ke server.' },
+    memuat: { judul: `Memuat ${APP.nama}...`, teks: 'Menyiapkan aplikasi dan menghubungkan ke server.' },
     konfigurasi: {
       judul: 'Sambungan ke Supabase belum diatur',
       teks: 'Isi VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY pada berkas .env.local (untuk komputer sendiri) atau pada Variables repositori GitHub (untuk situs terbit), lalu bangun ulang. Panduannya ada di README, bagian "Menghubungkan ke Supabase". Untuk mencoba tanpa Supabase, jalankan npm run dev:lokal.',
@@ -241,7 +248,7 @@ function Shell() {
 
   // Jumlah belum dibaca juga pada judul tab dan ikon aplikasi terpasang
   useEffect(() => {
-    const dasar = 'SIGARDA - Sistem Informasi Garuda dan SKU Penegak';
+    const dasar = `${APP.nama} - ${APP.kepanjangan}`;
     document.title = user && belumDibaca > 0 ? `(${belumDibaca}) ${dasar}` : dasar;
     try {
       if (user && belumDibaca > 0) navigator.setAppBadge?.(belumDibaca);
