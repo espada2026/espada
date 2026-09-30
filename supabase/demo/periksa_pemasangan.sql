@@ -1615,7 +1615,7 @@ h_fungsi(skema, nama, args, isi, au, an, sv) as (values
     ('sigarda', 'notif_dokumen', '', 'fcab8ec142a2bef4502e4c47c06362f2', true, false, true),
     ('sigarda', 'notif_label_butir', 'p_sku text', '8e1a6536ff0083300c43803bd070524d', true, false, true),
     ('sigarda', 'notif_penerima_uji', 'p_peserta uuid, p_sku text, p_penguji uuid', 'a7bed1bd1c92a0155a3ee93e90f4a243', true, false, true),
-    ('sigarda', 'notif_pengingat', '', 'ab6e0f3fbded303addba2661c80b686f', true, false, true),
+    ('sigarda', 'notif_pengingat', '', '6c975d24a6fc6477f011f37b3907f0a3', true, false, true),
     ('sigarda', 'notif_pra_uji', '', '33ddda520e00be7f42960e85a2d11921', true, false, true),
     ('sigarda', 'notif_sesi_peserta', '', '2909b9eace71da48f15c5d2f60ca8132', true, false, true),
     ('sigarda', 'notif_sku_progress', '', '611aff08b14d968c8884d204cd951cff', true, false, true),

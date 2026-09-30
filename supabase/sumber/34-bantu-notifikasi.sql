@@ -88,6 +88,7 @@ create trigger notif_dokumen after insert on public.dokumen_terbit
 -- ===== Usulan kegiatan lain (tahap L6b): pengingat ===== (penanda kelima, fungsi SAMA; dipakai migrasi L6b)
 -- ===== Pra-uji berjenjang (fase C): pengingat ===== (penanda keenam, fungsi SAMA; dipakai migrasi pra-uji)
 -- ===== Kalender Garuda (Tahap 2, G4d): pengingat ===== (penanda ketujuh, fungsi SAMA; dipakai migrasi pengingat kalender)
+-- ===== Pembersihan riwayat penjadwal: pengingat ===== (penanda kedelapan, fungsi SAMA; dipakai migrasi pembersihan riwayat cron)
 -- Pengingat harian (dijalankan pg_cron pukul 07.00 WIB): pengujian dan sesi ujian besok, pengajuan yang menunggu lebih dari 3 hari,
 -- cadangan data yang sudah sebulan tidak diunduh (tahap L4), tangga eskalasi tidak bergerak (tahap L5), agenda tahunan H-30/H-7/H-1
 -- (tahap L6), usulan Musyawarah Ambalan belum terjadwal H-60 lalu tiap 14 hari (tahap L6b), usulan 10 kegiatan lain belum terjadwal
@@ -132,6 +133,14 @@ begin
   perform sigarda.kegiatan_pengingat();
   perform sigarda.pra_uji_pengingat();
   perform sigarda.garuda_kalender_pengingat();
+  -- Riwayat pg_cron (cron.job_run_details) hanya 30 hari terakhir: pekerjaan sigarda-terbit-ulang berjalan tiap 5 menit dan tabel itu
+  -- tidak dibersihkan siapa pun. Dijaga: tanpa pg_cron atau tanpa izin, pengingat harian tetap berjalan.
+  if to_regclass('cron.job_run_details') is not null then
+    begin
+      execute 'delete from cron.job_run_details where end_time < now() - interval ''30 days''';
+    exception when others then null;
+    end;
+  end if;
   delete from public.notifikasi where dibuat < now() - interval '90 days';
 end $$;
 -- ===== akhir pengingat cadangan =====
@@ -141,6 +150,7 @@ end $$;
 -- ===== akhir pengingat usulan kegiatan lain =====
 -- ===== akhir pengingat pra-uji =====
 -- ===== akhir pengingat kalender garuda =====
+-- ===== akhir pembersihan riwayat penjadwal =====
 
 -- Mengantre Web Push: satu permintaan HTTP per pernyataan INSERT (pg_net) ke Edge Function notif-push, hanya untuk penerima yang punya perangkat.
 -- Tanpa konfigurasi (sigarda.push_atur) atau tanpa pg_net tidak ada yang dikirim; Kotak Notifikasi di aplikasi tetap berjalan. Galat push tidak
