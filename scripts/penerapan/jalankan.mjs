@@ -4,6 +4,7 @@
 //   node scripts/penerapan/jalankan.mjs tandai                             memakai SIGARDA_DB_URL_TULIS (sekali, saat pemasangan)
 // Inti dan aturannya ada di penerapan.mjs; panduan pemilik di docs/penerapan-otomatis.md. Log tidak pernah memuat alamat sambungan atau isi SQL.
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterPg, bacaMigrasi, jalankanPeriksa, tandaiSemua, terapkanTertunda } from './penerapan.mjs';
@@ -14,8 +15,13 @@ const lewatiBilaKosong = opsi.includes('--lewati-bila-kosong');
 const NAMA_RAHASIA = { periksa: 'SIGARDA_DB_URL', terapkan: 'SIGARDA_DB_URL_TULIS', tandai: 'SIGARDA_DB_URL_TULIS' };
 
 async function sambung(url) {
-  const modulPg = 'pg'; // impor dinamis tak terbaca pembundel: pg hanya terpasang di scripts/cadangan (npm ci), tidak di akar
-  const pg = (await import(modulPg)).default;
+  // pg hanya terpasang di scripts/cadangan (`npm ci --prefix scripts/cadangan`), tidak di akar dan tidak di scripts/penerapan: cari dari sana.
+  let pg;
+  try {
+    pg = createRequire(path.join(akar, 'scripts/cadangan/package.json'))('pg');
+  } catch {
+    throw new Error('Paket pg belum terpasang. Jalankan: npm ci --prefix scripts/cadangan');
+  }
   const db = new pg.Client({ connectionString: url, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 20000, statement_timeout: 300000 });
   try {
     await db.connect();

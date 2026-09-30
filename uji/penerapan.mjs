@@ -146,6 +146,14 @@ console.log('\n--- Pintu masuk (CLI) ---');
   ok(c.status === 1 && /Aksi tidak dikenal/.test(c.stderr), 'aksi tak dikenal ditolak');
   const d = jalan(['terapkan', '--lewati-bila-kosong'], { SIGARDA_DB_URL_TULIS: 'postgresql://x:kata-sandi-rahasia@tidak-ada.invalid:5432/postgres' });
   ok(d.status === 1 && !/kata-sandi-rahasia|tidak-ada\.invalid/.test(d.stdout + d.stderr), 'sambungan gagal: pesan umum, tanpa membocorkan alamat atau sandi');
+  // Paket pg hanya ada di scripts/cadangan; kesalahan lama (mencarinya dari scripts/penerapan) lolos karena pesan "tidak bocor" tetap benar. Uji ini memastikan pg DITEMUKAN.
+  const kunciPg = readFileSync(`${P}/scripts/penerapan/jalankan.mjs`, 'utf8');
+  ok(/createRequire\(path\.join\(akar, 'scripts\/cadangan\/package\.json'\)\)\('pg'\)/.test(kunciPg) && !/import\(modulPg\)/.test(kunciPg), 'jalankan.mjs mencari pg dari scripts/cadangan (tempat npm ci memasangnya), bukan dari folder sendiri');
+  if (existsSync(`${P}/scripts/cadangan/node_modules/pg`)) {
+    ok(d.status === 1 && /Tidak dapat menjangkau database|Gagal menyambung|Sandi atau nama peran/.test(d.stderr) && !/Cannot find package|Paket pg belum terpasang/.test(d.stderr), 'pg ditemukan: sambungan palsu gagal di tahap koneksi (bukan karena paket tak ada): ' + d.stderr.trim().slice(0, 80));
+  } else {
+    ok(/Paket pg belum terpasang.*npm ci --prefix scripts\/cadangan/.test(d.stderr), 'pg belum terpasang di mesin ini: pesannya menuntun ke npm ci --prefix scripts/cadangan');
+  }
 }
 
 console.log(`\nRINGKASAN PENERAPAN: ${l} lulus, ${g} GAGAL`);
