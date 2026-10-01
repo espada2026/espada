@@ -1,4 +1,4 @@
-// Migrasi Pramuka Siaga Fase 2 (SKU Siaga): kesetaraan dengan skema baru (katalog, kendala, fungsi, hak, pemicu), data utuh, idempoten, perilaku baru,
+// Migrasi Pramuka Siaga Fase 2b (anak Siaga berakun): kesetaraan dengan skema baru (katalog, kendala, fungsi, hak, pemicu), data utuh, idempoten, perilaku baru,
 // dan gagal jelas bila prasyarat belum ada.
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
@@ -13,7 +13,7 @@ let g = 0, l = 0;
 const ok = (c, m) => { if (c) { l++; console.log('ok   :', m); } else { g++; console.log('GAGAL:', m); } };
 const stub = readFileSync(`${P}/supabase/lokal/stub.sql`, 'utf8');
 const bersih = (s) => s.replace(/^﻿/, '').replace(/\r\n/g, '\n');
-const MP = bersih(readFileSync(`${P}/supabase/migrasi/2026-10-sku-siaga.sql`, 'utf8'));
+const MP = bersih(readFileSync(`${P}/supabase/migrasi/2026-10-siaga-akun.sql`, 'utf8'));
 
 const skemaDari = (ref) => (ref === 'baru' ? readFileSync(`${P}/supabase/skema.sql`, 'utf8') : skemaLama(ref.slice(4), P));
 const baru = async (ref) => { const db = new PGlite(); await siapkanPg(db, { sqlStub: stub, sqlSkema: bersih(skemaDari(ref)) }); return db; };
@@ -34,23 +34,22 @@ const potret = async (db) => {
   };
 };
 
-const A = await baru('git:fe6f927'); // skema TEPAT sesudah migrasi ini (migrasi sesudahnya, siaga-akun, punya ujinya sendiri)
+const A = await baru('baru');
 const pa = await potret(A);
 
 console.log('--- Database berisi data: kesetaraan, data utuh, idempoten ---');
-const B1 = await baru('git:538d8d6'); // commit TEPAT sebelum migrasi ini
+const B1 = await baru('git:fe6f927'); // commit TEPAT sebelum migrasi ini
 await isiDataContoh(B1);
 await B1.query('update public.profiles set wajib_ganti_pin = false');
 const sebelum = await cacah(B1);
 const md5Fungsi = async (db, nama) => (await db.query(`select md5(p.prosrc) m from pg_proc p where p.proname = $1`, [nama])).rows[0].m;
-ok((await B1.query(`select count(*)::int n from public.sku_butir where tingkat in ('Mula','Bantu','Tata')`)).rows[0].n === 0, 'prasyarat: katalog Siaga belum ada');
-const lama = { cat: await md5Fungsi(B1, 'sg_sku_catat_internal'), aju: await md5Fungsi(B1, 'sg_sku_ajukan'), pem: await md5Fungsi(B1, 'tolak_peserta_tak_aktif'), esk: await md5Fungsi(B1, 'eskalasi_proses'), dft: await md5Fungsi(B1, 'sg_eskalasi_daftar') };
+ok((await B1.query(`select count(*)::int n from pg_proc where proname = 'kelas_siaga'`)).rows[0].n === 0, 'prasyarat: sigarda.kelas_siaga belum ada');
+const lama = { cat: await md5Fungsi(B1, 'sg_sku_catat_internal'), aju: await md5Fungsi(B1, 'sg_sku_ajukan'), ubh: await md5Fungsi(B1, 'sg_siaga_ubah'), pp: await md5Fungsi(B1, 'penguji_peran_ok'), pem: await md5Fungsi(B1, 'sg_pemeriksaan_data') };
 await B1.exec(MP);
 ok(JSON.stringify(await cacah(B1)) === JSON.stringify(sebelum), 'jumlah data tidak berubah oleh migrasi: ' + JSON.stringify(sebelum));
-ok(await md5Fungsi(B1, 'sg_sku_catat_internal') !== lama.cat && await md5Fungsi(B1, 'sg_sku_ajukan') !== lama.aju && await md5Fungsi(B1, 'tolak_peserta_tak_aktif') !== lama.pem
-  && await md5Fungsi(B1, 'eskalasi_proses') !== lama.esk && await md5Fungsi(B1, 'sg_eskalasi_daftar') !== lama.dft,
-  'sg_sku_catat_internal, sg_sku_ajukan, tolak_peserta_tak_aktif, eskalasi_proses, dan sg_eskalasi_daftar ditulis ulang oleh migrasi');
-ok((await B1.query(`select count(*)::int n from public.sku_unit where tingkat in ('Mula','Bantu','Tata')`)).rows[0].n === 175, 'katalog Siaga masuk: 175 unit');
+ok(await md5Fungsi(B1, 'sg_sku_catat_internal') !== lama.cat && await md5Fungsi(B1, 'sg_sku_ajukan') !== lama.aju && await md5Fungsi(B1, 'sg_siaga_ubah') !== lama.ubh
+  && await md5Fungsi(B1, 'penguji_peran_ok') !== lama.pp && await md5Fungsi(B1, 'sg_pemeriksaan_data') !== lama.pem, 'fungsi yang berubah ditulis ulang oleh migrasi');
+ok((await B1.query(`select sigarda.kelas_siaga('4A') a, sigarda.kelas_siaga('X-01') b`)).rows[0].a === true, 'sigarda.kelas_siaga tersedia');
 await B1.exec(MP); await B1.exec(MP);
 ok(JSON.stringify(await cacah(B1)) === JSON.stringify(sebelum), 'menjalankan migrasi tiga kali: data tetap sama');
 const pb = await potret(B1);
@@ -67,28 +66,30 @@ console.log('\n--- Sesudah migrasi: perilaku baru ---');
 {
   const pembina = buatApi(buatKlienFake(B1));
   await pembina.masuk('pembina', PIN_DEMO.pembina);
-  let r = await pembina.tambahSiaga([{ nama: 'Anak Uji', kelas: '4A', agama: 'Islam' }]);
-  ok(r.ok && r.data === 1, 'Pembina menambah anggota Siaga pada database hasil migrasi ' + (r.pesan ?? ''));
-  const anak = (await B1.query("select id from public.profiles where tanpa_akun and nama = 'Anak Uji'")).rows[0].id;
-  const catat = (pesertaId, skuId) => pembina.catatHasil({ pin: PIN_DEMO.pembina, pesertaId, skuId, hasil: 'lulus', tanggalUji: '2026-09-25', nilai: 'Baik', catatan: '' });
-  r = await catat(anak, 'MUL-02');
-  ok(r.ok, 'Pembina meluluskan butir Mula pada database hasil migrasi ' + (r.pesan ?? ''));
-  r = await catat(anak, 'BNU-02');
-  ok(!r.ok && /belum menyelesaikan seluruh butir Mula/.test(r.pesan), 'Bantu menunggu Mula: ' + r.pesan);
-  r = await catat(anak, 'MUL-01-KAT-1');
-  ok(!r.ok && /Poin SKU tidak ditemukan/.test(r.pesan), 'sub-butir agama lain ditolak');
-  ok((await B1.query("select sigarda.prasyarat_tingkat('Tata') v")).rows[0].v === 'Bantu', 'sigarda.prasyarat_tingkat tersedia');
-  const penegak = (await B1.query("select id from public.profiles where username = '10231'")).rows[0].id;
-  r = await catat(penegak, 'LAK-02');
-  ok(!r.ok && /belum menyelesaikan seluruh butir Bantara/.test(r.pesan), 'aturan Penegak tetap: Laksana menunggu Bantara');
+  let r = await pembina.buatAkun('peserta', [{ no: 1, nama: 'Anak Akun', nis: '5101', kelas: '4A', agama: 'Islam' }]);
+  ok(r.ok && r.hasil?.[0]?.ok, 'Pembina membuat akun anak Siaga pada database hasil migrasi ' + (r.pesan ?? ''));
+  const anak = r.hasil[0];
+  r = await pembina.ubahSiaga(anak.id, { nama: 'Anak Akun', kelas: '4A', jk: 'L', agama: 'Islam', perindukan: 'Melati', barung: 'Kancil' });
+  ok(r.ok, 'anak berakun dapat diubah lewat jalur Siaga ' + (r.pesan ?? ''));
+  r = await pembina.hapusSiaga(anak.id);
+  ok(!r.ok && /punya akun masuk/.test(r.pesan), 'anak berakun tidak dihapus lewat jalur Siaga');
+  await B1.query('update public.profiles set wajib_ganti_pin = false');
+  const kid = buatApi(buatKlienFake(B1));
+  await kid.masuk('5101', anak.pin);
+  r = await kid.ajukan({ skuId: 'MUL-02', jadwal: '2099-01-01', pengujiId: null });
+  ok(r.ok, 'anak mengajukan butir Mula ' + (r.pesan ?? ''));
+  r = await kid.ajukan({ skuId: 'BAN-02', jadwal: '2099-01-01', pengujiId: null });
+  ok(!r.ok && /bukan untuk tingkat/.test(r.pesan), 'anak tidak dapat mengajukan butir Penegak');
+  r = await pembina.catatHasil({ pin: PIN_DEMO.pembina, pesertaId: anak.id, skuId: 'MUL-02', hasil: 'lulus', tanggalUji: '2026-09-25', nilai: 'Baik', catatan: '' });
+  ok(r.ok, 'Pembina meluluskan pengajuan anak ' + (r.pesan ?? ''));
 }
 
 console.log('\n--- Tanpa migrasi sebelumnya: gagal jelas ---');
-const B3 = await baru('git:ad277d8'); // sebelum Fase 1: tanpa kolom tanpa_akun
+const B3 = await baru('git:538d8d6'); // sebelum sku-siaga: tanpa sigarda.prasyarat_tingkat
 let galat = null;
 try { await B3.exec(MP); } catch (e) { galat = e.message; await B3.exec('rollback'); }
 ok(/Jalankan lebih dulu skema dan migrasi/.test(galat ?? ''), 'pesan yang menuntun: ' + (galat ?? 'TIDAK GAGAL').slice(0, 100));
-ok((await B3.query(`select count(*)::int n from public.sku_butir where tingkat in ('Mula','Bantu','Tata')`)).rows[0].n === 0, 'kegagalan membatalkan seluruh migrasi');
+ok((await B3.query(`select count(*)::int n from pg_proc where proname = 'kelas_siaga'`)).rows[0].n === 0, 'kegagalan membatalkan seluruh migrasi');
 
-console.log(`\nRINGKASAN MIGRASI SKU-SIAGA: ${l} lulus, ${g} GAGAL`);
+console.log(`\nRINGKASAN MIGRASI SIAGA-AKUN: ${l} lulus, ${g} GAGAL`);
 process.exit(g ? 1 : 0);

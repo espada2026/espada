@@ -14,6 +14,7 @@ import { parameterKelola, petunjukDari, simpanPetunjuk } from './lib/suntingLogi
 import { menuSanggaTampil } from './lib/sanggaLogic';
 import { menuPraUjiTampil, ujiResmiTampil } from './lib/praUjiLogic';
 import { bolehKelolaMateri } from './lib/materiLogic';
+import { kelasSd } from './lib/rombelLogic';
 import LogoMark from './components/LogoMark';
 
 // Halaman selain beranda dimuat malas (berkasnya diunduh saat pertama dibuka); lihat BatasHalaman.
@@ -27,6 +28,10 @@ const GarudaDashboard = lazy(muatGarudaDashboard);
 const PengujiDashboard = lazy(muatPengujiDashboard);
 const AdminDashboard = lazy(muatAdminDashboard);
 const PesertaSku = lazy(() => import('./pages/PesertaSku'));
+// Anak Siaga berakun (kelas SD) memakai halaman SKU dan beranda Siaga; Pembina membuka SKU anak lewat SiagaSku (katalog Siaga hanya dimuat di sini)
+const SiagaBeranda = lazy(() => import('./pages/SiagaBeranda'));
+const SiagaSkuSaya = lazy(() => import('./pages/SiagaSkuSaya'));
+const SiagaSku = lazy(() => import('./pages/SiagaSku'));
 const PraUji = lazy(() => import('./pages/PraUji'));
 const Pelantikan = lazy(() => import('./pages/Pelantikan'));
 const Tkk = lazy(() => import('./pages/Tkk'));
@@ -192,7 +197,7 @@ function LayarArsip() {
 }
 
 function Shell() {
-  const { user, akun, peranUser, status, galatMuat, belumDibaca, segarkanNotifikasi, pendampingan, praUjiAktif } = useApp();
+  const { user, akun, peranUser, status, galatMuat, belumDibaca, segarkanNotifikasi, pendampingan, praUjiAktif, daftarPesertaSemua } = useApp();
   const [tab, setTab] = useState(null);
   const [fokusId, setFokusId] = useState(null); // peserta yang sedang dibuka penguji/admin
   const [jenisCetak, setJenisCetak] = useState('kartu'); // tab awal halaman Cetak (kartu | stl | surat)
@@ -200,7 +205,8 @@ function Shell() {
   const [materiButir, setMateriButir] = useState(null); // butir SKU yang dituju tombol "Materi"
   const [kelolaId, setKelolaId] = useState(null); // materi yang langsung dibuka di Kelola Materi ('baru' = tambah)
   const [tabKelolaBeranda, setTabKelolaBeranda] = useState(null); // tab awal Kelola Beranda dari pensil sunting di halaman muka
-  const ajakData = akun?.role === 'peserta' && (akun.status ?? 'aktif') === 'aktif'; // Penegak aktif: ajakan data diri (memuat nomor WhatsApp); peran lain: hanya nomor WhatsApp
+  const akunSiaga = akun?.role === 'peserta' && kelasSd(akun.kelas); // anak Siaga berakun: tanpa ajakan data diri Penegak maupun nomor WhatsApp
+  const ajakData = akun?.role === 'peserta' && !akunSiaga && (akun.status ?? 'aktif') === 'aktif'; // Penegak aktif: ajakan data diri (memuat nomor WhatsApp); peran lain: hanya nomor WhatsApp
   const [waTutup, setWaTutup] = useState(false); // ajakan isi nomor WhatsApp ditutup/dilewati untuk sesi masuk ini (tahap L5)
 
   useEffect(() => {
@@ -364,8 +370,9 @@ function Shell() {
       />
     );
   } else if (user.role === 'peserta') {
-    if (tabAktif === 'sku') isi = <PesertaSku tingkat={tingkat} setTingkat={setTingkat} onBukaMateri={bukaMateri} />;
+    if (tabAktif === 'sku') isi = kelasSd(user.kelas) ? <SiagaSkuSaya /> : <PesertaSku tingkat={tingkat} setTingkat={setTingkat} onBukaMateri={bukaMateri} />;
     else if (tabAktif === 'absensi') isi = <AbsensiPeserta />;
+    else if (kelasSd(user.kelas)) isi = <SiagaBeranda setTab={pilihTab} />;
     else if (peranUser === 'calon-garuda') isi = <GarudaDashboard setTab={pilihTab} />;
     else isi = <PesertaBeranda setTab={pilihTab} setTingkat={setTingkat} />;
   } else if (tabAktif === 'absensi') {
@@ -379,6 +386,8 @@ function Shell() {
         onBukaSku={(id) => pindah(user.role === 'penguji' ? 'peserta' : 'rekap', id)}
       />
     );
+  } else if (fokusId && kelasSd(daftarPesertaSemua.find((u) => u.id === fokusId)?.kelas)) {
+    isi = <SiagaSku pesertaId={fokusId} onKembali={() => setFokusId(null)} />;
   } else if (fokusId) {
     isi = (
       <PesertaDetail
@@ -405,7 +414,7 @@ function Shell() {
         <BatasHalaman senyap><AjakanIsian tutup={waTutup} onTutup={() => setWaTutup(true)} /></BatasHalaman>
       )}
       {/* Ajakan isi nomor WhatsApp (tahap L5) untuk peran selain Penegak: satu kali per masuk, dapat dilewati, tampil lagi pada masuk berikutnya bila masih kosong. */}
-      <Modal buka={!ajakData && !user.whatsapp && !waTutup} tutup={() => setWaTutup(true)} judul="Isi nomor WhatsApp">
+      <Modal buka={!ajakData && !akunSiaga && !user.whatsapp && !waTutup} tutup={() => setWaTutup(true)} judul="Isi nomor WhatsApp">
         <p className="mb-4 text-sm text-pramuka-600">
           Supaya Pembina atau Dewan Ambalan dapat menghubungi Anda bila diperlukan (mis. SKU sudah lama tidak bergerak). Boleh dilewati; akan
           ditanyakan lagi lain kali sampai diisi.

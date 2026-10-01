@@ -16,7 +16,7 @@ begin
   end if;
   -- Agama Penegak baru diisi sendiri sesudah akun dibuat (Tahap 3, H1). Tanpa agama, butir agama tidak tampak baginya sehingga progres SKU-nya tidak lengkap: penulisan progres SKU ditolak sampai agama diisi.
   if v_status = 'aktif' and v_agama is null and TG_TABLE_NAME in ('sku_progress', 'sku_riwayat', 'sku_pra_uji', 'sesi_ujian_peserta') then
-    if v_tanpa_akun then
+    if v_tanpa_akun or (new.peserta_id is distinct from auth.uid() and sigarda.kelas_siaga((select kelas from public.profiles where id = new.peserta_id))) then
       raise exception '% belum dicatat agamanya. Isi agamanya di menu Anggota Siaga (ubah data anak) sebelum mencatat SKU.', v_nama;
     end if;
     if new.peserta_id = auth.uid() then

@@ -27,6 +27,8 @@ export const daftarRombelKelas = (kelas) => Array.from({ length: ROMBEL_PER_KELA
 export const SEMUA_ROMBEL = KELAS_ROMBEL.flatMap(daftarRombelKelas);
 
 export const rombelSah = (r) => POLA_ROMBEL.test(String(r ?? ''));
+/** Kelas SD (angka 1-6 + satu huruf paralel opsional): pengenal anggota Pramuka Siaga, dengan atau tanpa akun masuk (sigarda.kelas_siaga). */
+export const kelasSd = (r) => /^[1-6][A-Z]?$/.test(String(r ?? ''));
 export const kelasDariRombel = (r) => (POLA_ROMBEL_SMA.test(String(r ?? '')) ? String(r).split('-')[0] : null);
 
 /**
@@ -168,6 +170,7 @@ export function ditugaskanUntuk({ penugasan = [], penugasanPeserta = [], peserta
 export function pengujiPeranOk(users, peserta, penguji, poin, dokumen = [], tugas = {}) {
   if (!bisaMenguji(penguji, !!tugas.praUji) || !poin || penguji.id === peserta?.id) return false;
   const pembina = adalahPembina(penguji);
+  if (!pembina && kelasSd(peserta?.kelas)) return false; // anak Siaga hanya diuji Pembina
   if (!pembina && poin.agama) return false;
   if (!pembina && poin.tingkat === 'Laksana' && !ditugaskanUntuk({ ...tugas, peserta, pengujiId: penguji.id })) return false;
   if (poin.agama && users.some((u) => adalahPembina(u) && u.agama)) {

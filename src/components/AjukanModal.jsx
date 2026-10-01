@@ -43,7 +43,8 @@ export default function AjukanModal({ poin, onTutup }) {
     else setGalat(hasil.pesan);
   };
 
-  const label = poin.agama ? 'Penguji (Pembina seagama)' : poin.tingkat === 'Laksana' ? 'Penguji (Pembina atau yang ditugaskan)' : 'Penguji (Pembina atau Dewan Ambalan)';
+  const siaga = ['Mula', 'Bantu', 'Tata'].includes(poin.tingkat); // anak Siaga: uji oleh Pembina, tanpa pra-uji
+  const label = poin.agama ? 'Penguji (Pembina seagama)' : siaga ? 'Penguji (Pembina)' : poin.tingkat === 'Laksana' ? 'Penguji (Pembina atau yang ditugaskan)' : 'Penguji (Pembina atau Dewan Ambalan)';
   const bantuan = poin.agama
     ? 'Butir agama hanya diuji oleh Pembina yang seagama dengan Anda.'
     : poin.tingkat === 'Laksana'

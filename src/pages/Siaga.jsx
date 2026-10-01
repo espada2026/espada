@@ -7,14 +7,17 @@ import {
 import { urutTeks } from '../lib/format';
 import { hitungProgres } from '../lib/skuLogic';
 import SiagaSku, { tingkatSiagaAwal } from './SiagaSku';
+import AkunBaru from '../components/AkunBaru';
 import { BadgeStatus, Field, Kosong, Modal } from '../components/ui';
 
 const KOSONG = { nama: '', kelas: '', jk: '', agama: '', nis: '', perindukan: '', barung: '' };
 const JK_LABEL = { L: 'Putra', P: 'Putri' };
 
 /** Tambah atau ubah satu anggota Siaga. `awal` = anggota yang diubah (tanpa = tambah). */
-function ModalAnggota({ awal, onTutup }) {
-  const { users, tambahSiaga, ubahSiaga, hapusSiaga, aturStatusAnggota } = useApp();
+function ModalAnggota({ awal, onTutup, onAkunBaru }) {
+  const { users, tambahSiaga, buatAkunSiaga, ubahSiaga, hapusSiaga, aturStatusAnggota } = useApp();
+  const berakun = !!awal && !awal.tanpaAkun; // anak yang sudah punya akun masuk: NIS = nama pengguna, tidak diubah dari sini
+  const [buatAkun, setBuatAkun] = useState(false); // hanya saat menambah: buat akun masuk (NIS dan PIN awal) sekalian
   const [f, setF] = useState(awal ? { nama: awal.nama, kelas: awal.kelas ?? '', jk: awal.jenisKelamin ?? '', agama: awal.agama ?? '', nis: awal.nis ?? '', perindukan: awal.perindukan ?? '', barung: awal.barung ?? '' } : KOSONG);
   const [galat, setGalat] = useState('');
   const [sibuk, setSibuk] = useState(false);
@@ -27,10 +30,12 @@ function ModalAnggota({ awal, onTutup }) {
   const simpan = async () => {
     const p = periksaSiaga(f, penyama);
     if (!p.ok) { setGalat(p.pesan); return; }
+    if (buatAkun && !p.nilai.nis) { setGalat('NIS wajib diisi untuk anak yang diberi akun masuk (NIS menjadi nama penggunanya).'); return; }
     setSibuk(true);
-    const r = awal ? await ubahSiaga(awal.id, p.nilai) : await tambahSiaga([p.nilai]);
+    const r = awal ? await ubahSiaga(awal.id, berakun ? { ...p.nilai, nis: awal.nis } : p.nilai) : buatAkun ? await buatAkunSiaga(p.nilai) : await tambahSiaga([p.nilai]);
     setSibuk(false);
     if (!r.ok) { setGalat(r.pesan); return; }
+    if (r.akun) onAkunBaru(r.akun);
     onTutup();
   };
   const ubahStatus = async (status) => {
@@ -65,17 +70,26 @@ function ModalAnggota({ awal, onTutup }) {
         <Field label="Agama (opsional)" htmlFor="sg-agama" bantuan="Menentukan butir agama pada SKU.">
           <select id="sg-agama" className="input" value={f.agama} onChange={ubah('agama')}><option value="">-</option>{AGAMA.map((a) => <option key={a}>{a}</option>)}</select>
         </Field>
-        <Field label="NIS (opsional)" htmlFor="sg-nis"><input id="sg-nis" className="input" maxLength={20} value={f.nis} onChange={ubah('nis')} /></Field>
+        <Field label={buatAkun ? 'NIS (nama pengguna)' : 'NIS (opsional)'} htmlFor="sg-nis" bantuan={berakun ? 'NIS anak berakun adalah nama penggunanya; Admin Gudep mengubahnya di menu Anggota.' : undefined}>
+          <input id="sg-nis" className="input" maxLength={20} value={f.nis} onChange={ubah('nis')} disabled={berakun} />
+        </Field>
         <Field label="Perindukan (opsional)" htmlFor="sg-per"><input id="sg-per" className="input" maxLength={40} value={f.perindukan} onChange={ubah('perindukan')} /></Field>
         <Field label="Barung (opsional)" htmlFor="sg-bar"><input id="sg-bar" className="input" maxLength={40} value={f.barung} onChange={ubah('barung')} /></Field>
       </div>
+      {!awal && (
+        <label className="mb-3 flex items-start gap-2 text-sm">
+          <input type="checkbox" className="mt-1" checked={buatAkun} onChange={(e) => setBuatAkun(e.target.checked)} />
+          <span><span className="font-semibold">Buat akun masuk</span> (anak dapat masuk dan mengajukan SKU sendiri). NIS menjadi nama pengguna dan PIN awal dibuat otomatis; tampil sekali untuk Anda sampaikan. Tanpa dicentang, anak dinilai langsung Pembina tanpa akun.</span>
+        </label>
+      )}
+      {berakun && <p className="mb-2 text-xs text-pramuka-600">Anak ini punya akun masuk. PIN yang lupa direset lewat menu Reset PIN.</p>}
       {galat && <p role="alert" className="mb-2 text-sm font-medium text-red-700">{galat}</p>}
       {awal && (
         <div className="mt-2 flex flex-wrap gap-2 border-t border-pramuka-100 pt-3">
           {(awal.status ?? 'aktif') === 'aktif'
             ? <button className="btn btn-outline btn-sm" disabled={sibuk} onClick={() => ubahStatus('nonaktif')}>Tandai tidak melanjutkan</button>
             : <button className="btn btn-outline btn-sm" disabled={sibuk} onClick={() => ubahStatus('aktif')}>Aktifkan kembali</button>}
-          <button className="btn btn-outline btn-sm text-red-700" disabled={sibuk} onClick={hapus}>Hapus (salah input)</button>
+          {!berakun && <button className="btn btn-outline btn-sm text-red-700" disabled={sibuk} onClick={hapus}>Hapus (salah input)</button>}
         </div>
       )}
     </Modal>
@@ -206,6 +220,7 @@ export default function Siaga() {
   const [kelas, setKelas] = useState('');
   const [status, setStatus] = useState('aktif');
   const [pilih, setPilih] = useState(() => new Set());
+  const [akunBaru, setAkunBaru] = useState(null); // nama pengguna dan PIN awal akun anak yang baru dibuat (tampil sekali)
   const [modal, setModal] = useState(null); // { jenis: 'tambah' | 'tempel' | 'ubah' | 'barung', anggota? }
 
   const daftarKelas = useMemo(() => [...new Set(semua.map((u) => u.kelas).filter(Boolean))].sort(urutTeks), [semua]);
@@ -225,7 +240,7 @@ export default function Siaga() {
     <div className="animasi-naik">
       <h1 className="mb-1 text-2xl font-bold">Anggota Siaga</h1>
       <p className="mb-4 text-sm text-pramuka-600">
-        Anak Siaga tidak punya akun masuk; datanya dikelola Pembina di sini. {semua.filter((u) => (u.status ?? 'aktif') === 'aktif').length} anggota aktif.
+        Anak Siaga boleh punya akun masuk (mengajukan SKU sendiri) atau tanpa akun (dinilai langsung Pembina); datanya dikelola Pembina di sini. {semua.filter((u) => (u.status ?? 'aktif') === 'aktif').length} anggota aktif.
       </p>
       <div className="mb-4 flex flex-wrap gap-2">
         <button className="btn btn-primary btn-sm" onClick={() => setModal({ jenis: 'tambah' })}>Tambah anak</button>
@@ -261,7 +276,7 @@ export default function Siaga() {
                   <button className="min-w-0 flex-1 text-left" onClick={() => setModal({ jenis: 'ubah', anggota: u })}>
                     <span className="block font-medium [overflow-wrap:anywhere]">{u.nama}</span>
                     <span className="block text-xs text-pramuka-600 [overflow-wrap:anywhere]">
-                      Kelas {u.kelas}{u.jenisKelamin ? `, ${JK_LABEL[u.jenisKelamin]}` : ''}{u.agama ? `, ${u.agama}` : ''}{u.perindukan ? ` | ${u.perindukan}${u.barung ? ` / ${u.barung}` : ''}` : ''}
+                      Kelas {u.kelas}{u.jenisKelamin ? `, ${JK_LABEL[u.jenisKelamin]}` : ''}{u.agama ? `, ${u.agama}` : ''}{u.tanpaAkun ? '' : ', berakun'}{u.perindukan ? ` | ${u.perindukan}${u.barung ? ` / ${u.barung}` : ''}` : ''}
                     </span>
                   </button>
                   {(u.status ?? 'aktif') !== 'aktif' && <BadgeStatus status={u.status} />}
@@ -273,8 +288,9 @@ export default function Siaga() {
         </>
       )}
 
-      {modal?.jenis === 'tambah' && <ModalAnggota onTutup={tutup} />}
-      {modal?.jenis === 'ubah' && <ModalAnggota awal={modal.anggota} onTutup={tutup} />}
+      {modal?.jenis === 'tambah' && <ModalAnggota onTutup={tutup} onAkunBaru={setAkunBaru} />}
+      {modal?.jenis === 'ubah' && <ModalAnggota awal={modal.anggota} onTutup={tutup} onAkunBaru={setAkunBaru} />}
+      {akunBaru && <AkunBaru akun={akunBaru} onTutup={() => setAkunBaru(null)} />}
       {modal?.jenis === 'tempel' && <ModalTempel onTutup={tutup} />}
       {modal?.jenis === 'barung' && <ModalBarung ids={terpilih} onTutup={tutup} />}
     </div>

@@ -1119,6 +1119,28 @@ export function AppProvider({ children }) {
   };
   const tambahSiaga = (daftar) => aksiSiaga(() => api().tambahSiaga(daftar), (n) => `${n} anggota Siaga ditambahkan.`);
   const ubahSiaga = (id, d) => aksiSiaga(() => api().ubahSiaga(id, d), () => 'Data anggota Siaga disimpan.');
+  /**
+   * Membuat anak Siaga BERAKUN (Pembina dan Admin; Edge Function buat-akun, sama seperti akun Penegak): nama pengguna = NIS, PIN awal dibuat acak dan wajib diganti saat masuk pertama.
+   * `nilai` = hasil periksaSiaga (nis wajib). Jenis kelamin, perindukan, dan barung diisi sesudah akun ada (Edge Function tidak membawanya). Mengembalikan { ok, akun: { nama, username, pin }, peringatan }.
+   */
+  const buatAkunSiaga = async (nilai) => {
+    if (!pembinaAtauAdmin(user)) return ditolak(notify, 'Hanya Pembina dan Admin Gudep yang dapat membuat akun anak Siaga.');
+    const r = await api().buatAkun('peserta', [{ no: 1, nama: nilai.nama, nis: nilai.nis, kelas: nilai.kelas, agama: nilai.agama ?? '' }]);
+    if (!r.ok) {
+      if (r.sesiBerakhir) await sesiBerakhir();
+      return { ok: false, pesan: r.pesan };
+    }
+    const b = r.hasil?.[0];
+    if (!b?.ok) return { ok: false, pesan: b?.pesan ?? 'Akun belum dapat dibuat.' };
+    let peringatan = '';
+    if (nilai.jk || nilai.perindukan) {
+      const u = await api().ubahSiaga(b.id, nilai);
+      if (!u.ok) peringatan = `Jenis kelamin atau kelompok belum tersimpan: ${u.pesan}`;
+    }
+    await segarkan.users();
+    notify(peringatan ? `Akun anak dibuat, tetapi ${peringatan}` : 'Akun anak Siaga dibuat. PIN awal wajib diganti saat masuk pertama.', peringatan ? 'err' : 'ok');
+    return { ok: true, akun: { nama: b.nama, username: b.username, pin: b.pin }, peringatan };
+  };
   const hapusSiaga = (id) => aksiSiaga(() => api().hapusSiaga(id), () => 'Anggota Siaga dihapus.');
   const aturBarung = (ids, perindukan, barung) => aksiSiaga(() => api().aturBarung(ids, perindukan, barung), (n) => `${n} anggota dipindahkan.`);
   /** Arsipkan (aktifkan = false) atau aktifkan kembali akun Dewan LAMA (Admin). */
@@ -1392,7 +1414,7 @@ export function AppProvider({ children }) {
     penugasan: db.penugasan, penugasanPeserta: db.penugasanPeserta, guruAgama: db.guruAgama, muatPenugasan, muatLogPenugasan, aturPenugasan, aturPenugasanPeserta, salinPenugasan, simpanGuruAgama, hapusGuruAgama, bolehAturPenugasan,
     praUjiAktif, pastikanPraUji, praUjiPeserta, muatAntrianPraUji, muatPraUjiMenunggu, catatPraUji, lewatiPraUji, aturSakelarPraUji,
     pendampingan, muatBinaDamping, aturBinaDamping, muatSanggaRombel, aturSangga, calonPinsa, tugaskanPinsa, cabutPinsa,
-    bolehKepengurusan, terapkanKepengurusan, aturJabatanDewan, tambahSiaga, ubahSiaga, hapusSiaga, aturBarung, arsipkanDewanLama, muatLogKepengurusan, muatPengukuhanDewan, simpanPengukuhanDewan, hapusPengukuhanDewan,
+    bolehKepengurusan, terapkanKepengurusan, aturJabatanDewan, tambahSiaga, buatAkunSiaga, ubahSiaga, hapusSiaga, aturBarung, arsipkanDewanLama, muatLogKepengurusan, muatPengukuhanDewan, simpanPengukuhanDewan, hapusPengukuhanDewan,
     muatUlang: muatSemua,
     notifikasi: db.notifikasi, belumDibaca: jumlahBelumDibaca(db.notifikasi), segarkanNotifikasi, tandaiNotifikasi, api,
     notify, toast,

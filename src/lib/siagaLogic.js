@@ -52,8 +52,8 @@ export function periksaSiaga(d, ada = {}) {
   return { ok: true, nilai: { nama, kelas, jk: jk || null, agama: agama || null, nis: nis || null, perindukan: perindukan || null, barung: barung || null } };
 }
 
-/** Anggota Siaga (akun tanpa login) dari daftar pengguna. */
-export const anggotaSiaga = (users) => (users ?? []).filter((u) => u.role === 'peserta' && u.tanpaAkun);
+/** Anggota Siaga dari daftar pengguna: anak tanpa akun, atau anak berkelas SD yang punya akun masuk (dibuat Pembina/Admin seperti akun Penegak). */
+export const anggotaSiaga = (users) => (users ?? []).filter((u) => u.role === 'peserta' && (u.tanpaAkun || kelasSiagaSah(u.kelas)));
 
 /** Penulisan perindukan/barung yang sudah dipakai (tanpa membedakan huruf besar/kecil), untuk menyamakan isian baru. */
 export function penyamaKelompok(users) {

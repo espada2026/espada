@@ -182,7 +182,7 @@ begin
               case when not exists (select 1 from public.penegak_isian i where i.peserta_id = p.id and i.kunci = 'alamat') then 'alamat' end,
               case when not exists (select 1 from public.penegak_isian i where i.peserta_id = p.id and i.kunci in ('ayah_nama', 'ibu_nama', 'wali_nama')) then 'ortu' end
             ], null) as kurang
-          from public.profiles p where p.role = 'peserta' and p.status = 'aktif' and not p.tanpa_akun
+          from public.profiles p where p.role = 'peserta' and p.status = 'aktif' and not p.tanpa_akun and not sigarda.kelas_siaga(p.kelas)
         ) y where cardinality(y.kurang) > 0 order by y.kelas, y.nama limit 300
       ) x
     ), '[]'::jsonb),
@@ -222,7 +222,7 @@ begin
     'tanpaJk', case when jsonb_array_length(v_hasil -> 'tanpaJk') < 300 then jsonb_array_length(v_hasil -> 'tanpaJk')
       else (select count(*) from public.profiles where status = 'aktif' and jenis_kelamin is null) end,
     'dataDiriBelum', case when jsonb_array_length(v_hasil -> 'dataDiriBelum') < 300 then jsonb_array_length(v_hasil -> 'dataDiriBelum')
-      else (select count(*) from public.profiles p where p.role = 'peserta' and p.status = 'aktif' and not p.tanpa_akun and (
+      else (select count(*) from public.profiles p where p.role = 'peserta' and p.status = 'aktif' and not p.tanpa_akun and not sigarda.kelas_siaga(p.kelas) and (
         p.whatsapp is null or btrim(p.whatsapp) = '' or p.jenis_kelamin is null or p.agama is null
         or not exists (select 1 from public.tanggal_lahir t where t.peserta_id = p.id)
         or not exists (select 1 from public.penegak_isian i where i.peserta_id = p.id and i.kunci = 'tempat_lahir')
