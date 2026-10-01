@@ -73,7 +73,7 @@ function BarisKas({ tanggal, catatanTotal, kas, boleh, simpan }) {
  * catatan iuran. Pembina dan Admin hanya melihat.
  */
 export default function KasIuran() {
-  const { absensi, dewanAmbalan, simpanKas } = useApp();
+  const { absensi, pengelolaIuran, simpanKas } = useApp();
   const [per, setPer] = useState(periodeAwal);
   const { mulai, akhir } = rentangPeriode(per.ta, per.periode);
   const sesi = useMemo(() => [...sesiPeriode(absensi, per.ta, per.periode)].reverse(), [absensi, per.ta, per.periode]);
@@ -88,7 +88,7 @@ export default function KasIuran() {
     <div>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <p className="max-w-xl text-sm text-pramuka-600">
-          Cocokkan uang fisik di bumbung dengan catatan iuran setiap Jumat. {dewanAmbalan ? 'Dewan Ambalan mengisi total uang yang dihitung.' : 'Hanya Dewan Ambalan yang dapat menutup kas; Anda melihat hasilnya.'}
+          Cocokkan uang fisik di bumbung dengan catatan iuran setiap latihan. {pengelolaIuran ? 'Pengelola (Pembina atau Dewan Ambalan) mengisi total uang yang dihitung.' : 'Hanya Pembina atau Dewan Ambalan yang dapat menutup kas; Anda melihat hasilnya.'}
         </p>
         <PilihPeriode nilai={per} ubah={setPer} />
       </div>
@@ -105,7 +105,7 @@ export default function KasIuran() {
           </section>
 
           {sesi.length === 0 ? (
-            <Kosong judul="Belum ada pertemuan" teks={`Belum ada sesi latihan Jumat pada ${PERIODE[per.periode]} ${per.ta}.`} />
+            <Kosong judul="Belum ada pertemuan" teks={`Belum ada sesi latihan pada ${PERIODE[per.periode]} ${per.ta}.`} />
           ) : (
             <ul className="panel divide-y divide-pramuka-100">
               {sesi.map((s) => (
@@ -114,7 +114,7 @@ export default function KasIuran() {
                   tanggal={s.tanggal}
                   catatanTotal={ring.perTanggal[s.tanggal]?.jumlah ?? 0}
                   kas={r.kas[s.tanggal]}
-                  boleh={dewanAmbalan}
+                  boleh={pengelolaIuran}
                   simpan={simpanKas}
                 />
               ))}

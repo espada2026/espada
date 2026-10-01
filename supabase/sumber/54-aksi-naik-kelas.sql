@@ -57,6 +57,7 @@ create trigger tak_aktif_tanggal_lahir before insert or update on public.tanggal
 -- ===== akhir pemicu gerbang =====
 -- ===== Isian Penegak (Tahap 3, H1): pemicu =====
 create trigger tak_aktif_penegak_isian before insert or update on public.penegak_isian for each row execute function sigarda.tolak_peserta_tak_aktif();
+create trigger tak_aktif_tabungan_cek before insert or update on public.tabungan_cek for each row execute function sigarda.tolak_peserta_tak_aktif();
 -- ===== akhir pemicu isian penegak =====
 
 -- Status Calon Garuda hanya untuk Penegak yang aktif (diberikan sendiri lewat sg_calon_garuda_daftar atau oleh Admin lewat sg_anggota_ubah).

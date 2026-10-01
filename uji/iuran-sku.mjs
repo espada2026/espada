@@ -117,7 +117,7 @@ r = await susulan(K.dewan, ahmad, 1000, 61); ok(/antara 1 dan 60/.test(r.err ?? 
 r = await rpc(K.dewan.k, 'sg_iuran_susulan', { p_peserta_id: ahmad, p_tanggal: null, p_jumlah: 1000, p_pertemuan: 1 }); ok(/Tanggal uji wajib/.test(r.err ?? ''), 'tanggal wajib');
 r = await susulan(K.dewan, K.pembina.id, 1000, 1); ok(/Peserta tidak ditemukan/.test(r.err ?? ''), 'hanya untuk Penegak');
 await isiKali(ahmad, 0);
-for (const [nama, kk] of [['Pembina', K.pembina], ['Admin', K.admin], ['Penegak', K.ahmad]]) { r = await susulan(kk, ahmad, 1000, 1); ok(/Hanya Dewan Ambalan/.test(r.err ?? ''), `${nama} tidak dapat mencatat susulan: ${r.err}`); }
+for (const [nama, kk] of [['Admin', K.admin], ['Penegak', K.ahmad]]) { r = await susulan(kk, ahmad, 1000, 1); ok(/Hanya Dewan Ambalan/.test(r.err ?? ''), `${nama} tidak dapat mencatat susulan: ${r.err}`); }
 r = await rpc(anon, 'sg_iuran_susulan', { p_peserta_id: ahmad, p_tanggal: UJI, p_jumlah: 1000, p_pertemuan: 1 }); ok(!!r.err, 'tanpa login ditolak');
 ok((await q(`select count(*)::int n from public.iuran where peserta_id = $1`, [ahmad]))[0].n === 0, 'tidak ada baris dari percobaan yang ditolak');
 // asisten tidak dapat mencatat susulan

@@ -57,7 +57,7 @@ r = await set(K.dewan.k, T, kevin, 500); ok(!r.err, 'peserta tanpa catatan absen
 r = await set(K.dewan.k, T2, ahmad, 1000); ok(!r.err, 'Jumat sebelumnya (pengisian susulan) dapat dicatat');
 
 console.log('\n--- Yang TIDAK boleh mencatat ---');
-for (const [nama, kk] of [['Pembina', K.pembina], ['Admin', K.admin], ['Penegak', K.ahmad]]) {
+for (const [nama, kk] of [['Admin', K.admin], ['Penegak', K.ahmad]]) {
   r = await set(kk.k, T, kevin, 3000); ok(/Dewan Ambalan atau asisten/.test(r.err ?? ''), `${nama} ditolak: ${r.err}`);
   r = await rpc(kk.k, 'sg_iuran_set_banyak', { p_tanggal: T, p_peserta_ids: [kevin], p_jumlah: 1000, p_hanya_kosong: false }); ok(!!r.err, `${nama} ditolak untuk pengisian banyak`);
   r = await rpc(kk.k, 'sg_iuran_lembar', { p_tanggal: T }); ok(!!r.err, `${nama} tidak dapat membuka lembar catat`);
@@ -149,7 +149,7 @@ ok((await q(`select jenis from public.iuran_log where peserta_id = $1 order by i
 console.log('\n--- Tutup kas ---');
 r = await rpc(K.dewan.k, 'sg_iuran_kas_simpan', { p_tanggal: T, p_total: 21500, p_catatan: 'Selisih Rp 500 (uang receh)' }); ok(!r.err, 'Dewan menutup kas');
 ok((await baca(K.pembina.k, 'iuran_kas')).n === 1 && (await baca(K.admin.k, 'iuran_kas')).n === 1, 'Pembina dan Admin membaca tutup kas');
-for (const [nama, kk] of [['Pembina', K.pembina], ['Admin', K.admin], ['Penegak', K.ahmad]]) { r = await rpc(kk.k, 'sg_iuran_kas_simpan', { p_tanggal: T, p_total: 1, p_catatan: '' }); ok(/Hanya Dewan Ambalan/.test(r.err ?? ''), `${nama} tidak dapat menutup kas`); }
+for (const [nama, kk] of [['Admin', K.admin], ['Penegak', K.ahmad]]) { r = await rpc(kk.k, 'sg_iuran_kas_simpan', { p_tanggal: T, p_total: 1, p_catatan: '' }); ok(/Hanya Dewan Ambalan/.test(r.err ?? ''), `${nama} tidak dapat menutup kas`); }
 r = await rpc(K.dewan.k, 'sg_iuran_kas_simpan', { p_tanggal: T, p_total: -1, p_catatan: '' }); ok(/tidak valid/.test(r.err ?? ''), 'total negatif ditolak');
 r = await rpc(K.dewan.k, 'sg_iuran_kas_simpan', { p_tanggal: T, p_total: 5, p_catatan: 'x'.repeat(301) }); ok(/Catatan maksimal/.test(r.err ?? ''), 'catatan terlalu panjang ditolak');
 r = await rpc(K.dewan.k, 'sg_iuran_kas_simpan', { p_tanggal: '2000-01-07', p_total: 5, p_catatan: '' }); ok(/Sesi absensi belum dibuat/.test(r.err ?? ''), 'kas untuk tanggal tanpa sesi ditolak');

@@ -67,7 +67,7 @@ declare
   v_sisa int;
   -- Tabel yang SELALU kosong sesudah penghapusan (milik akun yang dihapus, atau dikosongkan).
   v_wajib_kosong text[] := array[
-    'sku_progress', 'sku_riwayat', 'absensi_hadir', 'iuran', 'iuran_log', 'asisten_iuran', 'penugasan_rombel', 'penugasan_peserta',
+    'sku_progress', 'sku_riwayat', 'absensi_hadir', 'iuran', 'iuran_log', 'asisten_iuran', 'tabungan_cek', 'penugasan_rombel', 'penugasan_peserta',
     'portofolio', 'portofolio_jurnal', 'raport', 'sku_penilaian', 'sertifikat_tingkat', 'garuda_berkas_token', 'sesi_ujian_peserta',
     'notifikasi', 'login_gagal',
     'sku_pra_uji', 'bina_damping', 'pinsa_tugas', 'pelantikan', 'saka_anggota', 'tkk_capaian', 'tkk_krida', 'tkk_pengajuan', 'spg_penetapan',

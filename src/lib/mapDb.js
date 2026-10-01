@@ -298,6 +298,10 @@ export const susunAgenda = (baris = []) =>
     pesertaTerkait: r.peserta_terkait ?? [], lewatiBatas: !!r.lewati_batas, dibuatOleh: r.dibuat_oleh ?? null, dibuatPada: r.dibuat_pada,
   })).sort((a, b) => a.tanggal.localeCompare(b.tanggal));
 
+/** Baris tabungan_cek -> [{ tanggal, jumlah, catatan }], tanggal terbaru dulu. */
+export const susunTabungan = (baris = []) =>
+  baris.map((r) => ({ tanggal: tgl(r.tanggal), jumlah: Number(r.jumlah), catatan: r.catatan ?? '' })).sort((a, b) => b.tanggal.localeCompare(a.tanggal));
+
 /** Baris pelantikan -> [{ id, pesertaId, tingkat ('bantara'|'laksana'), tanggal, tempat, agendaId, catatan, dicatatOleh, dicatatPada }], tanggal terbaru dulu. */
 export const susunPelantikan = (baris = []) =>
   baris.map((r) => ({

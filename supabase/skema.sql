@@ -19,7 +19,7 @@ set check_function_bodies = off;
 -- ---------------------------------------------------------------------------
 -- 0. Bersihkan versi lama
 -- ---------------------------------------------------------------------------
-drop table if exists public.sfh_catatan, public.portofolio_snapshot, public.dokumen_templat, public.penegak_isian, public.sku_pra_uji,public.pengukuhan_dewan, public.pinsa_tugas, public.bina_damping, public.kepengurusan_log, public.penugasan_peserta, public.penugasan_log, public.penugasan_rombel, public.guru_agama,
+drop table if exists public.tabungan_cek, public.sfh_catatan, public.portofolio_snapshot, public.dokumen_templat, public.penegak_isian, public.sku_pra_uji,public.pengukuhan_dewan, public.pinsa_tugas, public.bina_damping, public.kepengurusan_log, public.penugasan_peserta, public.penugasan_log, public.penugasan_rombel, public.guru_agama,
   public.naik_kelas_log, public.naik_kelas_batch, public.notifikasi, public.push_langganan, public.push_konfigurasi, public.keepalive_konfigurasi, public.terbit_ulang_konfigurasi,
   public.dokumen_terbit, public.dokumen_urut, public.iuran_kas, public.iuran_log, public.iuran, public.asisten_iuran,
   public.sesi_ujian_peserta, public.sesi_ujian_butir, public.sesi_ujian, public.sertifikat_tingkat, public.sku_penilaian, public.instrumen_panduan, public.instrumen_penguji, public.instrumen_kriteria, public.instrumen,
@@ -140,7 +140,7 @@ create table public.sku_riwayat (
 create index on public.sku_riwayat (peserta_id);
 
 create table public.absensi_sesi (
-  tanggal date primary key check (extract(dow from tanggal) = 5),   -- hanya Jumat
+  tanggal date primary key,   -- hari latihan apa pun (Siaga tidak hanya berlatih pada hari Jumat)
   dibuat_oleh uuid references public.profiles(id) on delete set null,
   dibuat_pada timestamptz not null default now()
 );
@@ -194,8 +194,22 @@ create table public.asisten_iuran (
   ditunjuk_oleh uuid references public.profiles(id) on delete set null,
   ditunjuk_pada timestamptz not null default now()
 );
--- ===== akhir tabel iuran =====
+-- ===== Tabungan Siaga (Fase 3): tabel =====
+-- Tabungan Siaga (Pramuka Siaga, Fase 3; SK Kwarnas 119/2011 butir 4 tiap tingkat: punya buku tabungan dan menabung teratur beberapa minggu; kebiasaan menabung SK 186/1979).
+-- Uang tabungan milik anak dan disimpan di bukunya sendiri, BUKAN di aplikasi: satu baris = pada tanggal itu Pembina memeriksa buku tabungan dan melihat setoran minggu itu.
+-- Tidak ada baris = tidak diperiksa. Minggu menabung dihitung aplikasi dari baris-baris ini (src/lib/tabunganLogic.js).
+create table public.tabungan_cek (
+  peserta_id uuid not null references public.profiles(id) on delete cascade,
+  tanggal date not null check (tanggal >= date '2015-01-01'),
+  jumlah int not null check (jumlah between 1 and 100000000),
+  catatan text not null default '' check (char_length(catatan) <= 200),
+  oleh uuid references public.profiles(id) on delete set null,
+  waktu timestamptz not null default now(),
+  primary key (peserta_id, tanggal)
+);
+-- ===== akhir tabel tabungan =====
 
+-- ===== akhir tabel iuran =====
 -- ===== Penugasan penguji per rombel: tabel =====
 -- Admin Gudep menetapkan Pembina dan Dewan Ambalan yang bertugas menguji tiap rombel, per tahun ajaran (dikelola lewat sg_penugasan_*).
 -- Fase 1a hanya menyimpan dan menampilkan penugasan; penegakannya (siapa yang boleh dipilih Penegak) menyusul di fase 1b.
@@ -1490,7 +1504,7 @@ begin
 end $$;
 
 create function sigarda.pencatat_iuran() returns boolean language plpgsql stable security definer set search_path = public as
-$$ begin return sigarda.dewan() or sigarda.asisten_iuran(); end $$;
+$$ begin return sigarda.dewan() or sigarda.pembina_saja() or sigarda.asisten_iuran(); end $$;   -- Pembina ikut (Siaga tidak punya Dewan Ambalan; Pembina yang mencatat)
 -- ---- akhir bantu iuran ----
 
 -- ---- Iuran bumbung: perhitungan untuk penilaian SKU (harus sama dengan src/lib/iuranLogic.js; dijaga oleh pengujian) ----
@@ -2449,6 +2463,7 @@ alter table public.sesi_ujian enable row level security;
 alter table public.sesi_ujian_butir enable row level security;
 alter table public.sesi_ujian_peserta enable row level security;
 alter table public.iuran enable row level security;
+alter table public.tabungan_cek enable row level security;   -- baca: pemilik, Pembina, Admin; tulis: hanya fungsi sg_tabungan_*
 alter table public.iuran_log enable row level security;
 alter table public.iuran_kas enable row level security;
 alter table public.asisten_iuran enable row level security;
@@ -2527,6 +2542,8 @@ create policy baca_iuran_log on public.iuran_log for select to authenticated
   using ((select sigarda.aktif()) and (select sigarda.pengurus()));
 create policy baca_iuran_kas on public.iuran_kas for select to authenticated
   using ((select sigarda.aktif()) and (select sigarda.pengurus()));
+create policy baca_tabungan_cek on public.tabungan_cek for select to authenticated
+  using ((select sigarda.aktif()) and (peserta_id = (select auth.uid()) or (select sigarda.pembina_atau_admin())));
 create policy baca_asisten_iuran on public.asisten_iuran for select to authenticated
   using ((select sigarda.aktif()) and (peserta_id = (select auth.uid()) or (select sigarda.pengurus())));
 -- Penugasan penguji dan guru agama: dibaca pengurus (Pembina dan Dewan hanya melihat); diatur Admin lewat fungsi.
@@ -3060,7 +3077,6 @@ begin
   perform sigarda.wajib_aktif();
   if not sigarda.pengurus() then raise exception 'Hanya Dewan Ambalan, Pembina, atau admin yang dapat mencatat absensi.'; end if;
   if p_tanggal is null or p_tanggal < date '2000-01-01' or p_tanggal > date '2100-12-31' then raise exception 'Tanggal tidak valid.'; end if;
-  if extract(dow from p_tanggal) <> 5 then raise exception 'Latihan rutin hanya dicatat pada hari Jumat.'; end if;
   if p_tanggal > sigarda.hari_ini() then raise exception 'Sesi belum bisa dibuat untuk tanggal yang belum tiba.'; end if;
   insert into public.absensi_sesi (tanggal, dibuat_oleh) values (p_tanggal, auth.uid()) on conflict (tanggal) do nothing;
 end $$;
@@ -3215,7 +3231,7 @@ $$
 declare v_cat text := btrim(coalesce(p_catatan, ''));
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.dewan() then raise exception 'Hanya Dewan Ambalan yang dapat menutup kas.'; end if;
+  if not (sigarda.dewan() or sigarda.pembina_saja()) then raise exception 'Hanya Dewan Ambalan atau Pembina yang dapat menutup kas.'; end if;
   if not exists (select 1 from public.absensi_sesi where tanggal = p_tanggal) then raise exception 'Sesi absensi belum dibuat.'; end if;
   if p_total is null then
     delete from public.iuran_kas where tanggal = p_tanggal;
@@ -3316,7 +3332,7 @@ $$
 declare h record; v_t date; v_n int := 0;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.dewan() then raise exception 'Hanya Dewan Ambalan yang dapat mencatat iuran susulan.'; end if;
+  if not (sigarda.dewan() or sigarda.pembina_saja()) then raise exception 'Hanya Dewan Ambalan atau Pembina yang dapat mencatat iuran susulan.'; end if;
   if p_tanggal is null then raise exception 'Tanggal uji wajib diisi.'; end if;
   if p_jumlah is null or p_jumlah < 1 or p_jumlah > 1000000 then raise exception 'Jumlah iuran harus antara Rp 1 dan Rp 1.000.000.'; end if;
   if p_pertemuan is null or p_pertemuan < 1 or p_pertemuan > 60 then raise exception 'Jumlah pertemuan susulan harus antara 1 dan 60.'; end if;
@@ -3335,6 +3351,38 @@ begin
   if v_n = 0 then raise exception 'Tidak ada pertemuan tanpa iuran yang dapat ditebus pada semester ini.'; end if;
   return v_n;
 end $$;
+-- ===== Tabungan Siaga (Fase 3): aksi =====
+-- Pembina (atau Admin) mencatat bahwa pada p_tanggal buku tabungan seorang anak Siaga diperiksa dan ada setoran sebesar p_jumlah (rupiah) pada minggu itu.
+-- Mencatat ulang tanggal yang sama = koreksi. Hanya anggota Siaga (kelas SD, dengan atau tanpa akun) yang aktif; uang tetap di buku anak, aplikasi hanya mencatat pemeriksaannya.
+-- Aturan isian dicerminkan src/lib/tabunganLogic.js (periksaTabungan) dan dibandingkan langsung dengan fungsi ini oleh uji/tabungan-klien.mjs.
+create function public.sg_tabungan_catat(p_peserta_id uuid, p_tanggal date, p_jumlah int, p_catatan text default null) returns void
+language plpgsql security definer set search_path = public as
+$$
+declare v_p record; v_cat text := btrim(coalesce(p_catatan, ''));
+begin
+  perform sigarda.wajib_aktif();
+  if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina atau Admin Gudep yang dapat mencatat tabungan.'; end if;
+  select id, nama, kelas, status, tanpa_akun into v_p from public.profiles where id = p_peserta_id and role = 'peserta';
+  if v_p.id is null then raise exception 'Anggota tidak ditemukan.'; end if;
+  if not (v_p.tanpa_akun or sigarda.kelas_siaga(v_p.kelas)) then raise exception 'Tabungan hanya dicatat untuk anggota Siaga.'; end if;
+  if p_tanggal is null then raise exception 'Tanggal pemeriksaan wajib diisi.'; end if;
+  if p_tanggal < date '2015-01-01' or p_tanggal > sigarda.hari_ini() then raise exception 'Tanggal pemeriksaan harus antara 1 Januari 2015 dan hari ini.'; end if;
+  if p_jumlah is null or p_jumlah < 1 or p_jumlah > 100000000 then raise exception 'Setoran harus antara Rp 1 dan Rp 100.000.000.'; end if;
+  if char_length(v_cat) > 200 then raise exception 'Catatan maksimal 200 karakter.'; end if;
+  insert into public.tabungan_cek (peserta_id, tanggal, jumlah, catatan, oleh) values (p_peserta_id, p_tanggal, p_jumlah, v_cat, auth.uid())
+  on conflict (peserta_id, tanggal) do update set jumlah = excluded.jumlah, catatan = excluded.catatan, oleh = excluded.oleh, waktu = now();
+end $$;
+
+create function public.sg_tabungan_hapus(p_peserta_id uuid, p_tanggal date) returns void
+language plpgsql security definer set search_path = public as
+$$
+begin
+  perform sigarda.wajib_aktif();
+  if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina atau Admin Gudep yang dapat menghapus catatan tabungan.'; end if;
+  if exists (select 1 from public.profiles where id = p_peserta_id and status <> 'aktif') then raise exception 'Anggota nonaktif atau alumni tidak dapat diubah.'; end if;
+  delete from public.tabungan_cek where peserta_id = p_peserta_id and tanggal = p_tanggal;
+end $$;
+-- ===== akhir aksi tabungan =====
 -- ===== akhir fungsi iuran =====
 
 -- ===== Penugasan penguji per rombel: fungsi aksi (Pembina dan Admin Gudep) =====
@@ -3841,6 +3889,7 @@ create trigger tak_aktif_tanggal_lahir before insert or update on public.tanggal
 -- ===== akhir pemicu gerbang =====
 -- ===== Isian Penegak (Tahap 3, H1): pemicu =====
 create trigger tak_aktif_penegak_isian before insert or update on public.penegak_isian for each row execute function sigarda.tolak_peserta_tak_aktif();
+create trigger tak_aktif_tabungan_cek before insert or update on public.tabungan_cek for each row execute function sigarda.tolak_peserta_tak_aktif();
 -- ===== akhir pemicu isian penegak =====
 
 -- Status Calon Garuda hanya untuk Penegak yang aktif (diberikan sendiri lewat sg_calon_garuda_daftar atau oleh Admin lewat sg_anggota_ubah).
@@ -6102,6 +6151,7 @@ begin
       'penegak_isian', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.penegak_isian t),
       'dokumen_templat', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.dokumen_templat t),
       'portofolio_snapshot', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.portofolio_snapshot t),
+      'tabungan_cek', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.tabungan_cek t),
       'sfh_catatan', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.sfh_catatan t),
       'beranda_berita', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.beranda_berita t),
       'beranda_prestasi', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.beranda_prestasi t),
@@ -7804,7 +7854,7 @@ grant select on public.profiles, public.sku_butir, public.sku_unit, public.pf_it
   public.materi, public.pengaturan, public.sidang_dk, public.sidang_urut, public.raport,
   public.instrumen, public.instrumen_kriteria, public.instrumen_penguji, public.instrumen_panduan, public.sku_penilaian,
   public.sesi_ujian, public.sesi_ujian_butir, public.sesi_ujian_peserta,
-  public.iuran, public.iuran_log, public.iuran_kas, public.asisten_iuran,
+  public.iuran, public.iuran_log, public.iuran_kas, public.asisten_iuran, public.tabungan_cek,
   public.penugasan_rombel, public.penugasan_log, public.guru_agama, public.dokumen_terbit, public.dokumen_urut, public.notifikasi,
   public.naik_kelas_batch, public.naik_kelas_log, public.penugasan_peserta, public.kepengurusan_log, public.agenda, public.kegiatan_usulan, public.pengukuhan_dewan, public.sku_pra_uji, public.pelantikan, public.saka_anggota, public.tkk_katalog, public.tkk_capaian, public.tkk_krida, public.tkk_pengajuan, public.spg_penetapan, public.tanggal_lahir, public.tim_penilai, public.tim_penilai_anggota, public.garuda_tahap, public.penegak_isian, public.dokumen_templat, public.portofolio_snapshot, public.sfh_catatan,
   public.beranda_berita, public.beranda_prestasi, public.beranda_galeri, public.beranda_sosial, public.beranda_faq to authenticated;
@@ -7835,6 +7885,7 @@ grant execute on function
   public.sg_iuran_set(date, uuid, int), public.sg_iuran_set_banyak(date, uuid[], int, boolean), public.sg_iuran_lembar(date),
   public.sg_iuran_agregat(date, date), public.sg_iuran_kas_simpan(date, int, text), public.sg_asisten_iuran_atur(uuid, boolean),
   public.sg_iuran_pengaturan(), public.sg_iuran_pengaturan_simpan(jsonb), public.sg_iuran_ringkas(uuid, date), public.sg_iuran_susulan(uuid, date, int, int),
+  public.sg_tabungan_catat(uuid, date, int, text), public.sg_tabungan_hapus(uuid, date),
   public.sg_penugasan_atur(text, uuid, text[], boolean), public.sg_penugasan_salin(text, text), public.sg_rombel_perbarui(jsonb),
   public.sg_guru_agama_simpan(bigint, text, text, text), public.sg_guru_agama_hapus(bigint),
   public.sg_penguji_pilihan(text, uuid), public.sg_sku_alihkan(uuid, text, uuid, text),

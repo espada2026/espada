@@ -27,6 +27,7 @@ alter table public.sesi_ujian enable row level security;
 alter table public.sesi_ujian_butir enable row level security;
 alter table public.sesi_ujian_peserta enable row level security;
 alter table public.iuran enable row level security;
+alter table public.tabungan_cek enable row level security;   -- baca: pemilik, Pembina, Admin; tulis: hanya fungsi sg_tabungan_*
 alter table public.iuran_log enable row level security;
 alter table public.iuran_kas enable row level security;
 alter table public.asisten_iuran enable row level security;
@@ -105,6 +106,8 @@ create policy baca_iuran_log on public.iuran_log for select to authenticated
   using ((select sigarda.aktif()) and (select sigarda.pengurus()));
 create policy baca_iuran_kas on public.iuran_kas for select to authenticated
   using ((select sigarda.aktif()) and (select sigarda.pengurus()));
+create policy baca_tabungan_cek on public.tabungan_cek for select to authenticated
+  using ((select sigarda.aktif()) and (peserta_id = (select auth.uid()) or (select sigarda.pembina_atau_admin())));
 create policy baca_asisten_iuran on public.asisten_iuran for select to authenticated
   using ((select sigarda.aktif()) and (peserta_id = (select auth.uid()) or (select sigarda.pengurus())));
 -- Penugasan penguji dan guru agama: dibaca pengurus (Pembina dan Dewan hanya melihat); diatur Admin lewat fungsi.

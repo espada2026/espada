@@ -191,7 +191,7 @@ console.log('\n--- Render halaman SKU anak Siaga ---');
   const ctx = (user, pesertaId) => ({
     user, users, progress, dokumen: [], bolehSurat: false, muatDokumen: () => {}, daftarPesertaSemua: users, materi: [], penugasan: {}, penugasanPeserta: {}, muatPenugasan: () => {},
     praUjiAktif: false, pastikanRiwayat: () => {}, pastikanPraUji: () => {}, praUjiPeserta: () => [], instrumen: {}, instrumenSiap: true, pastikanInstrumen: () => {}, pengaturan: {},
-    catatHasil: async () => ({ ok: true }), notify: () => {}, pesertaId,
+    absensi: { sesi: {}, hadir: {} }, semesterSiap: {}, pastikanAbsensi: async () => ({ ok: true }), api: () => ({ muatTabungan: async () => ({ ok: true, data: [] }) }), catatHasil: async () => ({ ok: true }), notify: () => {}, pesertaId,
   });
   const render = (user, pesertaId) => renderToStaticMarkup(h(KonteksApp.Provider, { value: ctx(user, pesertaId) }, h(SiagaSku, { pesertaId, onKembali: () => {} }))).replace(/<!-- -->/g, '');
   const pembinaUser = { id: pembina.id, role: 'penguji', jabatan: 'Pembina', status: 'aktif', agama: 'Islam' };

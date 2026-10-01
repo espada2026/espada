@@ -91,7 +91,7 @@ create table public.sku_riwayat (
 create index on public.sku_riwayat (peserta_id);
 
 create table public.absensi_sesi (
-  tanggal date primary key check (extract(dow from tanggal) = 5),   -- hanya Jumat
+  tanggal date primary key,   -- hari latihan apa pun (Siaga tidak hanya berlatih pada hari Jumat)
   dibuat_oleh uuid references public.profiles(id) on delete set null,
   dibuat_pada timestamptz not null default now()
 );

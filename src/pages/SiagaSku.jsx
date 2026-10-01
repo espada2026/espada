@@ -5,9 +5,11 @@ import { SEMUA_TINGKAT } from '../data/skuData';
 import { DAFTAR_TINGKAT_SIAGA } from '../data/skuSiaga';
 import { bolehMenilaiPoin, hitungProgres, prasyaratTerpenuhi, tingkatSelesai } from '../lib/skuLogic';
 import { suratAgamaAktif } from '../lib/dokumenLogic';
+import { pembinaAtauAdmin } from '../lib/hakLogic';
 import { anggotaAktif, statusAnggota } from '../lib/naikKelasLogic';
 import { labelJenisKelamin } from '../lib/jenisKelaminLogic';
 import SkuChecklist from '../components/SkuChecklist';
+import PanelLatihanTabungan from '../components/PanelLatihanTabungan';
 import TingkatTabs from '../components/TingkatTabs';
 import UjiModal from '../components/UjiModal';
 import SumberPeraturan from '../components/SumberPeraturan';
@@ -101,6 +103,7 @@ export default function SiagaSku({ pesertaId, onKembali }) {
       <p className="mb-1 text-xs text-pramuka-600">Butir dinilai Pembina secara informal dan individual, butir demi butir; kenaikan tingkat lewat upacara pelantikan.</p>
       <SumberPeraturan rujukan="sku-siaga-2011" className="mb-4" />
 
+      <PanelLatihanTabungan peserta={peserta} tingkat={tingkat} progressAnak={progress[peserta.id]} dapatMencatat={pembinaAtauAdmin(user) && aktif} />
       <SkuChecklist tingkat={tingkat} peserta={peserta} renderAksi={renderAksi} />
       {uji && <UjiModal pesertaId={peserta.id} poin={uji.poin} onTutup={() => setUji(null)} />}
     </div>

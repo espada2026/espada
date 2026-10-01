@@ -160,7 +160,8 @@ ok(!galat(await sesi(kDewan, jumat)), 'membuat sesi yang sama dua kali tidak err
 ok((await q('select count(*)::int c from public.absensi_sesi'))[0].c === 1, 'tidak ada sesi ganda');
 ok(cocok(await sesi(kDewan, jumatDepan), /belum tiba/), 'Jumat di masa depan ditolak');
 const rabu = (await satu(`select ($1::date - 2)::text d`, [jumat])).d;
-ok(cocok(await sesi(kDewan, rabu), /hanya dicatat pada hari Jumat/), 'hari bukan Jumat ditolak');
+ok(!galat(await sesi(kDewan, rabu)), 'hari bukan Jumat kini diterima (latihan Siaga hari apa pun)');
+ok(!galat(await kDewan.rpc('sg_absen_hapus_sesi', { p_tanggal: rabu })), 'sesi hari Rabu dihapus lagi (menjaga hitungan di bawah)');
 ok(cocok(await sesi(kDewan, '1999-12-31'), /tidak valid/), 'tanggal di luar 2000-2100 ditolak');
 ok(cocok(await sesi(kP1, jumat), /Hanya Dewan Ambalan, Pembina, atau admin/), 'Penegak tidak bisa membuat sesi');
 ok(!galat(await sesi(kAdmin, (await satu(`select ($1::date - 7)::text d`, [jumat])).d)), 'Admin membuat sesi Jumat sebelumnya');
@@ -185,7 +186,8 @@ ok(cocok(await banyak(kP1, [p1], 'H', true), /Tidak diizinkan/), 'Penegak tidak 
 ok(!galat(await set(kDewan, p3, null)) && (await q('select 1 from public.absensi_hadir where tanggal=$1 and peserta_id=$2', [jumat, p3])).length === 0, 'status null menghapus catatan (kembali ke belum dicatat)');
 ok(cocok(await kP1.rpc('sg_absen_hapus_sesi', { p_tanggal: jumat }), /Tidak diizinkan/), 'Penegak tidak bisa menghapus sesi');
 ok(!galat(await kDewan.rpc('sg_absen_hapus_sesi', { p_tanggal: jumat })) && (await q('select count(*)::int c from public.absensi_hadir where tanggal=$1', [jumat]))[0].c === 0, 'hapus sesi ikut menghapus catatan kehadirannya');
-ok(/check|violates/i.test(await (async () => { try { await pg.query(`insert into public.absensi_sesi (tanggal) values ('${rabu}')`); return ''; } catch (e) { return e.message; } })()), 'batasan basis data: sesi non-Jumat mustahil masuk walau lewat jalan lain');
+ok(!(await (async () => { try { await pg.query(`insert into public.absensi_sesi (tanggal) values ('${rabu}')`); return ''; } catch (e) { return e.message; } })()), 'sesi hari non-Jumat kini boleh masuk (latihan Siaga hari apa pun)');
+await pg.query(`delete from public.absensi_sesi where tanggal = '${rabu}'`);
 
 // =====================================================================
 console.log('\n--- Materi ---');

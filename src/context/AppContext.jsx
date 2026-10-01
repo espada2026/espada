@@ -3,7 +3,7 @@ import { ambilKlien, GALAT_KONFIGURASI, LOKAL } from '../lib/supabaseClient';
 import { buatApi } from '../lib/api';
 import { pesertaDenganPeran } from '../lib/skuLogic';
 import {
-  adalahJumat, daftarSemester, gabungHadirSemester, KODE_STATUS, kunciSemester, rentangKunci, semesterDari, tanggalValid,
+  daftarSemester, gabungHadirSemester, KODE_STATUS, kunciSemester, rentangKunci, semesterDari, tanggalValid,
 } from '../lib/absensiLogic';
 import { bolehResetPin, validasiPinBaru } from '../lib/pinLogic';
 import { periksaBaris, POLA_NTA } from '../lib/importAnggota';
@@ -612,9 +612,11 @@ export function AppProvider({ children }) {
   /* ------------- Iuran bumbung kepramukaan (dicatat Dewan Ambalan atau asisten bendahara) ------------- */
   const dewanAmbalan = user?.role === 'penguji' && user?.jabatan === 'Dewan Ambalan';
   const asistenSaya = user?.role === 'peserta' && !hanyaLihatSaya && db.asisten.some((a) => a.pesertaId === user.id);
-  const pencatatIuran = dewanAmbalan || asistenSaya;
-  const penunjukAsisten = dewanAmbalan || (user?.role === 'penguji' && user?.jabatan === 'Pembina');
-  const MSG_IURAN = 'Hanya Dewan Ambalan atau asisten bendahara yang dapat mencatat iuran.';
+  const pembinaSaya = user?.role === 'penguji' && user?.jabatan === 'Pembina';
+  const pengelolaIuran = dewanAmbalan || pembinaSaya; // Pembina ikut (cermin sigarda.pencatat_iuran): gugus depan Siaga tidak punya Dewan Ambalan
+  const pencatatIuran = pengelolaIuran || asistenSaya;
+  const penunjukAsisten = dewanAmbalan || pembinaSaya;
+  const MSG_IURAN = 'Hanya Pembina, Dewan Ambalan, atau asisten bendahara yang dapat mencatat iuran.';
   const naikkanIuran = () => setVersiIuran((v) => v + 1); // hook rekap dan lembar memuat ulang bila angka ini berubah
 
   /** Membaca data iuran (rekap, kas, lembar, riwayat) tanpa toast; sesi berakhir ditangani di sini. */
@@ -636,13 +638,13 @@ export function AppProvider({ children }) {
   };
 
   const simpanKas = (tanggal, total, catatan = '') =>
-    dewanAmbalan
+    pengelolaIuran
       ? aksi(api().simpanKas(tanggal, total, catatan), { sukses: total == null ? 'Tutup kas dihapus.' : 'Tutup kas tersimpan.', sesudah: naikkanIuran })
-      : Promise.resolve(ditolak(notify, 'Hanya Dewan Ambalan yang dapat menutup kas.'));
+      : Promise.resolve(ditolak(notify, 'Hanya Pembina atau Dewan Ambalan yang dapat menutup kas.'));
 
   /** Iuran susulan saat ujian (Dewan): menebus Jumat kosong terlama dulu. Mengembalikan { ok, data: jumlah Jumat yang terisi }. */
   const catatIuranSusulan = async (pesertaId, tanggal, jumlah, pertemuan) => {
-    if (!dewanAmbalan) return ditolak(notify, 'Hanya Dewan Ambalan yang dapat mencatat iuran susulan.');
+    if (!pengelolaIuran) return ditolak(notify, 'Hanya Pembina atau Dewan Ambalan yang dapat mencatat iuran susulan.');
     const r = await aksi(api().catatIuranSusulan(pesertaId, tanggal, jumlah, pertemuan), { sesudah: naikkanIuran });
     if (r.ok) notify(`Iuran susulan untuk ${r.data} pertemuan dicatat.`);
     return r;
@@ -672,7 +674,7 @@ export function AppProvider({ children }) {
   const catatPortofolioPenguji = (pesertaId, itemId, catatan) =>
     aksi(api().catatPortofolioPenguji(pesertaId, itemId, catatan), { sukses: 'Catatan tersimpan.', sesudah: () => segarkan.portofolio(pesertaId) });
 
-  /* ------------------------------ Absensi Jumat ------------------------------ */
+  /* ------------------------------ Absensi latihan ------------------------------ */
   const bolehKelolaAbsen = user?.role === 'penguji' || user?.role === 'admin';
   const ubahHadir = (tanggal, fn) =>
     setDb((d) => ({ ...d, absensi: { ...d.absensi, hadir: { ...d.absensi.hadir, [tanggal]: fn({ ...(d.absensi.hadir[tanggal] ?? {}) }) } } }));
@@ -680,7 +682,6 @@ export function AppProvider({ children }) {
   const buatSesiAbsen = async (tanggal) => {
     if (!bolehKelolaAbsen) return ditolak(notify, 'Hanya Dewan Ambalan, Pembina, atau admin yang dapat mencatat absensi.');
     if (!tanggalValid(tanggal)) return ditolak(notify, 'Tanggal tidak valid.');
-    if (!adalahJumat(tanggal)) return ditolak(notify, 'Latihan rutin hanya dicatat pada hari Jumat.');
     if (tanggal > hariIni()) return ditolak(notify, 'Sesi belum bisa dibuat untuk tanggal yang belum tiba.');
     if (db.absensi.sesi[tanggal]) return { ok: true };
     return aksi(api().buatSesiAbsen(tanggal), {
@@ -1400,7 +1401,7 @@ export function AppProvider({ children }) {
     instrumen: db.instrumen, instrumenGalat: db.instrumenGalat, instrumenSiap, bolehKelolaInstrumen, pastikanInstrumen, simpanInstrumen, statusInstrumen, simpanPengaturanInstrumen,
     sesiUjian: db.sesiUjian, sesiUjianGalat: db.sesiUjianGalat, sesiUjianSiap, pastikanSesiUjian, simpanSesiUjian, ubahStatusSesiUjian, hapusSesiUjian, bolehHapusSesi,
     muatUlangProgress, pastikanRiwayat, tokenSuratTingkat, tokenSidang, muatPenilaian,
-    asisten: db.asisten, pengaturanIuran: db.pengaturanIuran, simpanPengaturanIuran, dewanAmbalan, asistenSaya, pencatatIuran, penunjukAsisten, versiIuran, bacaIuran, catatIuranSusulan, aturIuran, aturIuranBanyak, simpanKas, aturAsisten,
+    asisten: db.asisten, pengaturanIuran: db.pengaturanIuran, simpanPengaturanIuran, dewanAmbalan, pengelolaIuran, asistenSaya, pencatatIuran, penunjukAsisten, versiIuran, bacaIuran, catatIuranSusulan, aturIuran, aturIuranBanyak, simpanKas, aturAsisten,
     daftarPeserta, daftarPesertaSemua, peranUser, hanyaLihatSaya, bolehKelolaAbsen,
     naikKelas, batalkanNaikKelas, aturStatusAnggota, muatNaikKelas,
     login, logout,

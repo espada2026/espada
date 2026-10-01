@@ -32,6 +32,7 @@ from (
     ('Riwayat butir SKU',               (select count(*) from public.sku_riwayat)),
     ('Kehadiran latihan',               (select count(*) from public.absensi_hadir)),
     ('Iuran bumbung',                   (select count(*) from public.iuran)),
+    ('Pemeriksaan tabungan Siaga',      (select count(*) from public.tabungan_cek)),
     ('Portofolio Garuda',               (select count(*) from public.portofolio)),
     ('Nilai raport',                    (select count(*) from public.raport)),
     ('Penilaian instrumen',             (select count(*) from public.sku_penilaian)),
