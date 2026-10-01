@@ -38,7 +38,7 @@ console.log('--- Logika murni ---');
   ok(pelantikanPeserta(pel, 'e').bantara?.tempat === 'Lapangan' && pelantikanPeserta(pel, 'e').laksana === null && pelantikanPeserta(pel, 'x').bantara === null, 'pelantikanPeserta');
   const saka = [{ id: 1, pesertaId: 'a', saka: 'Saka Wanabakti', status: 'selesai' }, { id: 2, pesertaId: 'a', saka: 'Saka Bahari', status: 'aktif' }, { id: 3, pesertaId: 'b', saka: 'Saka Bahari', status: 'aktif' }];
   ok(sakaPeserta(saka, 'a').map((s) => s.id).join() === '2,1', 'sakaPeserta: aktif lebih dulu');
-  ok(JSON.stringify(ringkasPelantikan([...pel, { tingkat: 'laksana' }, { tingkat: 'bantara' }], saka)) === '{"bantara":2,"laksana":1,"sakaAktif":2}', 'ringkasPelantikan (Penegak berbeda yang aktif di Saka)');
+  ok(JSON.stringify(ringkasPelantikan([...pel, { tingkat: 'laksana' }, { tingkat: 'bantara' }], saka)) === '{"bantara":2,"laksana":1,"mula":0,"bantu":0,"tata":0,"sakaAktif":2}', 'ringkasPelantikan (Penegak berbeda yang aktif di Saka)');
   const banyak = [
     { id: 1, pesertaId: 'a', tingkat: 'bantara', tanggal: '2026-08-01', tempat: 'Lapangan', agendaId: null },
     { id: 2, pesertaId: 'b', tingkat: 'bantara', tanggal: '2026-08-01', tempat: 'Lapangan', agendaId: null },

@@ -5,10 +5,11 @@ import { cariPoin, hitungProgres, prasyaratTerpenuhi } from '../lib/skuLogic';
 import { fmtTanggal } from '../lib/format';
 import { Badge, Icon, Kosong, Lencana, ProgressBar, TeksPoin } from '../components/ui';
 import { tingkatSiagaAwal } from './SiagaSku';
+import KartuPelantikanSaya from '../components/KartuPelantikanSaya';
 
 /**
  * Beranda anak Siaga yang punya akun masuk (Pramuka Siaga, Fase 2b): kemajuan SKU Mula, Bantu, Tata, agenda pengujian, dan butir yang perlu diulang.
- * Kehadiran, iuran/tabungan, dan pelantikan Siaga menyusul pada fase berikutnya.
+ * Kartu pelantikan memuat tanggal dan tempat pelantikan Mula/Bantu/Tata (dicatat Pembina; Fase 4). Kehadiran dan iuran menyusul pada fase berikutnya.
  */
 export default function SiagaBeranda({ setTab }) {
   const { user, users, progress, batalkanAjuan, hanyaLihatSaya } = useApp();
@@ -58,6 +59,8 @@ export default function SiagaBeranda({ setTab }) {
           );
         })}
       </section>
+
+      <KartuPelantikanSaya />
 
       <section>
         <h2 className="mb-2 text-lg font-bold">Agenda pengujian</h2>

@@ -44,7 +44,7 @@ ok(cocok(r, /Hanya Pembina dan Admin Gudep/), 'Penegak tidak dapat mencatat pela
 r = await catat(K.dewan.id, 'bantara', tglLalu, 'Lapangan', [siti]);
 ok(cocok(r, /Hanya Pembina dan Admin Gudep/), 'akun Dewan lama tidak dapat mencatat pelantikan');
 r = await catat(K.pembina.id, 'garuda', tglLalu, 'Lapangan', [siti]);
-ok(cocok(r, /Bantara atau Laksana/), 'tingkat selain Bantara/Laksana ditolak');
+ok(cocok(r, /Bantara, Laksana, Mula, Bantu, atau Tata/), 'tingkat selain Bantara/Laksana ditolak');
 r = await catat(K.pembina.id, 'bantara', null, 'Lapangan', [siti]);
 ok(cocok(r, /Tanggal pelantikan wajib/), 'tanggal wajib');
 r = await catat(K.pembina.id, 'bantara', tglDepan, 'Lapangan', [siti]);
@@ -56,7 +56,7 @@ ok(cocok(r, /Tempat pelantikan wajib/), 'tempat wajib');
 r = await catat(K.pembina.id, 'bantara', tglLalu, 'Aula <b>', [siti]);
 ok(cocok(r, /Tempat pelantikan wajib/), 'tempat tanpa tanda < atau >');
 r = await catat(K.pembina.id, 'bantara', tglLalu, 'Lapangan', []);
-ok(cocok(r, /sedikitnya satu Penegak/), 'daftar Penegak tidak boleh kosong');
+ok(cocok(r, /sedikitnya satu anggota/), 'daftar Penegak tidak boleh kosong');
 r = await catat(K.pembina.id, 'bantara', tglLalu, 'Lapangan', [K.pembina.id]);
 ok(cocok(r, /bukan Penegak/), 'Pembina bukan Penegak: ditolak');
 r = await catat(K.pembina.id, 'bantara', tglLalu, 'Lapangan', [ahmad]);
@@ -92,7 +92,7 @@ ok(r.ok && (await baris('bantara')).find((x) => x.username === '10118').agenda_i
 
 console.log('\n--- Pelantikan Laksana: sesudah Bantara ---');
 r = await catat(K.pembina.id, 'laksana', tglLebihLalu, 'Lapangan', [bagas]);
-ok(cocok(r, /harus sesudah pelantikan Bantaranya/), 'Laksana pada tanggal yang sama atau sebelum Bantara ditolak');
+ok(cocok(r, /harus sesudah pelantikan Bantara/), 'Laksana pada tanggal yang sama atau sebelum Bantara ditolak');
 r = await catat(K.pembina.id, 'laksana', hari, 'Lapangan', [bagas]);
 ok(r.ok && (await baris('laksana')).length === 1, 'Bagas dilantik Laksana sesudah Bantaranya');
 r = await catat(K.pembina.id, 'bantara', hari, 'Lapangan', [bagas]);

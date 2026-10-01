@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import useAbsensiPeriode from '../hooks/useAbsensiPeriode';
+import usePelantikanSaka from '../hooks/usePelantikanSaka';
 import useTabungan from '../hooks/useTabungan';
 import { tahunAjaranDari } from '../lib/absensiLogic';
 import { awalTingkat, ringkasLatihan, TARGET_LATIHAN } from '../lib/latihanSiagaLogic';
@@ -24,8 +25,10 @@ export default function PanelLatihanTabungan({ peserta, tingkat, progressAnak, d
   const lalu = useAbsensiPeriode(taLalu, 'setahun'); // latihan dua tahun ajaran terakhir cukup untuk satu tingkat
   const kini = useAbsensiPeriode(taIni, 'setahun');
   const tab = useTabungan(peserta.id);
+  const { pelantikan } = usePelantikanSaka();
+  const pelantikanAnak = useMemo(() => pelantikan.filter((p) => p.pesertaId === peserta.id), [pelantikan, peserta.id]);
 
-  const sejak = awalTingkat(progressAnak, tingkat);
+  const sejak = awalTingkat(progressAnak, tingkat, pelantikanAnak);
   const latihan = useMemo(() => ringkasLatihan(absensi, peserta.id, { sejak, hari }), [absensi, peserta.id, sejak, hari]);
   const menabung = useMemo(() => ringkasTabungan(tab.baris, { sejak, hari }), [tab.baris, sejak, hari]);
   const targetL = TARGET_LATIHAN[tingkat];

@@ -3,7 +3,7 @@
  *
  * SK Kwarnas 119/2011, butir 11 tiap tingkat: rajin dan giat mengikuti latihan perindukan (Mula sedikitnya 6 kali berturut-turut, Bantu 8 kali sebagai Siaga Mula,
  * Tata 12 kali sebagai Siaga Bantu). Datanya dari absensi latihan (absensi_sesi/absensi_hadir; hari latihan bebas, tidak hanya Jumat): hadir = status 'H'.
- * Hanya tampilan bantuan: Pembina yang menilai butirnya. Kenaikan tingkat lewat pelantikan (Fase 4) akan menggantikan tanggal "sejak" di sini.
+ * Hanya tampilan bantuan: Pembina yang menilai butirnya. Kenaikan tingkat lewat pelantikan (Fase 4): bila pelantikan tingkat sebelumnya tercatat, tanggalnya menjadi awal tingkat.
  */
 import { hariIni } from './format';
 
@@ -12,13 +12,19 @@ export const TARGET_LATIHAN = { Mula: 6, Bantu: 8, Tata: 12 };
 /** Awalan id butir tiap tingkat sebelumnya (butir Penegak tidak ada di sini). */
 const AWALAN_SEBELUM = { Bantu: 'MUL-', Tata: 'BNU-' };
 
+/** Tingkat pelantikan yang membuat anak "menjadi" tingkat sebelumnya (id pelantikan): Bantu dijalani sesudah dilantik Mula, Tata sesudah dilantik Bantu. */
+const PELANTIKAN_SEBELUM = { Bantu: 'mula', Tata: 'bantu' };
+
 /**
- * Tanggal sejak anak mulai menjalani `tingkat`: tanggal uji terakhir butir lulus pada tingkat sebelumnya, atau null (Mula, atau tingkat sebelumnya belum ada tanggal ujinya).
+ * Tanggal sejak anak mulai menjalani `tingkat`: tanggal pelantikan tingkat sebelumnya bila tercatat (`pelantikan` = baris pelantikan anak ini, { tingkat, tanggal });
+ * jika belum, tanggal uji terakhir butir lulus pada tingkat sebelumnya; atau null (Mula, atau belum ada tanggalnya).
  * `progressPeserta` = progress[pesertaId] ({ [sku_id]: { status, tanggalUji } }).
  */
-export function awalTingkat(progressPeserta, tingkat) {
+export function awalTingkat(progressPeserta, tingkat, pelantikan = []) {
   const awalan = AWALAN_SEBELUM[tingkat];
   if (!awalan) return null;
+  const lantik = pelantikan.find((p) => p.tingkat === PELANTIKAN_SEBELUM[tingkat]);
+  if (lantik?.tanggal) return lantik.tanggal;
   let akhir = null;
   for (const [id, e] of Object.entries(progressPeserta ?? {})) {
     if (id.startsWith(awalan) && e.status === 'lulus' && e.tanggalUji && (akhir === null || e.tanggalUji > akhir)) akhir = e.tanggalUji;

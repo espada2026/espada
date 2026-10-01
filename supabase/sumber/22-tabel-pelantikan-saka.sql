@@ -4,7 +4,7 @@
 create table public.pelantikan (
   id bigint generated always as identity primary key,
   peserta_id uuid not null references public.profiles(id) on delete cascade,
-  tingkat text not null check (tingkat in ('bantara','laksana')),
+  tingkat text not null check (tingkat in ('bantara','laksana','mula','bantu','tata')),   -- bantara/laksana = Penegak; mula/bantu/tata = anggota Siaga (Fase 4)
   tanggal date not null check (tanggal >= date '2000-01-01'),
   tempat text not null check (char_length(btrim(tempat)) between 1 and 120),
   agenda_id bigint references public.agenda(id) on delete set null,          -- kegiatan pelantikan di Agenda (opsional)
