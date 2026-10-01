@@ -1,5 +1,5 @@
 import { useApp } from '../context/AppContext';
-import { TINGKAT, hurufSub } from '../data/skuData';
+import { SEMUA_TINGKAT, hurufSub } from '../data/skuData';
 import { PERAN, butirPeserta, getEntry, hitungProgres, tanggalLulusTingkat } from '../lib/skuLogic';
 import { fmtTanggal, hariIni, kodeVerifikasi } from '../lib/format';
 import { alamatDasar, urlVerifikasi } from '../lib/verifikasiLogic';
@@ -39,11 +39,15 @@ export function KopSurat({ gudep = null }) {
 
 const SEL = 'border border-pramuka-400 px-2 py-1 align-top';
 
+/** Tingkat SKU Siaga (SK Kwarnas 119/2011); sisanya Penegak. Katalog Siaga terdaftar bila halaman pemanggil mengimpor data/skuSiaga. */
+export const tingkatSiagaSku = (tingkat) => ['Mula', 'Bantu', 'Tata'].includes(tingkat);
+
 /** Kartu rekap SKU (A4 portrait). Butir 1 diuraikan per sub-butir sesuai agama peserta. */
 export function KartuSku({ peserta, tingkat }) {
   const G = useGudep();
   const { progress, users } = useApp();
-  const t = TINGKAT[tingkat];
+  const t = SEMUA_TINGKAT[tingkat];
+  const siaga = tingkatSiagaSku(tingkat);
   const h = hitungProgres(progress, peserta, tingkat);
   const namaPenguji = (id) => users.find((u) => u.id === id)?.nama ?? '-';
 
@@ -79,9 +83,18 @@ export function KartuSku({ peserta, tingkat }) {
         <dt>Nama</dt><dd className="col-span-3">: {peserta.nama}</dd>
         <dt>NIS</dt><dd>: {peserta.nis || '-'}</dd>
         <dt>Kelas</dt><dd>: {peserta.kelas}</dd>
-        <dt>Sangga</dt><dd>: {peserta.sangga}</dd>
-        <dt>Agama</dt><dd>: {peserta.agama}</dd>
-        <dt>Peran</dt><dd className="col-span-3">: {PERAN[peserta.peran]?.label}</dd>
+        {siaga ? (
+          <>
+            <dt>Barung</dt><dd>: {peserta.barung ? `${peserta.barung}${peserta.perindukan ? ` (${peserta.perindukan})` : ''}` : '-'}</dd>
+            <dt>Agama</dt><dd className="col-span-3">: {peserta.agama}</dd>
+          </>
+        ) : (
+          <>
+            <dt>Sangga</dt><dd>: {peserta.sangga}</dd>
+            <dt>Agama</dt><dd>: {peserta.agama}</dd>
+            <dt>Peran</dt><dd className="col-span-3">: {PERAN[peserta.peran]?.label}</dd>
+          </>
+        )}
         <dt>Progres</dt><dd className="col-span-3">: {h.lulus} dari {h.total} butir lulus ({h.persen}%)</dd>
       </dl>
 
@@ -129,7 +142,8 @@ function FragmenAgama({ no, agama, children }) {
 }
 
 // Kolom blok tanda tangan STL menurut jumlah penanda tangan Dewan (1 atau 2): [tanpa QR, dengan QR di tengah].
-const KOLOM_TTD = [['grid-cols-2', 'grid-cols-[1fr_auto_1fr]'], ['grid-cols-3', 'grid-cols-[1fr_1fr_auto_1fr]']];
+// Indeks = jumlah penanda tangan Dewan (0 untuk Siaga: hanya Pembina).
+const KOLOM_TTD = [['grid-cols-1', 'grid-cols-2'], ['grid-cols-2', 'grid-cols-[1fr_auto_1fr]'], ['grid-cols-3', 'grid-cols-[1fr_1fr_auto_1fr]']];
 
 /**
  * Surat Tanda Lulus (A4 landscape). Hanya boleh dicetak bila seluruh butir lulus.
@@ -138,12 +152,13 @@ const KOLOM_TTD = [['grid-cols-2', 'grid-cols-[1fr_auto_1fr]'], ['grid-cols-3', 
 export function SuratTandaLulus({ peserta, tingkat, token = null }) {
   const G = useGudep();
   const { progress, users } = useApp();
-  const t = TINGKAT[tingkat];
+  const t = SEMUA_TINGKAT[tingkat];
+  const siaga = tingkatSiagaSku(tingkat);
   const tglLulus = tanggalLulusTingkat(progress, peserta, tingkat);
   const tahun = (tglLulus ?? hariIni()).slice(0, 4);
   const hash = kodeVerifikasi([peserta.id, tingkat, tglLulus ?? '']).slice(4);
   const nomor = `${G.kodeSurat}/STL-${t.kode}/${tahun}/${hash}`;
-  const dewan = penandaTanganDewan(pejabatDewan(users)); // Pradana dan/atau Pradani (anggota Dewan Ambalan); Pembina di kanan memuat tanggal
+  const dewan = siaga ? [] : penandaTanganDewan(pejabatDewan(users)); // Siaga tanpa Dewan; Penegak: Pradana dan/atau Pradani (anggota Dewan Ambalan); Pembina di kanan memuat tanggal
 
   return (
     <article className={`print-area mx-auto ${dewan.length > 1 ? 'min-w-[900px]' : 'min-w-[760px]'} max-w-[1050px] border-[10px] border-pramuka-800 bg-white p-2 text-pramuka-900`}>
@@ -156,15 +171,14 @@ export function SuratTandaLulus({ peserta, tingkat, token = null }) {
 
         <p className="mt-6 text-sm">Dengan ini dinyatakan bahwa</p>
         <p className="mt-2 border-b-2 border-emas/70 pb-1 font-display text-3xl font-bold">{peserta.nama}</p>
-        <p className="mt-2 text-sm">NIS {peserta.nis || '-'}, kelas {peserta.kelas}, {peserta.sangga}</p>
+        <p className="mt-2 text-sm">NIS {peserta.nis || '-'}, kelas {peserta.kelas}{siaga ? (peserta.barung ? `, barung ${peserta.barung}` : '') : `, ${peserta.sangga}`}</p>
 
         <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed">
-          telah menyelesaikan seluruh {t.butir.length} butir {t.judul} dan diuji secara berjenjang
-          oleh Pembina dan Dewan Ambalan, sehingga dinyatakan <span className="font-bold">LULUS</span> pada
+          telah menyelesaikan seluruh {t.butir.length} butir {t.judul} dan {siaga ? 'diuji oleh Pembina' : 'diuji secara berjenjang oleh Pembina dan Dewan Ambalan'}, sehingga dinyatakan <span className="font-bold">LULUS</span> pada
           tanggal {fmtTanggal(tglLulus)}.
         </p>
 
-        <div className={`mt-8 grid items-start gap-8 ${KOLOM_TTD[dewan.length - 1][token ? 1 : 0]}`}>
+        <div className={`mt-8 grid items-start gap-8 ${KOLOM_TTD[dewan.length][token ? 1 : 0]}`}>
           {dewan.map((o, i) => <BlokTtd key={i} orang={o} sisakanTanggal />)}
           {token && (
             <div className="flex flex-col items-center self-center text-[10px] leading-snug text-pramuka-600">

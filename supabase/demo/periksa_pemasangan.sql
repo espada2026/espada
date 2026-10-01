@@ -1587,7 +1587,7 @@ h_fungsi(skema, nama, args, isi, au, an, sv) as (values
     ('public', 'sg_saka_simpan', 'p_id bigint, p_peserta_id uuid, p_saka text, p_tanggal_masuk date, p_status text, p_tanggal_selesai date, p_surat_url text, p_catatan text', 'e91b7a8d56805c95fa5e88872d5747db', true, false, true),
     ('public', 'sg_sangga_atur', 'p_rombel text, p_data jsonb', 'b9ddd3c696919998179c4754cc1a7f7f', true, false, true),
     ('public', 'sg_sangga_rombel', 'p_rombel text', '4917262036a0730c4ab40dfb41fdbec1', true, false, true),
-    ('public', 'sg_sertifikat_tingkat', 'p_peserta_id uuid, p_tingkat text', 'd8790433b66c950053b0075cbd962a9e', true, false, true),
+    ('public', 'sg_sertifikat_tingkat', 'p_peserta_id uuid, p_tingkat text', '9a770ad825ce43c4994a2ce6d56a0332', true, false, true),
     ('public', 'sg_sesi_hapus', 'p_id integer', '5530ad82be568dc096b339f3abb5bd7e', true, false, true),
     ('public', 'sg_sesi_simpan', 'p_id integer, p_nama text, p_tanggal date, p_tempat text, p_catatan text, p_status text, p_butir text[], p_peserta uuid[]', 'c3acc485a3c36a6e2e6b9ed9e917c614', true, false, true),
     ('public', 'sg_sesi_status', 'p_id integer, p_status text', '9b695d526674806ad99ff42440b205b7', true, false, true),

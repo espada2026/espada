@@ -207,11 +207,14 @@ end $$;
 create function public.sg_sertifikat_tingkat(p_peserta_id uuid, p_tingkat text) returns text
 language plpgsql security definer set search_path = public as
 $$
-declare v_uid uuid := auth.uid(); v_token text;
+declare v_uid uuid := auth.uid(); v_token text; v_p public.profiles;
 begin
   perform sigarda.wajib_aktif();
-  if p_tingkat is null or p_tingkat not in ('Bantara', 'Laksana') then raise exception 'Tingkat SKU tidak dikenal.'; end if;
-  if not exists (select 1 from public.profiles where id = p_peserta_id and role = 'peserta') then raise exception 'Peserta tidak ditemukan.'; end if;
+  if p_tingkat is null or p_tingkat not in ('Bantara', 'Laksana', 'Mula', 'Bantu', 'Tata') then raise exception 'Tingkat SKU tidak dikenal.'; end if;
+  select * into v_p from public.profiles where id = p_peserta_id and role = 'peserta';
+  if not found then raise exception 'Peserta tidak ditemukan.'; end if;
+  -- Tingkat Siaga (Mula, Bantu, Tata) hanya untuk anggota Siaga; Bantara dan Laksana hanya untuk Penegak.
+  if (v_p.tanpa_akun or sigarda.kelas_siaga(v_p.kelas)) <> (p_tingkat in ('Mula', 'Bantu', 'Tata')) then raise exception 'Tingkat % tidak berlaku bagi anggota ini.', p_tingkat; end if;
   if p_peserta_id is distinct from v_uid and not sigarda.pengurus() then raise exception 'Anda tidak berwenang menerbitkan surat untuk peserta ini.'; end if;
   if not sigarda.tingkat_selesai(p_peserta_id, p_tingkat) then raise exception 'Surat Tanda Lulus hanya untuk tingkat yang seluruh butirnya sudah lulus.'; end if;
   insert into public.sertifikat_tingkat (token, peserta_id, tingkat, diterbitkan_oleh) values (sigarda.token_acak(), p_peserta_id, p_tingkat, v_uid)

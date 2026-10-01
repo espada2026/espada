@@ -1,15 +1,14 @@
 import { APP } from '../config';
 import { useGudep } from '../lib/gudepStore';
-import { TINGKAT } from '../data/skuData';
-import { ITEM_PORTOFOLIO } from '../data/portofolioData';
 import { LogoSigarda } from './LogoMark';
 import SumberPeraturan from './SumberPeraturan';
 
-// Jalur SIGASI: tiga tahap yang diwadahi aplikasi. Jumlah diambil dari data resmi, bukan angka tetap.
+// Jalur SIGASI: tiga tingkat SKU Siaga dan Siaga Garuda. Tanpa jumlah butir (katalog Siaga dimuat malas, bukan bagian JS awal).
 const JALUR = [
-  { no: 1, judul: 'SKU Bantara', ket: `${TINGKAT.Bantara.butir.length} butir diuji Dewan Ambalan dan Pembina` },
-  { no: 2, judul: 'SKU Laksana', ket: `${TINGKAT.Laksana.butir.length} butir, terbuka setelah Bantara lulus` },
-  { no: 3, judul: 'Portofolio Garuda', ket: `${ITEM_PORTOFOLIO.length} dokumen disusun dalam jurnal kesiapan`, garuda: true },
+  { no: 1, judul: 'SKU Mula', ket: 'Tingkat pertama, diuji Pembina dan dilantik dalam upacara' },
+  { no: 2, judul: 'SKU Bantu', ket: 'Tingkat kedua, terbuka setelah Mula selesai' },
+  { no: 3, judul: 'SKU Tata', ket: 'Tingkat ketiga, terbuka setelah Bantu selesai' },
+  { no: 4, judul: 'Siaga Garuda', ket: 'Penghargaan tertinggi, dinilai Pembina', garuda: true },
 ];
 
 // Tiga kolom butuh sekitar 540px isi; bila menu samping terbuka lebar (md:pl-60) lebar itu baru tercapai di lg,
@@ -68,7 +67,7 @@ export default function Footer({ ciut = false }) {
           <p>
             &copy; {new Date().getFullYear()} {G.nama}. {APP.nama} v{APP.versi}
           </p>
-          <SumberPeraturan gelap judul="Butir SKU mengacu pada" rujukan="sku-penegak-2011" className="md:max-w-xl md:text-right" />
+          <SumberPeraturan gelap judul="Butir SKU mengacu pada" rujukan="sku-siaga-2011" className="md:max-w-xl md:text-right" />
         </div>
       </div>
     </footer>

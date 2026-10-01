@@ -6,7 +6,8 @@
  * Dijaga uji/laporan.mjs.
  */
 import { rentangPeriode } from './absensiLogic';
-import { pesertaDenganPeran, tanggalLulusTingkat } from './skuLogic';
+import { pesertaDenganPeran, tanggalLulusTingkat, tingkatSelesai } from './skuLogic';
+import { anggotaSiaga } from './siagaLogic';
 import { tingkatRombel } from './naikKelasLogic';
 
 /** Dua jenis periode yang dapat dipilih pengguna (bukan salah satu tetap): tahun ajaran (konsisten dengan data SIGASI lain) atau tahun kalender (kebiasaan registrasi ulang Kwarcab). */
@@ -94,3 +95,46 @@ export const sesiRentang = (absensi, mulai, akhir) =>
 
 /** Nama berkas (tanpa akhiran) untuk satu rentang laporan. */
 export const namaFileLaporan = (rentang) => `Laporan-Tahunan-${rentang.label.replace(/\s+/g, '-')}`;
+
+// ===== Laporan untuk gugus depan Siaga (Fase 9): padanan rekap Penegak di atas, memakai data Siaga =====
+const KELAS_SIAGA = ['1', '2', '3', '4', '5', '6'];
+const JUMLAH_KOSONG_SIAGA = { lakiLaki: 0, perempuan: 0, menempuhMula: 0, menempuhBantu: 0, menempuhTata: 0, selesaiTata: 0, total: 0 };
+
+/** Tahap SKU anak: tingkat yang sedang ditempuh, atau 'selesaiTata' bila seluruh butir Mula, Bantu, dan Tata sudah lulus. */
+export function tahapSiaga(progress, u) {
+  if (!tingkatSelesai(progress, u, 'Mula')) return 'menempuhMula';
+  if (!tingkatSelesai(progress, u, 'Bantu')) return 'menempuhBantu';
+  if (!tingkatSelesai(progress, u, 'Tata')) return 'menempuhTata';
+  return 'selesaiTata';
+}
+
+/**
+ * Rekap keanggotaan Siaga AKTIF per kelas (1 sampai 6; kelas di luar itu masuk 'Lainnya'): jenis kelamin dan tahap SKU, plus baris Total.
+ * SNAPSHOT saat laporan dibuat (bukan rentang waktu). Katalog SKU Siaga harus sudah terdaftar (impor data/skuSiaga).
+ */
+export function rekapKeanggotaanSiaga(users, progress) {
+  const aktif = anggotaSiaga(users).filter((u) => (u.status ?? 'aktif') === 'aktif');
+  const ringkas = (label, grup) => ({
+    tingkat: label,
+    lakiLaki: grup.filter((u) => u.jenisKelamin === 'L').length,
+    perempuan: grup.filter((u) => u.jenisKelamin === 'P').length,
+    ...Object.fromEntries(['menempuhMula', 'menempuhBantu', 'menempuhTata', 'selesaiTata'].map((t) => [t, grup.filter((u) => tahapSiaga(progress, u) === t).length])),
+    total: grup.length,
+  });
+  const baris = KELAS_SIAGA.map((k) => ringkas(`Kelas ${k}`, aktif.filter((u) => String(u.kelas ?? '').startsWith(k))));
+  const lainnya = aktif.filter((u) => !KELAS_SIAGA.some((k) => String(u.kelas ?? '').startsWith(k)));
+  if (lainnya.length > 0) baris.push(ringkas('Lainnya', lainnya));
+  const total = baris.reduce((acc, b) => Object.fromEntries(Object.keys(JUMLAH_KOSONG_SIAGA).map((k) => [k, acc[k] + b[k]])), JUMLAH_KOSONG_SIAGA);
+  return [...baris, { tingkat: 'Total', ...total }];
+}
+
+/**
+ * Pencapaian SKU Siaga pada rentang [mulai, akhir]: berapa anak yang LULUS seluruh butir Mula, Bantu, atau Tata pada rentang itu.
+ * Dihitung dari SEMUA anggota Siaga (bukan hanya yang aktif sekarang), seperti rekapPencapaianSku untuk Penegak.
+ */
+export function rekapPencapaianSiaga(users, progress, mulai, akhir) {
+  const dalamRentang = (tgl) => !!tgl && tgl >= mulai && tgl <= akhir;
+  const anak = anggotaSiaga(users);
+  const hitung = (t) => anak.filter((u) => dalamRentang(tanggalLulusTingkat(progress, u, t))).length;
+  return { mulaLulus: hitung('Mula'), bantuLulus: hitung('Bantu'), tataLulus: hitung('Tata') };
+}
