@@ -71,6 +71,7 @@ begin
       'penegak_isian', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.penegak_isian t),
       'dokumen_templat', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.dokumen_templat t),
       'portofolio_snapshot', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.portofolio_snapshot t),
+      'siaga_garuda', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.siaga_garuda t),
       'tkk_siaga', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.tkk_siaga t),
       'tabungan_cek', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.tabungan_cek t),
       'sfh_catatan', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.sfh_catatan t),

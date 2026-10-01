@@ -55,6 +55,7 @@ alter table public.beranda_sosial enable row level security;   -- baca: pengurus
 alter table public.beranda_faq enable row level security;   -- baca: pengurus; tulis: hanya fungsi sg_faq_*
 alter table public.tanggal_lahir enable row level security;   -- baca: pemilik dan pengurus; tulis: hanya fungsi sg_tanggal_lahir_atur
 alter table public.spg_penetapan enable row level security;   -- baca: pemilik dan pengurus; tulis: hanya fungsi sg_spg_*
+alter table public.siaga_garuda enable row level security;   -- baca: pemilik, Pembina, Admin; tulis: hanya fungsi sg_siaga_garuda_*
 alter table public.tkk_siaga enable row level security;   -- baca: pemilik, Pembina, Admin; tulis: hanya fungsi sg_tkk_siaga_*
 alter table public.tkk_krida enable row level security;   -- baca: pemilik dan pengurus; tulis: hanya fungsi sg_tkk_krida_*
 alter table public.saka_anggota enable row level security;   -- baca: pemilik dan pengurus; tulis: hanya fungsi sg_saka_*
@@ -181,6 +182,8 @@ create policy baca_tkk_capaian on public.tkk_capaian for select to authenticated
   using ((select sigarda.aktif()) and (peserta_id = (select auth.uid()) or (select sigarda.pengurus())));
 create policy baca_tkk_krida on public.tkk_krida for select to authenticated
   using ((select sigarda.aktif()) and (peserta_id = (select auth.uid()) or (select sigarda.pengurus())));
+create policy baca_siaga_garuda on public.siaga_garuda for select to authenticated
+  using ((select sigarda.aktif()) and (peserta_id = (select auth.uid()) or (select sigarda.pembina_atau_admin())));
 create policy baca_tkk_siaga on public.tkk_siaga for select to authenticated
   using ((select sigarda.aktif()) and (peserta_id = (select auth.uid()) or (select sigarda.pembina_atau_admin())));
 -- ===== akhir kebijakan tkk =====
