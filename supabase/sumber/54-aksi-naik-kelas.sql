@@ -44,6 +44,7 @@ create trigger tak_aktif_saka_anggota before insert or update on public.saka_ang
 -- ===== akhir pemicu pelantikan dan saka =====
 -- ===== TKK (Tahap 2, G2): pemicu =====
 create trigger tak_aktif_tkk_capaian before insert or update on public.tkk_capaian for each row execute function sigarda.tolak_peserta_tak_aktif();
+create trigger tak_aktif_tkk_siaga before insert or update on public.tkk_siaga for each row execute function sigarda.tolak_peserta_tak_aktif();
 create trigger tak_aktif_tkk_krida before insert or update on public.tkk_krida for each row execute function sigarda.tolak_peserta_tak_aktif();
 -- ===== akhir pemicu tkk =====
 -- ===== TKK pengajuan (Tahap 2, G2b): pemicu tak aktif =====

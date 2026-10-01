@@ -19,7 +19,7 @@ set check_function_bodies = off;
 -- ---------------------------------------------------------------------------
 -- 0. Bersihkan versi lama
 -- ---------------------------------------------------------------------------
-drop table if exists public.tabungan_cek, public.sfh_catatan, public.portofolio_snapshot, public.dokumen_templat, public.penegak_isian, public.sku_pra_uji,public.pengukuhan_dewan, public.pinsa_tugas, public.bina_damping, public.kepengurusan_log, public.penugasan_peserta, public.penugasan_log, public.penugasan_rombel, public.guru_agama,
+drop table if exists public.tkk_siaga, public.tabungan_cek, public.sfh_catatan, public.portofolio_snapshot, public.dokumen_templat, public.penegak_isian, public.sku_pra_uji,public.pengukuhan_dewan, public.pinsa_tugas, public.bina_damping, public.kepengurusan_log, public.penugasan_peserta, public.penugasan_log, public.penugasan_rombel, public.guru_agama,
   public.naik_kelas_log, public.naik_kelas_batch, public.notifikasi, public.push_langganan, public.push_konfigurasi, public.keepalive_konfigurasi, public.terbit_ulang_konfigurasi,
   public.dokumen_terbit, public.dokumen_urut, public.iuran_kas, public.iuran_log, public.iuran, public.asisten_iuran,
   public.sesi_ujian_peserta, public.sesi_ujian_butir, public.sesi_ujian, public.sertifikat_tingkat, public.sku_penilaian, public.instrumen_panduan, public.instrumen_penguji, public.instrumen_kriteria, public.instrumen,
@@ -998,6 +998,24 @@ create index tkk_pengajuan_tkk_idx on public.tkk_pengajuan (tkk_id);
 create index tkk_pengajuan_capaian_idx on public.tkk_pengajuan (capaian_id);
 create index tkk_pengajuan_penguji1_idx on public.tkk_pengajuan (penguji1_id);
 -- ===== akhir tabel tkk pengajuan =====
+
+-- ===== TKK Siaga (Pramuka Siaga, Fase 5): tabel =====
+-- TKK anak Siaga (SK Kwarnas 134/1976 dan 132/1979): SATU tingkat saja (tanpa Purwa/Madya/Utama), tanpa bukti melatih, diuji Pembina (satu nama penguji) dan dicatat
+-- Pembina atau Admin; dikenakan sesudah anak menyelesaikan SKU Siaga Bantu. Satu baris per (anak, TKK); mencatat ulang = koreksi. Baca pemilik dan Pembina/Admin (RLS); tulis hanya fungsi.
+create table public.tkk_siaga (
+  id bigint generated always as identity primary key,
+  peserta_id uuid not null references public.profiles(id) on delete cascade,
+  tkk_id text not null references public.tkk_katalog(id),
+  tanggal date not null check (tanggal >= date '2015-01-01'),
+  penguji text not null check (char_length(btrim(penguji)) between 1 and 80),
+  bukti_url text not null default '' check (bukti_url = '' or (bukti_url ~* '^https?://' and char_length(bukti_url) <= 500)),
+  catatan text not null default '' check (char_length(catatan) <= 200),
+  dicatat_oleh uuid references public.profiles(id) on delete set null,
+  dicatat_pada timestamptz not null default now(),
+  constraint tkk_siaga_satu_per_tkk unique (peserta_id, tkk_id)
+);
+create index if not exists tkk_siaga_tkk_idx on public.tkk_siaga (tkk_id);
+-- ===== akhir tabel tkk siaga =====
 -- ===== SPG (Tahap 2, G3): tabel =====
 -- Penetapan Syarat Pramuka Garuda (SPG, 13 butir SK Kwarnas 038/2017) oleh Pembina: satu baris per Penegak per butir. Butir yang dapat dihitung dari data aplikasi (SKU Laksana
 -- dan 3 bulan sesudah dilantik, TKK, Saka, Penabung) dihitung di klien; baris ini mencatat PENETAPAN Pembina: butir berbasis dokumen (lengkap = 100, belum = 0) dan penimpaan
@@ -2491,6 +2509,7 @@ alter table public.beranda_sosial enable row level security;   -- baca: pengurus
 alter table public.beranda_faq enable row level security;   -- baca: pengurus; tulis: hanya fungsi sg_faq_*
 alter table public.tanggal_lahir enable row level security;   -- baca: pemilik dan pengurus; tulis: hanya fungsi sg_tanggal_lahir_atur
 alter table public.spg_penetapan enable row level security;   -- baca: pemilik dan pengurus; tulis: hanya fungsi sg_spg_*
+alter table public.tkk_siaga enable row level security;   -- baca: pemilik, Pembina, Admin; tulis: hanya fungsi sg_tkk_siaga_*
 alter table public.tkk_krida enable row level security;   -- baca: pemilik dan pengurus; tulis: hanya fungsi sg_tkk_krida_*
 alter table public.saka_anggota enable row level security;   -- baca: pemilik dan pengurus; tulis: hanya fungsi sg_saka_*
 alter table public.penugasan_peserta enable row level security;   -- baca: pengurus; tulis: hanya fungsi sg_penugasan_peserta_atur
@@ -2616,6 +2635,8 @@ create policy baca_tkk_capaian on public.tkk_capaian for select to authenticated
   using ((select sigarda.aktif()) and (peserta_id = (select auth.uid()) or (select sigarda.pengurus())));
 create policy baca_tkk_krida on public.tkk_krida for select to authenticated
   using ((select sigarda.aktif()) and (peserta_id = (select auth.uid()) or (select sigarda.pengurus())));
+create policy baca_tkk_siaga on public.tkk_siaga for select to authenticated
+  using ((select sigarda.aktif()) and (peserta_id = (select auth.uid()) or (select sigarda.pembina_atau_admin())));
 -- ===== akhir kebijakan tkk =====
 
 -- ===== TKK pengajuan (Tahap 2, G2b): kebijakan =====
@@ -3876,6 +3897,7 @@ create trigger tak_aktif_saka_anggota before insert or update on public.saka_ang
 -- ===== akhir pemicu pelantikan dan saka =====
 -- ===== TKK (Tahap 2, G2): pemicu =====
 create trigger tak_aktif_tkk_capaian before insert or update on public.tkk_capaian for each row execute function sigarda.tolak_peserta_tak_aktif();
+create trigger tak_aktif_tkk_siaga before insert or update on public.tkk_siaga for each row execute function sigarda.tolak_peserta_tak_aktif();
 create trigger tak_aktif_tkk_krida before insert or update on public.tkk_krida for each row execute function sigarda.tolak_peserta_tak_aktif();
 -- ===== akhir pemicu tkk =====
 -- ===== TKK pengajuan (Tahap 2, G2b): pemicu tak aktif =====
@@ -6151,6 +6173,7 @@ begin
       'penegak_isian', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.penegak_isian t),
       'dokumen_templat', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.dokumen_templat t),
       'portofolio_snapshot', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.portofolio_snapshot t),
+      'tkk_siaga', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.tkk_siaga t),
       'tabungan_cek', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.tabungan_cek t),
       'sfh_catatan', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.sfh_catatan t),
       'beranda_berita', (select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from public.beranda_berita t),
@@ -7261,6 +7284,55 @@ end $$;
 create trigger notif_tkk_pengajuan_baru after insert on public.tkk_pengajuan for each row execute function sigarda.notif_tkk_pengajuan();
 create trigger notif_tkk_pengajuan_tinjau after update of status on public.tkk_pengajuan for each row execute function sigarda.notif_tkk_pengajuan();
 -- ===== akhir aksi tkk pengajuan =====
+
+-- ===== TKK Siaga (Pramuka Siaga, Fase 5): aksi =====
+-- Pembina atau Admin mencatat bahwa seorang anak Siaga aktif lulus satu TKK (satu tingkat saja). Syarat: anggota Siaga (kelas SD atau tanpa akun), SKU Siaga Bantu sudah selesai
+-- (SK 134/1976: TKK dapat dikenakan sesudah Siaga Bantu), TKK dari 84 SKK SK 132/1979 (semuanya punya syarat golongan Siaga; SKK tambahan sesudahnya tidak dipakai) dan seagama
+-- bila khusus satu agama, tanggal bukan masa depan. Mencatat ulang TKK yang sama = koreksi. Aturan isian dicerminkan src/lib/tkkSiagaLogic.js (periksaTkkSiaga) dan dibandingkan
+-- langsung dengan fungsi ini oleh uji/tkk-siaga-klien.mjs.
+create function public.sg_tkk_siaga_catat(
+  p_peserta_id uuid, p_tkk_id text, p_tanggal date, p_penguji text, p_bukti_url text default '', p_catatan text default ''
+) returns bigint language plpgsql security definer set search_path = public as
+$$
+declare
+  v_p public.profiles; v_t public.tkk_katalog; v_peng text := sigarda.rapikan(p_penguji); v_url text := btrim(coalesce(p_bukti_url, '')); v_cat text := sigarda.rapikan(p_catatan); v_id bigint;
+begin
+  perform sigarda.wajib_aktif();
+  if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat mencatat TKK.'; end if;
+  select * into v_p from public.profiles where id = p_peserta_id and role = 'peserta';
+  if not found then raise exception 'Pilih anggota Siaga.'; end if;
+  if not (v_p.tanpa_akun or sigarda.kelas_siaga(v_p.kelas)) then raise exception 'TKK Siaga hanya dicatat untuk anggota Siaga.'; end if;
+  if v_p.status <> 'aktif' then raise exception '% tidak aktif; TKK hanya dicatat untuk anggota aktif.', v_p.nama; end if;
+  if not sigarda.tingkat_selesai(p_peserta_id, 'Bantu') then raise exception '% belum menyelesaikan SKU Bantu; TKK dapat dikenakan sesudah Siaga Bantu.', v_p.nama; end if;
+  select * into v_t from public.tkk_katalog where id = p_tkk_id;
+  if not found then raise exception 'TKK tidak dikenal.'; end if;
+  if v_t.sumber <> 'skk-132-1979' then raise exception 'TKK % belum dipakai untuk golongan Siaga.', v_t.nama; end if;
+  if v_t.agama is not null and v_t.agama is distinct from v_p.agama then raise exception 'TKK % khusus penganut agama %.', v_t.nama, v_t.agama; end if;
+  if p_tanggal is null then raise exception 'Tanggal lulus wajib diisi.'; end if;
+  if p_tanggal < date '2015-01-01' or p_tanggal > sigarda.hari_ini() then raise exception 'Tanggal lulus harus antara 1 Januari 2015 dan hari ini.'; end if;
+  if char_length(v_peng) not between 1 and 80 or v_peng ~ '[[:cntrl:]<>]' then raise exception 'Isi nama penguji (maksimal 80 karakter, tanpa tanda < atau >).'; end if;
+  if v_url <> '' and (v_url !~* '^https?://' or char_length(v_url) > 500 or v_url ~ '[[:cntrl:][:space:]<>]') then raise exception 'Tautan bukti harus berawalan http:// atau https:// (maksimal 500 karakter, tanpa spasi).'; end if;
+  if char_length(v_cat) > 200 or v_cat ~ '[[:cntrl:]<>]' then raise exception 'Catatan maksimal 200 karakter, tanpa tanda < atau >.'; end if;
+  insert into public.tkk_siaga (peserta_id, tkk_id, tanggal, penguji, bukti_url, catatan, dicatat_oleh, dicatat_pada)
+  values (p_peserta_id, p_tkk_id, p_tanggal, v_peng, v_url, v_cat, auth.uid(), now())
+  on conflict (peserta_id, tkk_id) do update
+    set tanggal = excluded.tanggal, penguji = excluded.penguji, bukti_url = excluded.bukti_url, catatan = excluded.catatan, dicatat_oleh = excluded.dicatat_oleh, dicatat_pada = excluded.dicatat_pada
+  returning id into v_id;
+  return v_id;
+end $$;
+
+create function public.sg_tkk_siaga_hapus(p_id bigint) returns void language plpgsql security definer set search_path = public as
+$$
+declare v public.tkk_siaga;
+begin
+  perform sigarda.wajib_aktif();
+  if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat menghapus catatan TKK.'; end if;
+  select * into v from public.tkk_siaga where id = p_id;
+  if not found then raise exception 'Catatan TKK tidak ditemukan.'; end if;
+  if exists (select 1 from public.profiles where id = v.peserta_id and status <> 'aktif') then raise exception 'Anggota nonaktif atau alumni tidak dapat diubah.'; end if;
+  delete from public.tkk_siaga where id = p_id;
+end $$;
+-- ===== akhir aksi tkk siaga =====
 -- ===== SPG (Tahap 2, G3): aksi =====
 -- Hanya Pembina dan Admin Gudep yang menetapkan (Pembina menguji SPG; Dewan hanya membaca). Penegak harus aktif dan sudah menyelesaikan seluruh SKU Bantara dan Laksana
 -- (sigarda.layak_garuda). Menetapkan ulang butir yang sama = koreksi. Penetapan yang berbeda dari hasil hitung aplikasi (p_timpa) wajib beralasan di catatan; server tidak
@@ -7859,7 +7931,7 @@ grant select on public.profiles, public.sku_butir, public.sku_unit, public.pf_it
   public.sesi_ujian, public.sesi_ujian_butir, public.sesi_ujian_peserta,
   public.iuran, public.iuran_log, public.iuran_kas, public.asisten_iuran, public.tabungan_cek,
   public.penugasan_rombel, public.penugasan_log, public.guru_agama, public.dokumen_terbit, public.dokumen_urut, public.notifikasi,
-  public.naik_kelas_batch, public.naik_kelas_log, public.penugasan_peserta, public.kepengurusan_log, public.agenda, public.kegiatan_usulan, public.pengukuhan_dewan, public.sku_pra_uji, public.pelantikan, public.saka_anggota, public.tkk_katalog, public.tkk_capaian, public.tkk_krida, public.tkk_pengajuan, public.spg_penetapan, public.tanggal_lahir, public.tim_penilai, public.tim_penilai_anggota, public.garuda_tahap, public.penegak_isian, public.dokumen_templat, public.portofolio_snapshot, public.sfh_catatan,
+  public.naik_kelas_batch, public.naik_kelas_log, public.penugasan_peserta, public.kepengurusan_log, public.agenda, public.kegiatan_usulan, public.pengukuhan_dewan, public.sku_pra_uji, public.pelantikan, public.saka_anggota, public.tkk_katalog, public.tkk_capaian, public.tkk_krida, public.tkk_siaga, public.tkk_pengajuan, public.spg_penetapan, public.tanggal_lahir, public.tim_penilai, public.tim_penilai_anggota, public.garuda_tahap, public.penegak_isian, public.dokumen_templat, public.portofolio_snapshot, public.sfh_catatan,
   public.beranda_berita, public.beranda_prestasi, public.beranda_galeri, public.beranda_sosial, public.beranda_faq to authenticated;
 
 revoke all on all functions in schema public from public, anon, authenticated;
@@ -7908,7 +7980,7 @@ grant execute on function
   public.sg_pelantikan_catat(text, date, text, uuid[], bigint, text), public.sg_pelantikan_hapus(bigint),
   public.sg_saka_simpan(bigint, uuid, text, date, text, date, text, text), public.sg_saka_hapus(bigint),
   public.sg_tkk_catat(uuid, text, text, date, text, text, text, text, text), public.sg_tkk_hapus(bigint),
-  public.sg_tkk_krida_simpan(bigint, uuid, text, text, date, text, text), public.sg_tkk_krida_hapus(bigint), public.sg_tkk_ambang_simpan(jsonb),
+  public.sg_tkk_krida_simpan(bigint, uuid, text, text, date, text, text), public.sg_tkk_krida_hapus(bigint), public.sg_tkk_siaga_catat(uuid, text, date, text, text, text), public.sg_tkk_siaga_hapus(bigint), public.sg_tkk_ambang_simpan(jsonb),
   public.sg_tkk_ajukan(text, text, date, uuid, text, text, text, text), public.sg_tkk_ajukan_batal(bigint), public.sg_tkk_tinjau(bigint, text, text, text, text),
   public.sg_tkk_penguji_pilihan(),
   public.sg_spg_catat(uuid, integer, integer, date, text, boolean), public.sg_spg_hapus(uuid, integer),

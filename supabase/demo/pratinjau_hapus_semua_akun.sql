@@ -43,7 +43,7 @@ from (
     ('Catatan percobaan masuk gagal',   (select count(*) from public.login_gagal)),
     ('Penugasan penguji (rombel dan khusus)', (select count(*) from public.penugasan_rombel) + (select count(*) from public.penugasan_peserta)),
     ('Pelantikan dan Saka',            (select count(*) from public.pelantikan) + (select count(*) from public.saka_anggota)),
-    ('TKK, TKK Krida, dan pengajuan TKK', (select count(*) from public.tkk_capaian) + (select count(*) from public.tkk_krida) + (select count(*) from public.tkk_pengajuan)),
+    ('TKK, TKK Krida, dan pengajuan TKK', (select count(*) from public.tkk_capaian) + (select count(*) from public.tkk_krida) + (select count(*) from public.tkk_siaga) + (select count(*) from public.tkk_pengajuan)),
     ('Penetapan SPG',                  (select count(*) from public.spg_penetapan)),
     ('Tanggal lahir dan data diri Penegak', (select count(*) from public.tanggal_lahir) + (select count(*) from public.penegak_isian)),
     ('Salinan beku portofolio',        (select count(*) from public.portofolio_snapshot)),
