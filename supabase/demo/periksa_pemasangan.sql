@@ -1502,7 +1502,7 @@ h_fungsi(skema, nama, args, isi, au, an, sv) as (values
     ('public', 'sg_naik_kelas_batalkan', 'p_batch bigint', 'dfb062d886126d7262dd450afd780a7e', true, false, true),
     ('public', 'sg_notifikasi_tandai', 'p_ids bigint[]', 'aebf3598eee6126fb4287e021c928d45', true, false, true),
     ('public', 'sg_notifikasi_tes', '', '9cf97c96da7bb16825c10586d54befb5', true, false, true),
-    ('public', 'sg_pelantikan_catat', 'p_tingkat text, p_tanggal date, p_tempat text, p_peserta_ids uuid[], p_agenda_id bigint, p_catatan text', 'b4f1d03d9acc789ab01597533f668e07', true, false, true),
+    ('public', 'sg_pelantikan_catat', 'p_tingkat text, p_tanggal date, p_tempat text, p_peserta_ids uuid[], p_agenda_id bigint, p_catatan text', 'a8aee8af0afabb4b7e790583fc050d54', true, false, true),
     ('public', 'sg_pelantikan_hapus', 'p_id bigint', 'bdff44fa55d3ffefc36ca96530fc1fbb', true, false, true),
     ('public', 'sg_pemeriksaan_data', '', 'a854c971e92e8e07ef8f4737253d4230', true, false, true),
     ('public', 'sg_pendampingan_saya', '', '70744740f501db3c05b11f78b624779a', true, false, true),

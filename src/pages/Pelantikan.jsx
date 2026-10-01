@@ -2,15 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import usePelantikanSaka from '../hooks/usePelantikanSaka';
 import { fmtTanggal, hariIni } from '../lib/format';
+import '../data/skuSiaga'; // mendaftarkan katalog Siaga (butir Mula/Bantu/Tata) agar kelayakan tingkat Siaga dapat dihitung
 import {
-  TINGKAT_PELANTIKAN, calonPelantikan, kelompokPelantikan, labelTingkatPelantikan, periksaPelantikan, periksaSaka, ringkasPelantikan, SARAN_SAKA,
+  TINGKAT_PENEGAK, TINGKAT_SIAGA_PELANTIKAN, calonPelantikan, kelompokPelantikan, labelTingkatPelantikan, periksaPelantikan, periksaSaka, ringkasPelantikan, SARAN_SAKA, tingkatSiaga,
 } from '../lib/pelantikanLogic';
 import SumberPeraturan from '../components/SumberPeraturan';
 import { Avatar, Field, Icon, Kosong, Modal } from '../components/ui';
 
 const TAB = [{ id: 'pelantikan', label: 'Pelantikan' }, { id: 'saka', label: 'Saka' }];
 
-/** Catat pelantikan satu upacara untuk banyak Penegak sekaligus (semua atau tidak sama sekali di server). */
+/** Catat pelantikan satu upacara untuk banyak anggota (Penegak atau anak Siaga) sekaligus (semua atau tidak sama sekali di server). */
 function FormPelantikan({ data, onSelesai }) {
   const { api, users, progress, notify } = useApp();
   const [tingkat, setTingkat] = useState('bantara');
@@ -31,9 +32,10 @@ function FormPelantikan({ data, onSelesai }) {
   const calon = useMemo(() => calonPelantikan({ users, progress, pelantikan: data.pelantikan, tingkat, termasukSudah }), [users, progress, data.pelantikan, tingkat, termasukSudah]);
   const tampil = useMemo(() => {
     const k = cari.trim().toLowerCase();
-    return k ? calon.filter((u) => `${u.nama} ${u.kelas ?? ''} ${u.sangga ?? ''}`.toLowerCase().includes(k)) : calon;
+    return k ? calon.filter((u) => `${u.nama} ${u.kelas ?? ''} ${u.sangga ?? ''} ${u.perindukan ?? ''} ${u.barung ?? ''}`.toLowerCase().includes(k)) : calon;
   }, [calon, cari]);
-  const agendaTingkat = agenda.filter((a) => a.jenis === `pelantikan_${tingkat}`);
+  const siaga = tingkatSiaga(tingkat);
+  const agendaTingkat = agenda.filter((a) => siaga || a.jenis === `pelantikan_${tingkat}`);   // Siaga: belum ada jenis Agenda khusus, semua kegiatan boleh ditautkan
   const sudahTercatat = (id) => data.pelantikan.some((p) => p.pesertaId === id && p.tingkat === tingkat);
 
   const ubahPilih = (id) => setPilih((s) => { const b = new Set(s); if (b.has(id)) b.delete(id); else b.add(id); return b; });
@@ -57,21 +59,22 @@ function FormPelantikan({ data, onSelesai }) {
     <section className="panel mb-5 p-4" aria-label="Catat pelantikan">
       <h2 className="mb-1 text-lg font-bold">Catat pelantikan</h2>
       <p className="mb-3 text-sm text-pramuka-600">
-        Catat sesudah upacara terlaksana. Yang tampil hanya Penegak aktif yang sudah menyelesaikan seluruh butir SKU tingkat itu. Satu upacara dicatat sekaligus; bila ada yang tidak layak, seluruh pencatatan dibatalkan.
+        Catat sesudah upacara terlaksana. Yang tampil hanya {siaga ? 'anggota Siaga' : 'Penegak'} aktif yang sudah menyelesaikan seluruh butir SKU tingkat itu. Satu upacara dicatat sekaligus; bila ada yang tidak layak, seluruh pencatatan dibatalkan.
       </p>
       <div className="grid gap-x-4 sm:grid-cols-2">
         <Field label="Tingkat" htmlFor="pl-tingkat">
           <select id="pl-tingkat" className="input" value={tingkat} onChange={(e) => setTingkat(e.target.value)}>
-            {TINGKAT_PELANTIKAN.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+            <optgroup label="Penegak">{TINGKAT_PENEGAK.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}</optgroup>
+            <optgroup label="Siaga">{TINGKAT_SIAGA_PELANTIKAN.map((t) => <option key={t.id} value={t.id}>Siaga {t.label}</option>)}</optgroup>
           </select>
         </Field>
         <Field label="Tanggal pelantikan" htmlFor="pl-tanggal">
           <input id="pl-tanggal" type="date" className="input" max={hariIni()} value={tanggal} onChange={(e) => setTanggal(e.target.value)} />
         </Field>
         <Field label="Tempat" htmlFor="pl-tempat">
-          <input id="pl-tempat" className="input" maxLength={120} value={tempat} onChange={(e) => setTempat(e.target.value)} placeholder="Contoh: Lapangan Upacara SMAN 1 Bukateja" />
+          <input id="pl-tempat" className="input" maxLength={120} value={tempat} onChange={(e) => setTempat(e.target.value)} placeholder="Contoh: Lapangan upacara sekolah" />
         </Field>
-        <Field label="Kegiatan di Agenda (opsional)" htmlFor="pl-agenda" bantuan={agendaTingkat.length ? undefined : `Belum ada kegiatan Agenda berjenis pelantikan ${labelTingkatPelantikan(tingkat)}.`}>
+        <Field label="Kegiatan di Agenda (opsional)" htmlFor="pl-agenda" bantuan={agendaTingkat.length ? undefined : (siaga ? 'Belum ada kegiatan di Agenda.' : `Belum ada kegiatan Agenda berjenis pelantikan ${labelTingkatPelantikan(tingkat)}.`)}>
           <select id="pl-agenda" className="input" value={agendaId} onChange={(e) => setAgendaId(e.target.value)} disabled={!agendaTingkat.length}>
             <option value="">Tanpa tautan</option>
             {agendaTingkat.map((a) => <option key={a.id} value={a.id}>{a.judul}, {fmtTanggal(a.tanggal)}</option>)}
@@ -83,19 +86,19 @@ function FormPelantikan({ data, onSelesai }) {
       </Field>
 
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-semibold">Penegak ({calon.length} layak, {pilih.size} dipilih)</p>
+        <p className="text-sm font-semibold">{siaga ? 'Anggota Siaga' : 'Penegak'} ({calon.length} layak, {pilih.size} dipilih)</p>
         <label className="flex items-center gap-2 text-xs font-medium text-pramuka-700">
           <input type="checkbox" className="h-4 w-4 accent-pramuka-800" checked={termasukSudah} onChange={(e) => setTermasukSudah(e.target.checked)} />
           Termasuk yang sudah tercatat (untuk koreksi)
         </label>
       </div>
       <div className="mb-2 flex flex-wrap gap-2">
-        <input className="input min-w-0 flex-1" aria-label="Cari Penegak" placeholder="Cari nama, kelas, atau sangga" value={cari} onChange={(e) => setCari(e.target.value)} />
+        <input className="input min-w-0 flex-1" aria-label="Cari anggota" placeholder={siaga ? 'Cari nama, kelas, perindukan, atau barung' : 'Cari nama, kelas, atau sangga'} value={cari} onChange={(e) => setCari(e.target.value)} />
         <button type="button" className="btn btn-outline btn-sm" onClick={pilihSemuaTampil} disabled={!tampil.length}>Pilih semua yang tampil</button>
         <button type="button" className="btn btn-outline btn-sm" onClick={() => setPilih(new Set())} disabled={!pilih.size}>Kosongkan</button>
       </div>
       {calon.length === 0 ? (
-        <Kosong judul="Belum ada Penegak yang layak" teks={`Belum ada Penegak aktif yang menyelesaikan seluruh butir SKU ${labelTingkatPelantikan(tingkat)}${termasukSudah ? '' : ' dan belum dilantik'}.`} />
+        <Kosong judul={siaga ? 'Belum ada anggota Siaga yang layak' : 'Belum ada Penegak yang layak'} teks={`Belum ada ${siaga ? 'anggota Siaga' : 'Penegak'} aktif yang menyelesaikan seluruh butir SKU ${siaga ? 'Siaga ' : ''}${labelTingkatPelantikan(tingkat)}${termasukSudah ? '' : ' dan belum dilantik'}.`} />
       ) : (
         <ul className="max-h-72 divide-y divide-pramuka-100 overflow-y-auto rounded-lg border border-pramuka-100 text-sm">
           {tampil.map((u) => (
@@ -112,7 +115,7 @@ function FormPelantikan({ data, onSelesai }) {
       )}
       {galat && <p role="alert" className="mt-3 text-sm font-medium text-red-700">{galat}</p>}
       <div className="mt-4">
-        <button className="btn btn-primary" onClick={kirim} disabled={sibuk || !pilih.size}>{sibuk ? 'Menyimpan...' : `Catat pelantikan (${pilih.size} Penegak)`}</button>
+        <button className="btn btn-primary" onClick={kirim} disabled={sibuk || !pilih.size}>{sibuk ? 'Menyimpan...' : `Catat pelantikan (${pilih.size} anggota)`}</button>
       </div>
     </section>
   );
@@ -148,8 +151,8 @@ function RiwayatPelantikan({ data, onSelesai }) {
           {kelompok.map((g) => (
             <li key={g.kunci} className="p-4">
               <button className="flex w-full flex-wrap items-baseline justify-between gap-2 text-left" aria-expanded={buka === g.kunci} onClick={() => setBuka(buka === g.kunci ? null : g.kunci)}>
-                <span className="font-semibold">Pelantikan {labelTingkatPelantikan(g.tingkat)}, {fmtTanggal(g.tanggal)}</span>
-                <span className="text-xs text-pramuka-600">{g.tempat}, {g.anggota.length} Penegak</span>
+                <span className="font-semibold">Pelantikan {tingkatSiaga(g.tingkat) ? 'Siaga ' : ''}{labelTingkatPelantikan(g.tingkat)}, {fmtTanggal(g.tanggal)}</span>
+                <span className="text-xs text-pramuka-600">{g.tempat}, {g.anggota.length} {tingkatSiaga(g.tingkat) ? 'anggota' : 'Penegak'}</span>
               </button>
               {buka === g.kunci && (
                 <ul className="animasi-naik mt-2 divide-y divide-pramuka-100 rounded-lg border border-pramuka-100 text-sm">
@@ -373,13 +376,13 @@ export default function Pelantikan() {
     <div className="animasi-naik">
       <h1 className="mb-1 text-2xl font-bold">Pelantikan dan Saka</h1>
       <p className="mb-2 text-sm text-pramuka-600">
-        Catatan pelantikan Bantara dan Laksana (tempat dan tanggal, untuk daftar isian Kwarcab dan syarat Garuda) serta keanggotaan Saka.
+        Catatan pelantikan kenaikan tingkat: Bantara dan Laksana untuk Penegak (tempat dan tanggal, untuk daftar isian Kwarcab dan syarat Garuda), Mula, Bantu, dan Tata untuk anggota Siaga, serta keanggotaan Saka.
       </p>
-      <SumberPeraturan className="mb-4" rujukan={['sku-penegak-2011', 'adart-2023']} />
+      <SumberPeraturan className="mb-4" rujukan={['sku-penegak-2011', 'sku-siaga-2011', 'adart-2023']} />
 
       {data.galat && <p role="alert" className="mb-4 text-sm font-medium text-red-700">{data.galat}</p>}
       <p className="mb-4 text-sm text-pramuka-700" aria-live="polite">
-        {data.memuat ? 'Memuat...' : `${r.bantara} Penegak dilantik Bantara, ${r.laksana} dilantik Laksana, ${r.sakaAktif} Penegak aktif di Saka.`}
+        {data.memuat ? 'Memuat...' : `Penegak: ${r.bantara} dilantik Bantara, ${r.laksana} dilantik Laksana, ${r.sakaAktif} aktif di Saka. Siaga: ${r.mula} dilantik Mula, ${r.bantu} Bantu, ${r.tata} Tata.`}
       </p>
 
       <div role="tablist" aria-label="Pelantikan dan Saka" className="mb-4 inline-flex flex-wrap rounded-lg bg-pramuka-100 p-1">
