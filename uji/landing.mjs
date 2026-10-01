@@ -49,9 +49,9 @@ console.log('\n--- Bagian: isi dari pengurus dan keamanannya ---');
 {
   const t1 = teks(h(Tentang, { G, kontak: kontak({ sambutanPembina: 'Selamat datang.\n\nSemoga betah.', cerita: 'Cerita satu.\n\nCerita dua.' }), pembina: { jabatan: 'Pembina Gudep', nama: 'Bu Pembina Contoh' }, kamabigus: { jabatan: '', nama: '' } }));
   ok(t1.includes('Selamat datang.') && t1.includes('Semoga betah.') && t1.includes('Bu Pembina Contoh') && t1.includes('Cerita dua.'), 'sambutan dan cerita dari pengurus tampil per paragraf, dengan nama penyampai');
-  ok(!t1.includes('Dewan Ambalan yang dipilih sesama Penegak'), 'cerita dari pengurus menggantikan kalimat bawaan');
+  ok(!t1.includes('Pembina menjalankan kegiatan perindukan dan barung'), 'cerita dari pengurus menggantikan kalimat bawaan');
   const t2 = teks(h(Tentang, { G, kontak: KOSONG, pembina: {}, kamabigus: {} }));
-  ok(t2.includes('Dewan Ambalan yang dipilih sesama Penegak') && !t2.includes('<blockquote'), 'tanpa isian pengurus: kalimat bawaan dan tanpa kutipan sambutan');
+  ok(t2.includes('Pembina menjalankan kegiatan perindukan dan barung') && !t2.includes('<blockquote'), 'tanpa isian pengurus: kalimat bawaan dan tanpa kutipan sambutan');
   const jahat = teks(h(Tentang, { G, kontak: kontak({ cerita: '<script>alert(1)</script><img src=x onerror=alert(2)>', sambutanPembina: '<b>tebal</b>' }), pembina: { nama: '<i>Nama</i>' }, kamabigus: {} }));
   ok(!/<script|<img|<b>tebal|<i>Nama/.test(jahat) && jahat.includes('&lt;script&gt;'), 'HTML dari pengurus di-escape (tidak pernah dirender sebagai HTML)');
 
@@ -61,7 +61,7 @@ console.log('\n--- Bagian: isi dari pengurus dan keamanannya ---');
   ok(k1.includes('href="https://maps.app.goo.gl/abc"') && !k1.includes('maps/search'), 'tautan peta dari pengurus dipakai bila sah');
   ok(/rel="noopener noreferrer"/.test(k1) && !/target="_blank"(?![^>]*noopener)/.test(k1), 'tautan keluar memakai rel="noopener noreferrer"');
   const k2 = teks(h(Kontak, { G, kontak: KOSONG }));
-  ok(!k2.includes('WhatsApp') && !k2.includes('Email') && !k2.includes('Telepon') && k2.includes('Setiap Jumat'), 'kolom kosong tidak ditampilkan; jadwal memakai kalimat bawaan');
+  ok(!k2.includes('WhatsApp') && !k2.includes('Email') && !k2.includes('Telepon') && k2.includes('Sesuai jadwal latihan'), 'kolom kosong tidak ditampilkan; jadwal memakai kalimat bawaan');
 }
 
 console.log('\n--- Agenda dan hero ---');
@@ -143,11 +143,11 @@ console.log('\n--- Berkas SEO statis ---');
   ok(html.includes(`<meta property="og:image" content="${ORIGIN}/og-gudep.png" />`) && html.includes(`<meta name="twitter:image" content="${ORIGIN}/og-gudep.png" />`), 'gambar pratinjau Open Graph dan Twitter mengarah ke og-gudep.png');
   const judul = /<title>([^<]+)<\/title>/.exec(html)[1];
   const deskripsi = /<meta name="description" content="([^"]+)"/.exec(html)[1];
-  ok(judul.includes('Pramuka') && judul.includes('Bukateja') && judul.length <= 70, `judul memuat kata kunci dan tidak terlalu panjang (${judul.length}): ${judul}`);
-  ok(deskripsi.includes('Bukateja') && deskripsi.length >= 80 && deskripsi.length <= 170, `deskripsi 80-170 karakter (${deskripsi.length})`);
+  ok(judul.includes('Pramuka') && judul.includes('Siaga') && judul.length <= 70, `judul memuat kata kunci dan tidak terlalu panjang (${judul.length}): ${judul}`);
+  ok(deskripsi.includes('Siaga') && deskripsi.length >= 80 && deskripsi.length <= 170, `deskripsi 80-170 karakter (${deskripsi.length})`);
   const ld = JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)[1]);
   const tipe = ld['@graph'].map((x) => x['@type']).join();
-  ok(tipe === 'WebSite,Organization' && ld['@graph'][1].parentOrganization['@type'] === 'EducationalOrganization' && ld['@graph'][1].address.addressLocality === 'Bukateja', 'data terstruktur JSON-LD sah: WebSite dan Organization (induk: sekolah)');
+  ok(tipe === 'WebSite,Organization' && ld['@graph'][1].parentOrganization['@type'] === 'EducationalOrganization', 'data terstruktur JSON-LD sah: WebSite dan Organization (induk: sekolah)');
   ok(!/telephone|email|nta|nip/i.test(JSON.stringify(ld)), 'data terstruktur tidak memuat telepon, email, atau NTA');
   const origins = new Set([...(html + robots + peta).matchAll(/https:\/\/(?:espada2026\.github\.io\/espada|sigarda\.[a-z.]+)/g)].map((m) => m[0]));
   ok(origins.size === 1 && origins.has(ORIGIN), 'satu alamat utama yang sama di index.html, robots.txt, dan sitemap.xml');

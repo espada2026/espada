@@ -155,7 +155,7 @@ const PEMBINA = {
     { id: 'perlindungan-004-2021', bagian: 'Pasal 7 (anggota dewasa), Pasal 9 (pelatihan), Pasal 10-11 (pelaporan dan penanganan)' },
   ],
   bagian: [
-    { id: 'pembina-dashboard', judul: 'Dashboard', isi: ['Ringkasan seluruh gudep (bukan hanya rombel yang menjadi tugas Anda): progres SKU, kehadiran, iuran, dan portofolio Garuda.'] },
+    { id: 'pembina-dashboard', judul: 'Dashboard', isi: ['Ringkasan gugus depan Siaga: jumlah anak aktif, barung yang terbentuk, berapa anak yang sudah menyelesaikan SKU Mula, Bantu, dan Tata, serta pintasan ke Anggota Siaga, Pelantikan, Absensi, Iuran, TKK, dan Agenda. Pengajuan SKU yang menunggu ada di menu Antrian.'] },
     { id: 'pembina-instrumen', judul: 'Instrumen', isi: ['Menyusun kriteria penilaian rinci untuk tiap butir SKU (opsional; butir tanpa instrumen tetap memakai penilaian Lulus/Perlu diulang biasa).'] },
     { id: 'pembina-penugasan', judul: 'Penugasan', isi: ['Menentukan Pembina/Dewan Ambalan mana yang menguji rombel mana pada satu tahun ajaran, dan penugasan khusus untuk satu Penegak tertentu.'] },
     { id: 'pembina-kepengurusan', judul: 'Pengurus', isi: ['Menetapkan jabatan Dewan Ambalan (Pradana, Pradani, Pemangku Adat, dan lainnya) untuk Penegak aktif, satu per satu atau lewat berkas Excel. Pradana, Pradani, dan Pemangku Adat masing-masing hanya satu orang.', 'Mencatat nomor dan tanggal SK pengukuhan Dewan Ambalan dari Ketua Kwartir Ranting (dan rekomendasi Ketua Mabigus bila ada) pada bagian Pengukuhan oleh Kwartir Ranting, satu catatan per tahun ajaran.'] },

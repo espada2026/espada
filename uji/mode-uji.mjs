@@ -132,7 +132,7 @@ console.log('\n--- Build produksi: tanpa mode uji, dengan klien Supabase, dan ha
   for (const [teks, nama] of malas) ok(!awal.includes(teks) && semua.includes(teks), `${nama} dimuat malas: tidak ada di JS awal, ada di potongan lain`);
   ok(!/\baddData\b/.test(awal) && /\baddData\b/.test(semua), 'pembuat kode QR dimuat malas: tidak ada di JS awal, ada di potongan lain');
   // Halaman muka (Fase 1): potongan malas di JS, tetapi isinya sudah ada sebagai HTML prarender di index.html (terbaca mesin pencari dan tampil seketika)
-  const kalimatBeranda = 'Berlatih setiap Jumat, bertumbuh sepanjang tahun';
+  const kalimatBeranda = 'Berlatih bersama, bertumbuh sepanjang tahun';
   const htmlAkhir = readFileSync(`${P}/${keluar}/index.html`, 'utf8');
   ok(!awal.includes(kalimatBeranda) && semua.includes(kalimatBeranda), 'halaman muka dimuat malas: tidak ada di JS awal, ada di potongan lain');
   ok(htmlAkhir.includes('<div id="root"><div data-pra>') && htmlAkhir.includes(kalimatBeranda) && /<h1[^>]*>\s*Gugus Depan/.test(htmlAkhir), 'index.html memuat halaman muka hasil prarender (di dalam #root, data-pra) dengan satu <h1>');

@@ -4,13 +4,14 @@ import '../data/skuSiaga'; // mendaftarkan katalog SKU Siaga supaya pengajuan an
 import { antrianPengujian, bolehMenilaiPoin, hitungProgres, pesanTidakBolehMenilai } from '../lib/skuLogic';
 import { ringkasDaftarRombel, rombelSaya as rombelDariPenugasan, tahunAjaranKini } from '../lib/rombelLogic';
 import { useFilterRombel } from '../hooks/useRombelSaya';
-import ProgresRombel from '../components/ProgresRombel';
 import { fmtTanggal } from '../lib/format';
 import FilterBar, { FILTER_AWAL, terapkanFilter } from '../components/FilterBar';
 import AlihkanModal from '../components/AlihkanModal';
-import RingkasanGudep from '../components/RingkasanGudep';
 import UjiModal from '../components/UjiModal';
-import { menuPraUjiTampil, ujiResmiTampil } from '../lib/praUjiLogic';
+import { ujiResmiTampil } from '../lib/praUjiLogic';
+import DasborSiaga from '../components/DasborSiaga';
+import { bolehKelolaMateri } from '../lib/materiLogic';
+import { kelasSiagaSah } from '../lib/siagaLogic';
 import { Avatar, Badge, BadgePeran, Icon, Kosong, ProgressBar, TeksPoin } from '../components/ui';
 
 /** Baris penugasan tahun ajaran berjalan (rombel dan khusus Penegak) untuk menyaring antrian bersama rombel; dimuat sekali. penugasan null selama belum termuat (aturan lama). */
@@ -22,7 +23,7 @@ function usePenugasanKini() {
 }
 
 function Dashboard({ onNav }) {
-  const { user, users, progress, dokumen, praUjiAktif, pendampingan } = useApp();
+  const { user, users, progress, dokumen, praUjiAktif } = useApp();
   const { penugasan, penugasanPeserta } = usePenugasanKini();
   const antrian = antrianPengujian(progress, users, user.id, penugasan, dokumen ?? [], penugasanPeserta, praUjiAktif);
   const menunggu = antrian.filter((a) => a.entry.status === 'diajukan').length;
@@ -31,8 +32,10 @@ function Dashboard({ onNav }) {
     <div className="animasi-naik">
       <div className="mb-4">
         <h1 className="text-2xl font-bold">Dashboard {user.jabatan}</h1>
-        <p className="text-sm text-pramuka-600">Ringkasan SKU, absensi latihan Jumat, dan jurnal portofolio Garuda.</p>
+        <p className="text-sm text-pramuka-600">Ringkasan gugus depan Siaga: anggota, barung, kemajuan SKU, dan pengajuan yang menunggu.</p>
       </div>
+
+      <DasborSiaga onNav={onNav} menu={bolehKelolaMateri(user) ? undefined : ['absensi', 'iuran', 'tkk', 'agenda']} />
 
       {ujiResmiTampil(user, praUjiAktif) ? (
         <section className="jahitan mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white p-4">
@@ -45,18 +48,11 @@ function Dashboard({ onNav }) {
           <button className="btn btn-primary btn-sm" onClick={() => onNav('antrian')}>Buka antrian</button>
         </section>
       ) : (
-        <section className="jahitan mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white p-4">
-          <div>
-            <p className="font-semibold text-pramuka-900">Pra-uji SKU</p>
-            <p className="text-sm text-pramuka-600">Uji resmi hanya dilakukan Pembina. Dewan Ambalan berperan di pra-uji sebagai Pinsa atau Bina Damping.</p>
-          </div>
-          {menuPraUjiTampil(user, pendampingan, praUjiAktif) && <button className="btn btn-primary btn-sm" onClick={() => onNav('pra-uji')}>Buka pra-uji</button>}
+        <section className="jahitan mb-5 rounded-lg bg-white p-4">
+          <p className="font-semibold text-pramuka-900">Pengujian SKU</p>
+          <p className="text-sm text-pramuka-600">Uji resmi hanya dilakukan Pembina.</p>
         </section>
       )}
-
-      <ProgresRombel penugasan={penugasan} onNav={onNav} />
-
-      <RingkasanGudep onNav={onNav} />
     </div>
   );
 }
@@ -169,8 +165,10 @@ function DaftarPeserta({ onBuka }) {
       ) : (
         <ul className="panel divide-y divide-pramuka-100">
           {daftar.map((u) => {
-            const b = hitungProgres(progress, u, 'Bantara');
-            const l = hitungProgres(progress, u, 'Laksana');
+            const siaga = u.tanpaAkun || kelasSiagaSah(u.kelas);
+            const [tA, tB] = siaga ? ['Mula', 'Bantu'] : ['Bantara', 'Laksana'];
+            const b = hitungProgres(progress, u, tA);
+            const l = hitungProgres(progress, u, tB);
             return (
               <li key={u.id}>
                 <button onClick={() => onBuka(u.id)} className="flex w-full items-center gap-3 p-4 text-left hover:bg-pramuka-50">
@@ -182,12 +180,12 @@ function DaftarPeserta({ onBuka }) {
                     </p>
                     <div className="mt-2 grid grid-cols-2 gap-3">
                       <div>
-                        <p className="mb-1 text-xs text-pramuka-600">Bantara {b.lulus}/{b.total} ({b.persen}%)</p>
-                        <ProgressBar persen={b.persen} label={`Bantara ${u.nama}`} />
+                        <p className="mb-1 text-xs text-pramuka-600">{tA} {b.lulus}/{b.total} ({b.persen}%)</p>
+                        <ProgressBar persen={b.persen} label={`${tA} ${u.nama}`} />
                       </div>
                       <div>
-                        <p className="mb-1 text-xs text-pramuka-600">Laksana {l.lulus}/{l.total} ({l.persen}%)</p>
-                        <ProgressBar persen={l.persen} label={`Laksana ${u.nama}`} />
+                        <p className="mb-1 text-xs text-pramuka-600">{tB} {l.lulus}/{l.total} ({l.persen}%)</p>
+                        <ProgressBar persen={l.persen} label={`${tB} ${u.nama}`} />
                       </div>
                     </div>
                   </div>

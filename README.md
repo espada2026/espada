@@ -943,3 +943,5 @@ Skrip demo membuat akun langsung di `auth.users`; bila gagal di proyek Anda, bua
 
 Menu Cetak menampilkan pratinjau. Klik "Cetak atau simpan PDF", lalu pada dialog cetak browser pilih "Simpan sebagai PDF".
 Kartu SKU dicetak A4 potret, Surat Tanda Lulus A4 lanskap. Aktifkan opsi "Grafik latar belakang" bila warna tidak muncul.
+
+**Data demo Siaga (Pramuka Siaga, Fase 7).** [`supabase/demo/data_demo_siaga.sql`](supabase/demo/data_demo_siaga.sql) membuat **24 anak Siaga demo TANPA akun** (NIS `991001`-`991024`, nama berawalan "Demo ") dalam dua perindukan dan empat barung (satu perindukan sengaja kurang dari tiga barung), dengan SKU Mula/Bantu/Tata pada tingkat berbeda, pelantikan, dan TKK Siaga. Jalankan di SQL Editor sesudah semua migrasi; aman diulang. Pembersihnya: [`supabase/demo/hapus_data_demo_siaga.sql`](supabase/demo/hapus_data_demo_siaga.sql). Dijaga `uji/data-demo-siaga.mjs`.
