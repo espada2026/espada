@@ -18,8 +18,8 @@ begin
   select status into v_status from public.sku_progress where peserta_id = v_uid and sku_id = p_sku_id;
   if v_status = 'lulus' then raise exception 'Poin ini sudah lulus.'; end if;
   if v_status in ('diajukan','proses') then raise exception 'Poin ini sedang menunggu atau dalam pengujian.'; end if;
-  if v_u.tingkat = 'Laksana' and not sigarda.tingkat_selesai(v_uid, 'Bantara') then
-    raise exception 'Selesaikan seluruh butir Bantara lebih dulu.';
+  if sigarda.prasyarat_tingkat(v_u.tingkat) is not null and not sigarda.tingkat_selesai(v_uid, sigarda.prasyarat_tingkat(v_u.tingkat)) then
+    raise exception 'Selesaikan seluruh butir % lebih dulu.', sigarda.prasyarat_tingkat(v_u.tingkat);
   end if;
   if p_jadwal is null then raise exception 'Tanggal pengujian wajib diisi.'; end if;
   if char_length(coalesce(p_catatan, '')) > 500 then raise exception 'Catatan maksimal 500 karakter.'; end if;
@@ -152,7 +152,7 @@ create function public.sg_sku_catat_internal(
   p_tanggal_uji date default null, p_nilai text default null, p_catatan text default ''
 ) returns void language plpgsql security definer set search_path = public as
 $$
-declare v_p public.profiles; v_kode text; v_cat text := btrim(coalesce(p_catatan, '')); v_lama public.sku_progress; v_ganti text := ''; v_luar text;
+declare v_p public.profiles; v_kode text; v_cat text := btrim(coalesce(p_catatan, '')); v_lama public.sku_progress; v_ganti text := ''; v_luar text; v_pra text;
 begin
   if not sigarda.bisa_menguji(p_oleh) then
     raise exception '%', case when sigarda.pra_uji_aktif() then 'Hanya Pembina yang dapat mencatat hasil uji resmi.' else 'Hanya Pembina atau Dewan Ambalan yang dapat mencatat hasil.' end;
@@ -193,8 +193,9 @@ begin
     raise exception 'Butir ini dinilai dengan instrumen penilaian. Catat hasilnya lewat lembar penilaian.';
   end if;
   if p_hasil <> 'reset' and p_tanggal_uji is null then raise exception 'Tanggal uji wajib diisi.'; end if;
-  if p_hasil <> 'reset' and p_sku_id like 'LAK-%' and not sigarda.tingkat_selesai(p_peserta_id, 'Bantara') then
-    raise exception 'Peserta belum menyelesaikan seluruh butir Bantara.';
+  select sigarda.prasyarat_tingkat(tingkat) into v_pra from public.sku_unit where id = p_sku_id;
+  if p_hasil <> 'reset' and v_pra is not null and not sigarda.tingkat_selesai(p_peserta_id, v_pra) then
+    raise exception 'Peserta belum menyelesaikan seluruh butir %.', v_pra;
   end if;
   if char_length(v_cat) > 1000 then raise exception 'Catatan maksimal 1000 karakter.'; end if;
 

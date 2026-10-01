@@ -196,7 +196,8 @@ create function sigarda.eskalasi_proses() returns void language plpgsql security
 $$
 declare v_hari date := sigarda.hari_ini(); r record; v_mulai date; v_elapsed int; v_tingkat int; v_x uuid;
 begin
-  for r in select id, nama from public.profiles where role = 'peserta' and status = 'aktif' loop
+  -- Anak Siaga tanpa akun (tanpa_akun) tidak diingatkan dan tidak masuk Tindak Lanjut: tangga ini dirancang untuk Penegak yang dapat dihubungi sendiri.
+  for r in select id, nama from public.profiles where role = 'peserta' and status = 'aktif' and not tanpa_akun loop
     declare v_jenis text; v_fn text[] := array['sku','absensi','iuran'];
     begin
       foreach v_jenis in array v_fn loop
@@ -229,7 +230,7 @@ declare v_hari date := sigarda.hari_ini(); v_hasil jsonb := '[]'::jsonb; r recor
 begin
   perform sigarda.wajib_aktif();
   if not sigarda.pengurus() then raise exception 'Hanya Pembina, Dewan Ambalan, dan Admin Gudep yang dapat melihat daftar ini.'; end if;
-  for r in select id, nama, kelas, sangga, whatsapp from public.profiles where role = 'peserta' and status = 'aktif' loop
+  for r in select id, nama, kelas, sangga, whatsapp from public.profiles where role = 'peserta' and status = 'aktif' and not tanpa_akun loop
     foreach v_jenis in array array['sku','absensi','iuran'] loop
       v_mulai := case v_jenis
         when 'sku' then sigarda.eskalasi_mulai_sku(r.id)

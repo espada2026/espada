@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { hurufSub } from '../data/skuData';
+import { AREA_SIAGA, hurufSub } from '../data/skuData';
 import { useApp } from '../context/AppContext';
 import { hitungMateriPerButir } from '../lib/materiLogic';
 import { butirPeserta, getEntry } from '../lib/skuLogic';
@@ -223,6 +223,7 @@ export default function SkuChecklist({ tingkat, peserta, renderAksi, onBukaMater
                 <NomorButir no={b.no} status={status} title={`Butir ${b.no}`} />
 
                 <div className="min-w-0 flex-1">
+                  {b.area && <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-pramuka-500">Area {AREA_SIAGA[b.area]}</p>}
                   {!bersub ? (
                     <>
                       <p className="text-sm leading-relaxed">{b.teks}</p>

@@ -5,6 +5,8 @@ import {
   BARUNG_MAKS, BARUNG_MIN, anggotaSiaga, bacaTempelanSiaga, bakukanKelasSiaga, penyamaKelompok, periksaBanyakSiaga, periksaSiaga, susunKelompok,
 } from '../lib/siagaLogic';
 import { urutTeks } from '../lib/format';
+import { hitungProgres } from '../lib/skuLogic';
+import SiagaSku, { tingkatSiagaAwal } from './SiagaSku';
 import { BadgeStatus, Field, Kosong, Modal } from '../components/ui';
 
 const KOSONG = { nama: '', kelas: '', jk: '', agama: '', nis: '', perindukan: '', barung: '' };
@@ -150,6 +152,17 @@ function ModalBarung({ ids, onTutup }) {
   );
 }
 
+/** Ringkasan SKU satu anak pada daftar: tingkat yang sedang dikerjakan dan jumlah butir lulus; tombol membuka rincian. */
+function SkuRingkas({ anggota, progress, onBuka }) {
+  const tingkat = tingkatSiagaAwal(progress, anggota);
+  const h = hitungProgres(progress, anggota, tingkat);
+  return (
+    <button className="btn btn-outline btn-sm shrink-0" onClick={onBuka} aria-label={`SKU ${anggota.nama}: ${tingkat} ${h.lulus} dari ${h.total} butir lulus`}>
+      SKU {tingkat} <span className="font-normal text-pramuka-600">{h.lulus}/{h.total}</span>
+    </button>
+  );
+}
+
 function TabKelompok({ users, onUbah }) {
   const { perindukan, tanpaKelompok } = useMemo(() => susunKelompok(users), [users]);
   if (perindukan.length === 0 && tanpaKelompok.length === 0) return <Kosong judul="Belum ada anggota Siaga" teks="Tambahkan anak lewat tombol di atas." />;
@@ -185,8 +198,9 @@ function TabKelompok({ users, onUbah }) {
  * Anggota Siaga (Pembina dan Admin): anak Siaga tidak punya akun; datanya dibuat dan dirawat di sini, termasuk pembagian ke perindukan dan barung.
  */
 export default function Siaga() {
-  const { users } = useApp();
+  const { users, progress } = useApp();
   const semua = useMemo(() => anggotaSiaga(users), [users]);
+  const [skuId, setSkuId] = useState(null); // anak yang SKU-nya sedang dibuka (SiagaSku)
   const [tab, setTab] = useState('daftar');
   const [cari, setCari] = useState('');
   const [kelas, setKelas] = useState('');
@@ -204,6 +218,8 @@ export default function Siaga() {
   const terpilih = tampil.filter((u) => pilih.has(u.id)).map((u) => u.id);
   const ganti = (id) => setPilih((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const tutup = () => { setModal(null); setPilih(new Set()); };
+
+  if (skuId) return <SiagaSku key={skuId} pesertaId={skuId} onKembali={() => setSkuId(null)} />;
 
   return (
     <div className="animasi-naik">
@@ -249,6 +265,7 @@ export default function Siaga() {
                     </span>
                   </button>
                   {(u.status ?? 'aktif') !== 'aktif' && <BadgeStatus status={u.status} />}
+                  <SkuRingkas anggota={u} progress={progress} onBuka={() => setSkuId(u.id)} />
                 </li>
               ))}
             </ul>

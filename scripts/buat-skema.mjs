@@ -9,15 +9,16 @@ import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { bacaInti } from './sumber.mjs';
-import { INDEKS_POIN, TINGKAT } from '../src/data/skuData.js';
+import { INDEKS_POIN, SEMUA_TINGKAT } from '../src/data/skuData.js';
+import '../src/data/skuSiaga.js'; // mendaftarkan tingkat Siaga ke SEMUA_TINGKAT dan INDEKS_POIN
 import { ITEM_PORTOFOLIO } from '../src/data/portofolioData.js';
 import { KATALOG_TKK } from '../src/data/tkkData.js';
 
 const akar = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const q = (teks) => `'${String(teks).replace(/'/g, "''")}'`;
 
-const butir = Object.values(TINGKAT).flatMap((t) =>
-  t.butir.map((b) => ({ id: b.id, tingkat: t.kode === 'BAN' ? 'Bantara' : 'Laksana', no: b.no, teks: b.teks ?? 'Sesuai agama yang dianut (ketakwaan)' }))
+const butir = Object.entries(SEMUA_TINGKAT).flatMap(([tingkat, t]) =>
+  t.butir.map((b) => ({ id: b.id, tingkat, no: b.no, teks: b.teks ?? 'Sesuai agama yang dianut (ketakwaan)' }))
 );
 
 // Unit per agama. Varian tanpa agama (kode LAIN) hanya dipakai internal aplikasi dan tidak dimasukkan.

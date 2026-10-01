@@ -4,10 +4,10 @@
 -- penguji dihapus) bukan penulisan pengguna dan dilewati (pg_trigger_depth() > 1). Fungsi naik kelas membatalkan pengajuan SEBELUM mengubah status.
 create function sigarda.tolak_peserta_tak_aktif() returns trigger language plpgsql security definer set search_path = public as
 $$
-declare v_status text; v_nama text; v_agama text;
+declare v_status text; v_nama text; v_agama text; v_tanpa_akun boolean;
 begin
   if TG_OP = 'UPDATE' and pg_trigger_depth() > 1 then return new; end if;
-  select status, nama, agama into v_status, v_nama, v_agama from public.profiles where id = new.peserta_id;
+  select status, nama, agama, tanpa_akun into v_status, v_nama, v_agama, v_tanpa_akun from public.profiles where id = new.peserta_id;
   if v_status is not null and v_status <> 'aktif' then
     if new.peserta_id = auth.uid() then
       raise exception 'Akun Anda berstatus % dan hanya dapat dilihat. Hubungi Pembina atau Admin Gudep bila ingin aktif kembali.', v_status;
@@ -16,6 +16,9 @@ begin
   end if;
   -- Agama Penegak baru diisi sendiri sesudah akun dibuat (Tahap 3, H1). Tanpa agama, butir agama tidak tampak baginya sehingga progres SKU-nya tidak lengkap: penulisan progres SKU ditolak sampai agama diisi.
   if v_status = 'aktif' and v_agama is null and TG_TABLE_NAME in ('sku_progress', 'sku_riwayat', 'sku_pra_uji', 'sesi_ujian_peserta') then
+    if v_tanpa_akun then
+      raise exception '% belum dicatat agamanya. Isi agamanya di menu Anggota Siaga (ubah data anak) sebelum mencatat SKU.', v_nama;
+    end if;
     if new.peserta_id = auth.uid() then
       raise exception 'Isi agama Anda lebih dulu di menu Akun saya (Data diri) sebelum mengajukan SKU.';
     end if;
