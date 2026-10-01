@@ -37,3 +37,42 @@ begin
   if not found then raise exception 'Penetapan SPG tidak ditemukan.'; end if;
 end $$;
 -- ===== akhir aksi spg =====
+
+-- ===== Siaga Garuda (Pramuka Siaga, Fase 6): aksi =====
+-- Hanya Pembina dan Admin Gudep yang menetapkan. Anak harus anggota Siaga aktif dan sudah menyelesaikan seluruh SKU Tata (syarat Siaga Garuda: SKU Tata lebih dulu). Menetapkan
+-- ulang butir yang sama = koreksi. Aturan isian dicerminkan src/lib/siagaGarudaLogic.js (periksaSiagaGaruda) dan dibandingkan langsung dengan fungsi ini oleh uji/siaga-garuda.mjs.
+create function public.sg_siaga_garuda_catat(
+  p_peserta_id uuid, p_butir integer, p_nilai integer, p_tanggal date, p_catatan text default ''
+) returns void language plpgsql security definer set search_path = public as
+$$
+declare v_p public.profiles; v_cat text := sigarda.rapikan(p_catatan);
+begin
+  perform sigarda.wajib_aktif();
+  if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat menetapkan Syarat Siaga Garuda.'; end if;
+  select * into v_p from public.profiles where id = p_peserta_id and role = 'peserta';
+  if not found then raise exception 'Pilih anggota Siaga.'; end if;
+  if not (v_p.tanpa_akun or sigarda.kelas_siaga(v_p.kelas)) then raise exception 'Syarat Siaga Garuda hanya untuk anggota Siaga.'; end if;
+  if v_p.status <> 'aktif' then raise exception '% tidak aktif; Syarat Siaga Garuda hanya untuk anggota aktif.', v_p.nama; end if;
+  if not sigarda.tingkat_selesai(p_peserta_id, 'Tata') then raise exception '% belum menyelesaikan SKU Tata.', v_p.nama; end if;
+  if p_butir is null or p_butir not between 1 and 6 then raise exception 'Butir Siaga Garuda harus 1 sampai 6.'; end if;
+  if p_nilai is null or p_nilai not in (0, 100) then raise exception 'Nilai harus 100 (memenuhi) atau 0 (belum).'; end if;
+  if p_tanggal is null then raise exception 'Tanggal pengujian wajib diisi.'; end if;
+  if p_tanggal < date '2015-01-01' or p_tanggal > sigarda.hari_ini() then raise exception 'Tanggal pengujian harus antara 1 Januari 2015 dan hari ini.'; end if;
+  if char_length(v_cat) > 200 or v_cat ~ '[[:cntrl:]<>]' then raise exception 'Catatan maksimal 200 karakter, tanpa tanda < atau >.'; end if;
+  insert into public.siaga_garuda (peserta_id, butir, nilai, tanggal, catatan, dicatat_oleh, dicatat_pada)
+  values (p_peserta_id, p_butir, p_nilai, p_tanggal, v_cat, auth.uid(), now())
+  on conflict (peserta_id, butir) do update
+    set nilai = excluded.nilai, tanggal = excluded.tanggal, catatan = excluded.catatan, dicatat_oleh = excluded.dicatat_oleh, dicatat_pada = excluded.dicatat_pada;
+end $$;
+
+-- Menghapus penetapan satu butir (kembali ke saran aplikasi atau "belum ditetapkan").
+create function public.sg_siaga_garuda_hapus(p_peserta_id uuid, p_butir integer) returns void language plpgsql security definer set search_path = public as
+$$
+begin
+  perform sigarda.wajib_aktif();
+  if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat menghapus penetapan Siaga Garuda.'; end if;
+  if exists (select 1 from public.profiles where id = p_peserta_id and status <> 'aktif') then raise exception 'Anggota nonaktif atau alumni tidak dapat diubah.'; end if;
+  delete from public.siaga_garuda where peserta_id = p_peserta_id and butir = p_butir;
+  if not found then raise exception 'Penetapan Siaga Garuda tidak ditemukan.'; end if;
+end $$;
+-- ===== akhir aksi siaga garuda =====

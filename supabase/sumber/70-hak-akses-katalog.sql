@@ -9,7 +9,7 @@ grant select on public.profiles, public.sku_butir, public.sku_unit, public.pf_it
   public.sesi_ujian, public.sesi_ujian_butir, public.sesi_ujian_peserta,
   public.iuran, public.iuran_log, public.iuran_kas, public.asisten_iuran, public.tabungan_cek,
   public.penugasan_rombel, public.penugasan_log, public.guru_agama, public.dokumen_terbit, public.dokumen_urut, public.notifikasi,
-  public.naik_kelas_batch, public.naik_kelas_log, public.penugasan_peserta, public.kepengurusan_log, public.agenda, public.kegiatan_usulan, public.pengukuhan_dewan, public.sku_pra_uji, public.pelantikan, public.saka_anggota, public.tkk_katalog, public.tkk_capaian, public.tkk_krida, public.tkk_siaga, public.tkk_pengajuan, public.spg_penetapan, public.tanggal_lahir, public.tim_penilai, public.tim_penilai_anggota, public.garuda_tahap, public.penegak_isian, public.dokumen_templat, public.portofolio_snapshot, public.sfh_catatan,
+  public.naik_kelas_batch, public.naik_kelas_log, public.penugasan_peserta, public.kepengurusan_log, public.agenda, public.kegiatan_usulan, public.pengukuhan_dewan, public.sku_pra_uji, public.pelantikan, public.saka_anggota, public.tkk_katalog, public.tkk_capaian, public.tkk_krida, public.siaga_garuda, public.tkk_siaga, public.tkk_pengajuan, public.spg_penetapan, public.tanggal_lahir, public.tim_penilai, public.tim_penilai_anggota, public.garuda_tahap, public.penegak_isian, public.dokumen_templat, public.portofolio_snapshot, public.sfh_catatan,
   public.beranda_berita, public.beranda_prestasi, public.beranda_galeri, public.beranda_sosial, public.beranda_faq to authenticated;
 
 revoke all on all functions in schema public from public, anon, authenticated;
@@ -58,7 +58,7 @@ grant execute on function
   public.sg_pelantikan_catat(text, date, text, uuid[], bigint, text), public.sg_pelantikan_hapus(bigint),
   public.sg_saka_simpan(bigint, uuid, text, date, text, date, text, text), public.sg_saka_hapus(bigint),
   public.sg_tkk_catat(uuid, text, text, date, text, text, text, text, text), public.sg_tkk_hapus(bigint),
-  public.sg_tkk_krida_simpan(bigint, uuid, text, text, date, text, text), public.sg_tkk_krida_hapus(bigint), public.sg_tkk_siaga_catat(uuid, text, date, text, text, text), public.sg_tkk_siaga_hapus(bigint), public.sg_tkk_ambang_simpan(jsonb),
+  public.sg_tkk_krida_simpan(bigint, uuid, text, text, date, text, text), public.sg_tkk_krida_hapus(bigint), public.sg_siaga_garuda_catat(uuid, integer, integer, date, text), public.sg_siaga_garuda_hapus(uuid, integer), public.sg_tkk_siaga_catat(uuid, text, date, text, text, text), public.sg_tkk_siaga_hapus(bigint), public.sg_tkk_ambang_simpan(jsonb),
   public.sg_tkk_ajukan(text, text, date, uuid, text, text, text, text), public.sg_tkk_ajukan_batal(bigint), public.sg_tkk_tinjau(bigint, text, text, text, text),
   public.sg_tkk_penguji_pilihan(),
   public.sg_spg_catat(uuid, integer, integer, date, text, boolean), public.sg_spg_hapus(uuid, integer),

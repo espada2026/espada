@@ -9,7 +9,7 @@
  *
  * `klien` = klien supabase-js (atau klien lokal yang bentuknya sama, lihat src/lokal).
  */
-import { petaPengaturan, petaPraUji, susunAntrianPraUji, petaProfil, petaSidang, susunPengukuhanDewan, susunAgenda, susunBatchNaikKelas, susunBerkasGaruda, susunLogNaikKelas, susunDokumen, susunGuruAgama, susunHadir, susunAsisten, susunInstrumen, susunIuran, susunKas, susunLembarIuran, susunLogKepengurusan, susunLogPenugasan, susunMateri, susunNotifikasi, susunPenilaian, susunPendampingan, susunBinaDamping, susunSanggaRombel, susunCalonPinsa, susunPenugasan, susunPenugasanPeserta, susunPelantikan, susunSaka, susunTkkCapaian, susunTkkKrida, susunTkkPengajuan, susunAmbangTkk, susunSpg, susunTanggalLahir, susunIsian, susunTemplatDokumen, susunSnapshot, susunSfh, susunTabungan, susunTkkSiaga, susunGerbang, susunTimPenilai, susunGarudaTahap, susunSesiUjian, susunPortofolio, susunProgress, susunRaport, susunSesi, susunUsulanKegiatan, susunBerita, susunPrestasi, susunGaleri, susunSosial, susunFaq } from './mapDb';
+import { petaPengaturan, petaPraUji, susunAntrianPraUji, petaProfil, petaSidang, susunPengukuhanDewan, susunAgenda, susunBatchNaikKelas, susunBerkasGaruda, susunLogNaikKelas, susunDokumen, susunGuruAgama, susunHadir, susunAsisten, susunInstrumen, susunIuran, susunKas, susunLembarIuran, susunLogKepengurusan, susunLogPenugasan, susunMateri, susunNotifikasi, susunPenilaian, susunPendampingan, susunBinaDamping, susunSanggaRombel, susunCalonPinsa, susunPenugasan, susunPenugasanPeserta, susunPelantikan, susunSaka, susunTkkCapaian, susunTkkKrida, susunTkkPengajuan, susunAmbangTkk, susunSpg, susunTanggalLahir, susunIsian, susunTemplatDokumen, susunSnapshot, susunSfh, susunTabungan, susunTkkSiaga, susunSiagaGaruda, susunGerbang, susunTimPenilai, susunGarudaTahap, susunSesiUjian, susunPortofolio, susunProgress, susunRaport, susunSesi, susunUsulanKegiatan, susunBerita, susunPrestasi, susunGaleri, susunSosial, susunFaq } from './mapDb';
 
 import { untukForm as untukFormBeranda, untukKirim as untukKirimBeranda } from './berandaLogic';
 
@@ -211,6 +211,14 @@ export function buatApi(klien) {
     catatTkkSiaga: ({ pesertaId, tkkId, tanggal, penguji, buktiUrl = '', catatan = '' }) =>
       rpc('sg_tkk_siaga_catat', { p_peserta_id: pesertaId, p_tkk_id: tkkId, p_tanggal: tanggal || null, p_penguji: penguji, p_bukti_url: buktiUrl, p_catatan: catatan }),
     hapusTkkSiaga: (id) => rpc('sg_tkk_siaga_hapus', { p_id: id }),
+
+    /* ------------------- Siaga Garuda (Pramuka Siaga, Fase 6) ------------------- */
+    /** Penetapan Siaga Garuda satu anak (pemilik, Pembina, dan Admin; dibatasi RLS). */
+    muatSiagaGaruda: (pesertaId) => muat(async () => susunSiagaGaruda(await ambilSemua('siaga_garuda', { filter: [['peserta_id', pesertaId]], urut: ['butir'] }))),
+    /** Menetapkan satu butir (Pembina dan Admin): nilai 100 (memenuhi) atau 0; menetapkan ulang = koreksi. */
+    catatSiagaGaruda: ({ pesertaId, butir, nilai, tanggal, catatan = '' }) =>
+      rpc('sg_siaga_garuda_catat', { p_peserta_id: pesertaId, p_butir: butir, p_nilai: nilai, p_tanggal: tanggal || null, p_catatan: catatan }),
+    hapusSiagaGaruda: (pesertaId, butir) => rpc('sg_siaga_garuda_hapus', { p_peserta_id: pesertaId, p_butir: butir }),
 
     /* ------------------- TKK (Tahap 2, G2) ------------------- */
     /** Capaian TKK, TKK Krida, dan ambang kesiapan Garuda yang boleh dilihat (Penegak: miliknya; pengurus: semua; dibatasi RLS). `bawaan` = ambang bila belum ada. */

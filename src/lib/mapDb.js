@@ -594,3 +594,8 @@ export const susunSosial = (baris = []) =>
 export const susunFaq = (baris = []) =>
   baris.map((r) => ({ id: Number(r.id), pertanyaan: r.pertanyaan, jawaban: r.jawaban, urutan: Number(r.urutan) }))
     .sort((a, b) => a.urutan - b.urutan || a.id - b.id);
+
+/** Baris siaga_garuda -> [{ pesertaId, butir, nilai (100|0), tanggal, catatan, dicatatPada }], urut anak lalu butir. */
+export const susunSiagaGaruda = (baris = []) =>
+  baris.map((r) => ({ pesertaId: r.peserta_id, butir: Number(r.butir), nilai: Number(r.nilai), tanggal: tgl(r.tanggal), catatan: r.catatan ?? '', dicatatPada: r.dicatat_pada }))
+    .sort((a, b) => a.pesertaId.localeCompare(b.pesertaId) || a.butir - b.butir);

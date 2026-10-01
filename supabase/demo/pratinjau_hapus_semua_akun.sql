@@ -44,7 +44,7 @@ from (
     ('Penugasan penguji (rombel dan khusus)', (select count(*) from public.penugasan_rombel) + (select count(*) from public.penugasan_peserta)),
     ('Pelantikan dan Saka',            (select count(*) from public.pelantikan) + (select count(*) from public.saka_anggota)),
     ('TKK, TKK Krida, dan pengajuan TKK', (select count(*) from public.tkk_capaian) + (select count(*) from public.tkk_krida) + (select count(*) from public.tkk_siaga) + (select count(*) from public.tkk_pengajuan)),
-    ('Penetapan SPG',                  (select count(*) from public.spg_penetapan)),
+    ('Penetapan SPG dan Siaga Garuda', (select count(*) from public.spg_penetapan) + (select count(*) from public.siaga_garuda)),
     ('Tanggal lahir dan data diri Penegak', (select count(*) from public.tanggal_lahir) + (select count(*) from public.penegak_isian)),
     ('Salinan beku portofolio',        (select count(*) from public.portofolio_snapshot)),
     ('Pra-uji dan Bina Damping', (select count(*) from public.sku_pra_uji) + (select count(*) from public.bina_damping)),
