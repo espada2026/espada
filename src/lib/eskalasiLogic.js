@@ -34,7 +34,7 @@ export function waLink(nomor, teks = '') {
 
 /** Pesan siap-kirim untuk satu entri daftar Tindak Lanjut ({ nama, jenis, hari }); nada ramah, tanpa menyebut hasil lulus/ulang. */
 export function teksWaSiap({ nama, jenis, hari }) {
-  const soal = jenis === 'sku' ? 'belum ada aktivitas SKU' : jenis === 'absensi' ? 'tidak hadir latihan Jumat tanpa keterangan' : 'iuran belum tercatat';
+  const soal = jenis === 'sku' ? 'belum ada aktivitas SKU' : jenis === 'absensi' ? 'tidak hadir latihan tanpa keterangan' : 'iuran belum tercatat';
   return `Halo ${nama}, ini dari Pembina/Dewan Ambalan. Sudah ${hari} hari ${soal}. Ada kendala? Kabari kami ya, biar bisa dibantu.`;
 }
 

@@ -119,7 +119,7 @@ export function Hero({ G, agendaTerdekat = null }) {
           </h1>
           <p className="mt-4 font-display text-lg font-medium text-emas-light sm:text-2xl">{namaAmbalan(G)}</p>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-pramuka-200 sm:text-lg">
-            Tempat Penegak belajar berani, mandiri, dan berguna bagi sesama. Dari latihan Jumat sampai Garuda, setiap langkahnya tercatat rapi.
+            Tempat anak-anak Siaga belajar berani, ceria, dan berbuat baik setiap hari. Dari latihan perindukan sampai Siaga Garuda, setiap langkahnya tercatat rapi.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a href="#tentang" className="btn btn-gold !rounded-full !px-6 !py-3 !text-[15px]">Kenali kami</a>
@@ -143,7 +143,7 @@ export function Hero({ G, agendaTerdekat = null }) {
   );
 }
 
-/** Tentang gudep: cerita, sambutan (bila diisi pengurus), Tri Satya dan Dasa Darma. */
+/** Tentang gudep: cerita, sambutan (bila diisi pengurus), Dwisatya dan Dwidarma. */
 export function Tentang({ G, kontak, pembina, kamabigus, sunting = '' }) {
   const cerita = pecahParagraf(kontak.cerita);
   const sambutan = [
@@ -154,16 +154,16 @@ export function Tentang({ G, kontak, pembina, kamabigus, sunting = '' }) {
     <section id="tentang" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#2e1b10]">
       <div className={`${wrap} tentang-grid`}>
         <div className="tentang-cerita">
-          <KepalaBagian label="Tentang kami" judul="Berlatih setiap Jumat, bertumbuh sepanjang tahun" sunting={sunting} tab="kontak" />
+          <KepalaBagian label="Tentang kami" judul="Berlatih bersama, bertumbuh sepanjang tahun" sunting={sunting} tab="kontak" />
           <div className="space-y-4 text-base leading-relaxed text-pramuka-700 sm:text-lg">
             <p>
-              Gugus Depan {G.sekolah} mendampingi Penegak dari kelas X sampai XII menempuh Syarat Kecakapan Umum (SKU), meraih Tanda Kecakapan Khusus (TKK),
-              dan menyiapkan diri menuju Pramuka Garuda.
+              Gugus Depan {G.sekolah} mendampingi anak Pramuka Siaga menempuh Syarat Kecakapan Umum (SKU) Mula, Bantu, dan Tata, meraih Tanda Kecakapan Khusus (TKK),
+              dan menyiapkan diri menuju Siaga Garuda.
             </p>
             {cerita.length > 0 ? cerita.map((p, i) => <p key={i}>{p}</p>) : (
               <p>
-                Dewan Ambalan yang dipilih sesama Penegak menjalankan kegiatan sehari-hari, dengan bimbingan Pembina dan dukungan sekolah. Catatan kemajuan
-                disimpan di SIGASI, jadi tidak hilang di antara satu angkatan dan angkatan berikutnya.
+                Pembina menjalankan kegiatan perindukan dan barung sehari-hari dengan dukungan sekolah dan orang tua. Catatan kemajuan
+                disimpan di SIGASI, jadi tidak hilang di antara satu tahun ajaran dan berikutnya.
               </p>
             )}
           </div>
@@ -182,12 +182,12 @@ export function Tentang({ G, kontak, pembina, kamabigus, sunting = '' }) {
           </figure>
         ))}
         <aside className="tentang-trisatya relative self-start overflow-hidden rounded-3xl bg-pramuka-800 p-7 text-pramuka-50 sm:p-8">
-          <h3 className="font-display text-2xl font-bold text-emas-light">Tri Satya</h3>
-          <p className="mt-1 text-sm text-pramuka-200">Janji setiap Pramuka Penegak</p>
+          <h3 className="font-display text-2xl font-bold text-emas-light">Dwisatya</h3>
+          <p className="mt-1 text-sm text-pramuka-200">Janji setiap Pramuka Siaga: demi kehormatanku aku berjanji akan bersungguh-sungguh</p>
           <ol className="mt-5 list-decimal space-y-2.5 pl-5 text-[15.5px] leading-relaxed text-pramuka-100 marker:font-bold marker:text-emas-light">
             {TRI_SATYA.map((s) => <li key={s}>{s}</li>)}
           </ol>
-          <h3 className="mt-7 border-t border-emas/25 pt-6 font-display text-xl font-bold text-emas-light">Dasa Darma</h3>
+          <h3 className="mt-7 border-t border-emas/25 pt-6 font-display text-xl font-bold text-emas-light">Dwidarma</h3>
           <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm leading-relaxed text-pramuka-100 marker:text-emas-light">
             {DASA_DARMA.map((s) => <li key={s}>{s}</li>)}
           </ol>
@@ -221,7 +221,7 @@ export function Perjalanan() {
   return (
     <section id="perjalanan" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:#f0e5cc]">
       <div className={wrap}>
-        <KepalaBagian gelap label="Perjalanan Penegak" judul="Empat pos dari pertama kali berlatih sampai Garuda" isi="Setiap Penegak melewati pos yang sama. Kecepatannya berbeda, tujuannya sama." />
+        <KepalaBagian gelap label="Perjalanan Siaga" judul="Empat pos dari pertama kali berlatih sampai Siaga Garuda" isi="Setiap anak melewati pos yang sama. Kecepatannya berbeda, tujuannya sama." />
         <ol className="relative grid gap-8 md:grid-cols-4 md:gap-0">
           <span aria-hidden="true" className="absolute left-[12.5%] right-[12.5%] top-10 hidden border-t-2 border-dashed border-emas/55 md:block" />
           {PERJALANAN.map((p) => (
@@ -303,7 +303,7 @@ export function Berita({ berita = [], memuat = false, sunting = '', halaman = {}
   return (
     <section id="berita" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#45291a]">
       <div className={wrap}>
-        <KepalaBagian label="Kabar gudep" judul="Yang sedang terjadi di gudep" isi="Ditulis oleh Dewan Ambalan, Pembina, dan Admin Gudep lewat Kelola Beranda." sunting={sunting} tab="berita" />
+        <KepalaBagian label="Kabar gudep" judul="Yang sedang terjadi di gudep" isi="Ditulis oleh Pembina dan Admin Gudep lewat Kelola Beranda." sunting={sunting} tab="berita" />
         {berita.length === 0 ? (
           <p role="status" className="rounded-2xl border border-pramuka-200 bg-white p-6 text-pramuka-600">{memuat ? 'Memuat berita...' : 'Belum ada berita. Tengok lagi nanti.'}</p>
         ) : (
@@ -497,7 +497,7 @@ export function TanyaJawab({ faq = [], sunting = '' }) {
   return (
     <section id="tanya" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:#45291a]">
       <div className={`${wrap} grid gap-12 lg:grid-cols-[1fr_1.4fr]`}>
-        <KepalaBagian label="Tanya jawab" judul="Sebelum Anda bergabung" isi="Jawaban singkat untuk calon Penegak dan orang tua. Tidak menemukan jawabannya? Hubungi kami lewat bagian Kontak." sunting={sunting} tab="faq" />
+        <KepalaBagian label="Tanya jawab" judul="Sebelum Anda bergabung" isi="Jawaban singkat untuk calon anggota Siaga dan orang tua. Tidak menemukan jawabannya? Hubungi kami lewat bagian Kontak." sunting={sunting} tab="faq" />
         <div className="border-t border-pramuka-200">
           {daftar.map((q, i) => (
             <details key={q.t} open={i === 0} className="group border-b border-pramuka-200">
@@ -548,7 +548,7 @@ export function Kontak({ G, kontak, sunting = '' }) {
             <dt className="pt-0.5 text-xs font-bold uppercase tracking-[0.14em] text-emas-dark">Alamat</dt>
             <dd>{G.sekolah}{G.alamat ? <><br />{G.alamat}</> : null}</dd>
             <dt className="pt-0.5 text-xs font-bold uppercase tracking-[0.14em] text-emas-dark">Latihan</dt>
-            <dd>{kontak.jadwal || 'Setiap Jumat di lingkungan sekolah'}</dd>
+            <dd>{kontak.jadwal || 'Sesuai jadwal latihan perindukan di sekolah'}</dd>
             {wa && <><dt className="pt-0.5 text-xs font-bold uppercase tracking-[0.14em] text-emas-dark">WhatsApp</dt><dd><a className="font-semibold underline decoration-emas underline-offset-4" href={wa} target="_blank" rel="noopener noreferrer">{kontak.whatsapp}</a></dd></>}
             {kontak.telepon && <><dt className="pt-0.5 text-xs font-bold uppercase tracking-[0.14em] text-emas-dark">Telepon</dt><dd>{kontak.telepon}</dd></>}
             {kontak.email && <><dt className="pt-0.5 text-xs font-bold uppercase tracking-[0.14em] text-emas-dark">Email</dt><dd className="break-all">{kontak.email}</dd></>}

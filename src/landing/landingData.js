@@ -21,52 +21,45 @@ export const MENU = [
 /** Menu yang ditampilkan: butir ber-`bilaAda` hanya bila `ada[bilaAda]` benar (mis. `{ sosial: true }` bila ada kiriman media sosial). Tanpa argumen = tanpa butir bersyarat (HTML prarender). */
 export const menuTampil = (ada = {}) => MENU.filter((m) => !m.bilaAda || ada[m.bilaAda] === true);
 
+/** Dwisatya Pramuka Siaga (nama ekspor TRI_SATYA dipertahankan dari kerangka Penegak; isinya Dwisatya). */
 export const TRI_SATYA = [
-  'Menjalankan kewajibanku terhadap Tuhan Yang Maha Esa, Negara Kesatuan Republik Indonesia, dan mengamalkan Pancasila.',
-  'Menolong sesama hidup dan ikut serta membangun masyarakat.',
-  'Menepati Dasa Darma.',
+  'Menjalankan kewajibanku terhadap Tuhan Yang Maha Esa, Negara Kesatuan Republik Indonesia dan menurut aturan keluarga.',
+  'Setiap hari berbuat kebaikan.',
 ];
 
+/** Dwidarma Pramuka Siaga (nama ekspor DASA_DARMA dipertahankan dari kerangka Penegak). */
 export const DASA_DARMA = [
-  'Takwa kepada Tuhan Yang Maha Esa',
-  'Cinta alam dan kasih sayang sesama manusia',
-  'Patriot yang sopan dan kesatria',
-  'Patuh dan suka bermusyawarah',
-  'Rela menolong dan tabah',
-  'Rajin, terampil, dan gembira',
-  'Hemat, cermat, dan bersahaja',
-  'Disiplin, berani, dan setia',
-  'Bertanggung jawab dan dapat dipercaya',
-  'Suci dalam pikiran, perkataan, dan perbuatan',
+  'Siaga berbakti pada ayah dan ibundanya',
+  'Siaga berani dan tidak putus asa',
 ];
 
 /** Program gudep: `ikon` = nama ikon SVG di bagian.jsx. */
 export const PROGRAM = [
-  { id: 'latihan', ikon: 'tenda', judul: 'Latihan Jumat', besar: true,
-    isi: 'Pertemuan mingguan bersama sangga. Kehadiran dicatat, iuran bumbung kepramukaan terkelola, dan Pembina memantau lewat rekap semester.' },
-  { id: 'sku', ikon: 'kompas', judul: 'SKU Bantara dan Laksana', besar: true,
-    isi: 'Butir kecakapan diuji bertahap: dinilai Pinsa dan Bina Damping lebih dulu, lalu diputuskan Pembina. Setiap hasil dapat diperiksa keasliannya lewat kode.' },
-  { id: 'garuda', ikon: 'bintang', judul: 'Menuju Garuda',
-    isi: 'Portofolio, Syarat Pramuka Garuda, dan pendampingan sampai penilaian di tingkat Kwartir Cabang.' },
-  { id: 'tkk', ikon: 'simpul', judul: 'TKK dan Saka',
-    isi: 'Ragam Tanda Kecakapan Khusus dan keanggotaan Satuan Karya sesuai minat.' },
-  { id: 'gladi', ikon: 'api', judul: 'Perkemahan dan Gladi',
-    isi: 'Perkemahan, Gladi Tangguh, dan pengembaraan sebagai ajang uji mental dan kerja sama.' },
+  { id: 'latihan', ikon: 'tenda', judul: 'Latihan Perindukan', besar: true,
+    isi: 'Pertemuan rutin bersama barung. Kehadiran dicatat, dan setiap tingkat memerlukan sedikitnya 12 kali latihan. Menabung dibimbing Pembina dengan uang tetap di buku anak.' },
+  { id: 'sku', ikon: 'kompas', judul: 'SKU Mula, Bantu, dan Tata', besar: true,
+    isi: 'Butir kecakapan dalam lima area (spiritual, emosional, sosial, intelektual, fisik) diuji Pembina secara informal dan menyenangkan. Setiap hasil dapat diperiksa keasliannya lewat kode.' },
+  { id: 'garuda', ikon: 'bintang', judul: 'Menuju Siaga Garuda',
+    isi: 'Setelah SKU Tata dan dilantik, anak berlatih dan memenuhi syarat Siaga Garuda yang dinilai Pembina.' },
+  { id: 'tkk', ikon: 'simpul', judul: 'TKK Siaga',
+    isi: 'Tanda Kecakapan Khusus sesuai minat anak, diberikan sesudah Siaga Bantu.' },
+  { id: 'gladi', ikon: 'api', judul: 'Pesta Siaga dan Persari',
+    isi: 'Pertemuan Siaga dan perkemahan sebagai ajang bergembira, belajar, dan bekerja sama.' },
 ];
 
 export const PERJALANAN = [
-  { id: 'calon-bantara', ikon: 'tunas', judul: 'Calon Bantara', isi: 'Mengenal gudep, sangga, dan dasar kepramukaan.' },
-  { id: 'bantara', ikon: 'simpul', judul: 'Bantara', isi: 'SKU Bantara selesai dan dilantik sebagai Penegak Bantara.' },
-  { id: 'laksana', ikon: 'kompas', judul: 'Laksana', isi: 'SKU Laksana selesai, mulai membimbing dan mengelola kegiatan.' },
-  { id: 'garuda', ikon: 'bintang', judul: 'Garuda', isi: 'Portofolio, Syarat Pramuka Garuda, dan penilaian tim Kwarcab.', puncak: true },
+  { id: 'calon-siaga', ikon: 'tunas', judul: 'Calon Siaga', isi: 'Mengenal gudep, barung, dan Dwisatya Dwidarma.' },
+  { id: 'mula', ikon: 'simpul', judul: 'Siaga Mula', isi: 'SKU Mula selesai dan dilantik dalam upacara kenaikan tingkat.' },
+  { id: 'bantu', ikon: 'kompas', judul: 'Siaga Bantu', isi: 'SKU Bantu selesai; mulai meraih Tanda Kecakapan Khusus.' },
+  { id: 'tata', ikon: 'bintang', judul: 'Siaga Tata', isi: 'SKU Tata selesai, lalu menuju Siaga Garuda.', puncak: true },
 ];
 
-/** Pertanyaan umum bawaan (Fase 2 memindahkannya ke menu Kelola Beranda). Jawaban tidak boleh memuat janji yang belum tentu benar: rujuk Pembina. */
+/** Pertanyaan umum bawaan (pengurus dapat menggantinya lewat menu Kelola Beranda). Jawaban tidak boleh memuat janji yang belum tentu benar: rujuk Pembina. */
 export const TANYA_JAWAB = [
-  { t: 'Kapan dan di mana latihan berlangsung?', j: 'Latihan rutin setiap Jumat di lingkungan SMA Negeri 1 Bukateja. Jadwal khusus, seperti gladi dan perkemahan, diumumkan di bagian Agenda.' },
-  { t: 'Siapa yang menjadi anggota?', j: 'Penegak adalah siswa kelas X sampai XII. Pendaftaran dan pembagian rombel diurus Admin gudep bersama Pembina.' },
-  { t: 'Perlu seragam dan perlengkapan apa?', j: 'Seragam Pramuka Penegak dan perlengkapan dasar. Daftar lengkapnya diberikan Pembina pada pertemuan pertama.' },
-  { t: 'Apakah ada iuran?', j: 'Ada iuran bumbung kepramukaan yang dicatat rapi di aplikasi dan dapat dilihat Penegak sendiri. Nominal dan aturannya disampaikan Pembina.' },
-  { t: 'Bagaimana kemajuan Penegak dipantau?', j: 'Kemajuan SKU, kehadiran, dan portofolio dicatat di SIGASI. Penegak dapat menunjukkan catatannya kepada orang tua, atau orang tua dapat menghubungi Pembina.' },
+  { t: 'Kapan dan di mana latihan berlangsung?', j: 'Latihan perindukan berlangsung di lingkungan sekolah sesuai jadwal dari Pembina. Jadwal khusus, seperti Pesta Siaga dan perkemahan, diumumkan di bagian Agenda.' },
+  { t: 'Siapa yang menjadi anggota?', j: 'Pramuka Siaga adalah anak sekolah dasar, umumnya kelas 1 sampai 6. Pendaftaran dan pembagian barung diurus Pembina bersama Admin gudep.' },
+  { t: 'Perlu seragam dan perlengkapan apa?', j: 'Seragam Pramuka Siaga dan perlengkapan dasar. Daftar lengkapnya diberikan Pembina pada pertemuan pertama.' },
+  { t: 'Apakah ada iuran atau tabungan?', j: 'Ada iuran dan kebiasaan menabung. Uang tabungan tetap di buku anak; Pembina hanya memeriksa dan mencatatnya. Nominal dan aturannya disampaikan Pembina.' },
+  { t: 'Bagaimana kemajuan anak dipantau?', j: 'Kemajuan SKU, kehadiran latihan, dan pelantikan dicatat Pembina di SIGASI. Orang tua dapat menanyakan catatannya kepada Pembina.' },
   { t: 'Bagaimana memeriksa keaslian surat atau sertifikat dari gudep?', j: 'Masukkan kode yang tercetak di dokumen pada kotak "Cek keaslian dokumen" di bawah, atau pindai kode QR-nya.' },
 ];

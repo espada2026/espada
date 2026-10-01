@@ -108,7 +108,7 @@ console.log('--- Pemasangan di halaman ---');
   }
   ok(!/useState\(FILTER_AWAL\)/.test(sumber('src/pages/Portofolio.jsx') + sumber('src/pages/Raport.jsx') + sumber('src/pages/PengujiDashboard.jsx')), 'tidak ada lagi filter Peserta/Portofolio/Raport yang bermula tanpa rombel saya');
   ok(/import useRombelSaya/.test(sumber('src/pages/SesiUjian.jsx')) && sumber('src/pages/SesiUjian.jsx').includes('Hanya rombel saya'), 'Sesi ujian: pemilih peserta dan papan memakai rombel saya');
-  ok(/<ProgresRombel penugasan=\{penugasan\}/.test(sumber('src/pages/PengujiDashboard.jsx')), 'Dashboard Pembina/Dewan memuat kartu progres per rombel');
+  ok(/<DasborSiaga /.test(sumber('src/pages/PengujiDashboard.jsx')), 'Dashboard Pembina memuat ringkasan gugus depan Siaga (kartu progres per rombel Penegak diganti Fase 7)');
   const ex = sumber('src/lib/exportLaporan.js');
   ok(ex.includes('filter.rombel?.length'), 'ekspor Excel menyebut "rombel saya" pada keterangan filter');
   const ap = sumber('src/hooks/useRombelSaya.js');
