@@ -78,3 +78,21 @@ create index tkk_pengajuan_tkk_idx on public.tkk_pengajuan (tkk_id);
 create index tkk_pengajuan_capaian_idx on public.tkk_pengajuan (capaian_id);
 create index tkk_pengajuan_penguji1_idx on public.tkk_pengajuan (penguji1_id);
 -- ===== akhir tabel tkk pengajuan =====
+
+-- ===== TKK Siaga (Pramuka Siaga, Fase 5): tabel =====
+-- TKK anak Siaga (SK Kwarnas 134/1976 dan 132/1979): SATU tingkat saja (tanpa Purwa/Madya/Utama), tanpa bukti melatih, diuji Pembina (satu nama penguji) dan dicatat
+-- Pembina atau Admin; dikenakan sesudah anak menyelesaikan SKU Siaga Bantu. Satu baris per (anak, TKK); mencatat ulang = koreksi. Baca pemilik dan Pembina/Admin (RLS); tulis hanya fungsi.
+create table public.tkk_siaga (
+  id bigint generated always as identity primary key,
+  peserta_id uuid not null references public.profiles(id) on delete cascade,
+  tkk_id text not null references public.tkk_katalog(id),
+  tanggal date not null check (tanggal >= date '2015-01-01'),
+  penguji text not null check (char_length(btrim(penguji)) between 1 and 80),
+  bukti_url text not null default '' check (bukti_url = '' or (bukti_url ~* '^https?://' and char_length(bukti_url) <= 500)),
+  catatan text not null default '' check (char_length(catatan) <= 200),
+  dicatat_oleh uuid references public.profiles(id) on delete set null,
+  dicatat_pada timestamptz not null default now(),
+  constraint tkk_siaga_satu_per_tkk unique (peserta_id, tkk_id)
+);
+create index if not exists tkk_siaga_tkk_idx on public.tkk_siaga (tkk_id);
+-- ===== akhir tabel tkk siaga =====

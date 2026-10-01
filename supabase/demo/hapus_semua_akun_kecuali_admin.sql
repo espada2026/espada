@@ -70,7 +70,7 @@ declare
     'sku_progress', 'sku_riwayat', 'absensi_hadir', 'iuran', 'iuran_log', 'asisten_iuran', 'tabungan_cek', 'penugasan_rombel', 'penugasan_peserta',
     'portofolio', 'portofolio_jurnal', 'raport', 'sku_penilaian', 'sertifikat_tingkat', 'garuda_berkas_token', 'sesi_ujian_peserta',
     'notifikasi', 'login_gagal',
-    'sku_pra_uji', 'bina_damping', 'pinsa_tugas', 'pelantikan', 'saka_anggota', 'tkk_capaian', 'tkk_krida', 'tkk_pengajuan', 'spg_penetapan',
+    'sku_pra_uji', 'bina_damping', 'pinsa_tugas', 'pelantikan', 'saka_anggota', 'tkk_capaian', 'tkk_krida', 'tkk_siaga', 'tkk_pengajuan', 'spg_penetapan',
     'tanggal_lahir', 'penegak_isian', 'portofolio_snapshot'];
   -- Tabel opsional (dikosongkan menurut pilihan di atas) dan yang dipertahankan; dipakai pula oleh Pengaman 5.
   v_tabel_kegiatan text[] := array['kegiatan_usulan', 'agenda', 'sesi_ujian', 'sesi_ujian_butir', 'absensi_sesi', 'iuran_kas', 'sidang_dk', 'sidang_urut',

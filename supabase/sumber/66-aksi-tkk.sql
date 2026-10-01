@@ -273,3 +273,52 @@ end $$;
 create trigger notif_tkk_pengajuan_baru after insert on public.tkk_pengajuan for each row execute function sigarda.notif_tkk_pengajuan();
 create trigger notif_tkk_pengajuan_tinjau after update of status on public.tkk_pengajuan for each row execute function sigarda.notif_tkk_pengajuan();
 -- ===== akhir aksi tkk pengajuan =====
+
+-- ===== TKK Siaga (Pramuka Siaga, Fase 5): aksi =====
+-- Pembina atau Admin mencatat bahwa seorang anak Siaga aktif lulus satu TKK (satu tingkat saja). Syarat: anggota Siaga (kelas SD atau tanpa akun), SKU Siaga Bantu sudah selesai
+-- (SK 134/1976: TKK dapat dikenakan sesudah Siaga Bantu), TKK dari 84 SKK SK 132/1979 (semuanya punya syarat golongan Siaga; SKK tambahan sesudahnya tidak dipakai) dan seagama
+-- bila khusus satu agama, tanggal bukan masa depan. Mencatat ulang TKK yang sama = koreksi. Aturan isian dicerminkan src/lib/tkkSiagaLogic.js (periksaTkkSiaga) dan dibandingkan
+-- langsung dengan fungsi ini oleh uji/tkk-siaga-klien.mjs.
+create function public.sg_tkk_siaga_catat(
+  p_peserta_id uuid, p_tkk_id text, p_tanggal date, p_penguji text, p_bukti_url text default '', p_catatan text default ''
+) returns bigint language plpgsql security definer set search_path = public as
+$$
+declare
+  v_p public.profiles; v_t public.tkk_katalog; v_peng text := sigarda.rapikan(p_penguji); v_url text := btrim(coalesce(p_bukti_url, '')); v_cat text := sigarda.rapikan(p_catatan); v_id bigint;
+begin
+  perform sigarda.wajib_aktif();
+  if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat mencatat TKK.'; end if;
+  select * into v_p from public.profiles where id = p_peserta_id and role = 'peserta';
+  if not found then raise exception 'Pilih anggota Siaga.'; end if;
+  if not (v_p.tanpa_akun or sigarda.kelas_siaga(v_p.kelas)) then raise exception 'TKK Siaga hanya dicatat untuk anggota Siaga.'; end if;
+  if v_p.status <> 'aktif' then raise exception '% tidak aktif; TKK hanya dicatat untuk anggota aktif.', v_p.nama; end if;
+  if not sigarda.tingkat_selesai(p_peserta_id, 'Bantu') then raise exception '% belum menyelesaikan SKU Bantu; TKK dapat dikenakan sesudah Siaga Bantu.', v_p.nama; end if;
+  select * into v_t from public.tkk_katalog where id = p_tkk_id;
+  if not found then raise exception 'TKK tidak dikenal.'; end if;
+  if v_t.sumber <> 'skk-132-1979' then raise exception 'TKK % belum dipakai untuk golongan Siaga.', v_t.nama; end if;
+  if v_t.agama is not null and v_t.agama is distinct from v_p.agama then raise exception 'TKK % khusus penganut agama %.', v_t.nama, v_t.agama; end if;
+  if p_tanggal is null then raise exception 'Tanggal lulus wajib diisi.'; end if;
+  if p_tanggal < date '2015-01-01' or p_tanggal > sigarda.hari_ini() then raise exception 'Tanggal lulus harus antara 1 Januari 2015 dan hari ini.'; end if;
+  if char_length(v_peng) not between 1 and 80 or v_peng ~ '[[:cntrl:]<>]' then raise exception 'Isi nama penguji (maksimal 80 karakter, tanpa tanda < atau >).'; end if;
+  if v_url <> '' and (v_url !~* '^https?://' or char_length(v_url) > 500 or v_url ~ '[[:cntrl:][:space:]<>]') then raise exception 'Tautan bukti harus berawalan http:// atau https:// (maksimal 500 karakter, tanpa spasi).'; end if;
+  if char_length(v_cat) > 200 or v_cat ~ '[[:cntrl:]<>]' then raise exception 'Catatan maksimal 200 karakter, tanpa tanda < atau >.'; end if;
+  insert into public.tkk_siaga (peserta_id, tkk_id, tanggal, penguji, bukti_url, catatan, dicatat_oleh, dicatat_pada)
+  values (p_peserta_id, p_tkk_id, p_tanggal, v_peng, v_url, v_cat, auth.uid(), now())
+  on conflict (peserta_id, tkk_id) do update
+    set tanggal = excluded.tanggal, penguji = excluded.penguji, bukti_url = excluded.bukti_url, catatan = excluded.catatan, dicatat_oleh = excluded.dicatat_oleh, dicatat_pada = excluded.dicatat_pada
+  returning id into v_id;
+  return v_id;
+end $$;
+
+create function public.sg_tkk_siaga_hapus(p_id bigint) returns void language plpgsql security definer set search_path = public as
+$$
+declare v public.tkk_siaga;
+begin
+  perform sigarda.wajib_aktif();
+  if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat menghapus catatan TKK.'; end if;
+  select * into v from public.tkk_siaga where id = p_id;
+  if not found then raise exception 'Catatan TKK tidak ditemukan.'; end if;
+  if exists (select 1 from public.profiles where id = v.peserta_id and status <> 'aktif') then raise exception 'Anggota nonaktif atau alumni tidak dapat diubah.'; end if;
+  delete from public.tkk_siaga where id = p_id;
+end $$;
+-- ===== akhir aksi tkk siaga =====

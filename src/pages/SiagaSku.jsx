@@ -10,6 +10,7 @@ import { anggotaAktif, statusAnggota } from '../lib/naikKelasLogic';
 import { labelJenisKelamin } from '../lib/jenisKelaminLogic';
 import SkuChecklist from '../components/SkuChecklist';
 import PanelLatihanTabungan from '../components/PanelLatihanTabungan';
+import PanelTkkSiaga from '../components/PanelTkkSiaga';
 import TingkatTabs from '../components/TingkatTabs';
 import UjiModal from '../components/UjiModal';
 import SumberPeraturan from '../components/SumberPeraturan';
@@ -105,6 +106,7 @@ export default function SiagaSku({ pesertaId, onKembali }) {
 
       <PanelLatihanTabungan peserta={peserta} tingkat={tingkat} progressAnak={progress[peserta.id]} dapatMencatat={pembinaAtauAdmin(user) && aktif} />
       <SkuChecklist tingkat={tingkat} peserta={peserta} renderAksi={renderAksi} />
+      <div className="mt-5"><PanelTkkSiaga peserta={peserta} dapatMencatat={pembinaAtauAdmin(user) && aktif} /></div>
       {uji && <UjiModal pesertaId={peserta.id} poin={uji.poin} onTutup={() => setUji(null)} />}
     </div>
   );

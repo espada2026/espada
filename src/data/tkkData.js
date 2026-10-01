@@ -68,6 +68,12 @@ export const cariTkk = (id) => INDEKS_TKK[id] ?? null;
 export const tkkUntukPenegak = (agama) => KATALOG_TKK.filter((t) => t.golongan === 'penegak' && (!t.agama || t.agama === agama));
 
 /**
+ * TKK yang boleh dikenakan pada anak Siaga beragama `agama` (Fase 5 Pramuka Siaga): 84 SKK SK 132/1979 (semuanya punya syarat golongan Siaga), tanpa SKK tambahan
+ * sesudahnya; yang khusus satu agama hanya untuk agama itu. SATU tingkat saja. Cermin `sg_tkk_siaga_catat` (dibandingkan langsung di uji/tkk-siaga-klien.mjs).
+ */
+export const tkkUntukSiaga = (agama) => KATALOG_TKK.filter((t) => t.sumber === S && (!t.agama || t.agama === agama));
+
+/**
  * Ambang kesiapan Garuda (standar Kwarcab Purbalingga 2026 dan Kwarran: MINIMAL dan boleh dilampaui; Admin/Pembina dapat mengubahnya di menu TKK, disimpan
  * pada pengaturan 'tkk.ambang'): `total` TKK berbeda (tingkat tertinggi tiap TKK), sepuluh TKK `utamaWajib` harus berTingkat Utama, dan `madya` TKK
  * bertingkat Madya DI LUAR yang Utama (TKK bertingkat lebih tinggi ikut dihitung untuk tingkat di bawahnya); sisanya Purwa sampai `total`.

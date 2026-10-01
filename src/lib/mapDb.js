@@ -302,6 +302,11 @@ export const susunAgenda = (baris = []) =>
 export const susunTabungan = (baris = []) =>
   baris.map((r) => ({ tanggal: tgl(r.tanggal), jumlah: Number(r.jumlah), catatan: r.catatan ?? '' })).sort((a, b) => b.tanggal.localeCompare(a.tanggal));
 
+/** Baris tkk_siaga -> [{ id, pesertaId, tkkId, tanggal, penguji, buktiUrl, catatan }], tanggal terbaru dulu. */
+export const susunTkkSiaga = (baris = []) =>
+  baris.map((r) => ({ id: Number(r.id), pesertaId: r.peserta_id, tkkId: r.tkk_id, tanggal: tgl(r.tanggal), penguji: r.penguji, buktiUrl: r.bukti_url ?? '', catatan: r.catatan ?? '' }))
+    .sort((a, b) => b.tanggal.localeCompare(a.tanggal) || a.id - b.id);
+
 /** Baris pelantikan -> [{ id, pesertaId, tingkat ('bantara'|'laksana'), tanggal, tempat, agendaId, catatan, dicatatOleh, dicatatPada }], tanggal terbaru dulu. */
 export const susunPelantikan = (baris = []) =>
   baris.map((r) => ({
