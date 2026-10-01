@@ -12,7 +12,7 @@ import PilihNominal from './PilihNominal';
  * Iuran susulan dihitung setara dengan iuran rutin, tetapi panel sengaja mendorong beriuran setiap Jumat agar "rutin" tetap bermakna.
  */
 export default function PanelIuranSku({ ringkas, galat, pesertaId, tanggalUji, tingkat }) {
-  const { dewanAmbalan, catatIuranSusulan } = useApp();
+  const { pengelolaIuran, catatIuranSusulan } = useApp();
   const [nominal, setNominal] = useState(null);       // nominal per pertemuan (null = ikuti iuran standar)
   const [pertemuan, setPertemuan] = useState(null);   // jumlah pertemuan (null = ikuti rekomendasi)
   const [proses, setProses] = useState(false);
@@ -71,7 +71,7 @@ export default function PanelIuranSku({ ringkas, galat, pesertaId, tanggalUji, t
       {r.pertemuan > 0 && r.kurang > 0 && (
         <div className="mt-3 border-t border-amber-200 pt-2.5">
           <p className="text-xs font-semibold text-pramuka-800">Iuran susulan (menebus Jumat yang kosong, terlama dulu)</p>
-          {dewanAmbalan ? (
+          {pengelolaIuran ? (
             <>
               <p className="mt-1 text-xs text-pramuka-700">
                 Rekomendasi: <b>{rek.pertemuan} pertemuan x {rupiah(rek.nominal)} = {rupiah(rek.total)}</b> (cukup untuk mencapai batas rutin). Jumat kosong saat ini: {jmlKosong}.

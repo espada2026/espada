@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { jumatBerdekatan, jumatTerakhir, tanggalValid, adalahJumat } from '../lib/absensiLogic';
+import { geserHari, tanggalValid } from '../lib/absensiLogic';
 import { NOMINAL_TOMBOL, rupiah } from '../lib/iuranLogic';
 import { fmtHariTanggal, hariIni } from '../lib/format';
 import FilterBar, { FILTER_AWAL, terapkanFilter } from './FilterBar';
@@ -8,17 +8,17 @@ import PilihNominal from './PilihNominal';
 import { Avatar, BadgeAbsen, Icon, Kosong } from './ui';
 
 /**
- * Lembar catat iuran satu Jumat untuk Dewan Ambalan dan asisten bendahara. Daftar Penegak berasal dari fungsi server (asisten tidak
+ * Lembar catat iuran satu hari latihan untuk Pembina, Dewan Ambalan, dan asisten bendahara. Daftar Penegak berasal dari fungsi server (asisten tidak
  * boleh membaca profil Penegak lain lewat tabel) dan sudah memuat status absensi serta iuran hari itu. Iuran sendiri tidak muncul.
  */
 export default function LembarIuran() {
-  const { absensi, aturIuran, aturIuranBanyak, bacaIuran, versiIuran, dewanAmbalan } = useApp();
-  const [tanggal, setTanggal] = useState(() => jumatTerakhir(hariIni()));
+  const { absensi, aturIuran, aturIuranBanyak, bacaIuran, versiIuran, pengelolaIuran } = useApp();
+  const [tanggal, setTanggal] = useState(() => hariIni());
   const [filter, setFilter] = useState(FILTER_AWAL);
   const [nominalMassal, setNominalMassal] = useState(1000);
   const [s, setS] = useState({ untuk: null, daftar: [], galat: '' });
 
-  const valid = tanggalValid(tanggal) && adalahJumat(tanggal);
+  const valid = tanggalValid(tanggal);
   const belumTiba = valid && tanggal > hariIni();
   const adaSesi = valid && !belumTiba && !!absensi.sesi[tanggal];
 
@@ -42,24 +42,24 @@ export default function LembarIuran() {
   return (
     <div>
       <section className="panel mb-4 p-4">
-        <label htmlFor="tgl-iuran" className="label">Tanggal latihan (Jumat)</label>
+        <label htmlFor="tgl-iuran" className="label">Tanggal latihan</label>
         <div className="flex flex-wrap items-center gap-2">
           <input id="tgl-iuran" type="date" className="input w-auto" value={tanggal} min="2000-01-01" max="2100-12-31" onChange={(e) => setTanggal(e.target.value)} />
-          <button className="btn btn-outline btn-sm" disabled={!tanggalValid(tanggal)} onClick={() => setTanggal(jumatBerdekatan(tanggal, -1))}>
-            <Icon nama="kembali" className="h-3.5 w-3.5" /> Jumat sebelumnya
+          <button className="btn btn-outline btn-sm" disabled={!tanggalValid(tanggal)} onClick={() => setTanggal(geserHari(tanggal, -7))}>
+            <Icon nama="kembali" className="h-3.5 w-3.5" /> Pekan sebelumnya
           </button>
-          <button className="btn btn-outline btn-sm" disabled={!tanggalValid(tanggal) || jumatBerdekatan(tanggal, 1) > hariIni()} onClick={() => setTanggal(jumatBerdekatan(tanggal, 1))}>
-            Jumat berikutnya <Icon nama="panahKanan" className="h-3.5 w-3.5" />
+          <button className="btn btn-outline btn-sm" disabled={!tanggalValid(tanggal) || geserHari(tanggal, 7) > hariIni()} onClick={() => setTanggal(geserHari(tanggal, 7))}>
+            Pekan berikutnya <Icon nama="panahKanan" className="h-3.5 w-3.5" />
           </button>
-          <button className="btn btn-outline btn-sm" onClick={() => setTanggal(jumatTerakhir(hariIni()))}>Jumat terakhir</button>
+          <button className="btn btn-outline btn-sm" onClick={() => setTanggal(hariIni())}>Hari ini</button>
         </div>
         {valid && <p className="mt-2 text-sm font-semibold text-pramuka-800">{fmtHariTanggal(tanggal)}</p>}
       </section>
 
-      {!valid && <Kosong judul="Pilih hari Jumat" teks="Iuran dicatat pada sesi latihan Jumat." />}
+      {!valid && <Kosong judul="Pilih tanggal latihan" teks="Iuran dicatat pada sesi latihan." />}
       {valid && belumTiba && <Kosong judul="Tanggal ini belum tiba" teks="Iuran hanya dapat dicatat pada hari latihan atau sesudahnya." />}
       {valid && !belumTiba && !adaSesi && (
-        <Kosong judul="Sesi absensi Jumat ini belum dibuat" teks="Iuran dicatat pada sesi latihan. Minta Dewan Ambalan membuka absensi Jumat ini di menu Absensi, lalu kembali ke sini." />
+        <Kosong judul="Sesi absensi tanggal ini belum dibuat" teks="Iuran dicatat pada sesi latihan. Buka absensi tanggal ini lebih dulu di menu Absensi, lalu kembali ke sini." />
       )}
       {adaSesi && !siap && <div role="status" aria-live="polite"><Kosong judul="Memuat daftar..." teks="Mengambil daftar Penegak dan iuran hari ini." /></div>}
       {adaSesi && siap && s.galat && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-900 ring-1 ring-red-300">{s.galat}</p>}
@@ -88,7 +88,7 @@ export default function LembarIuran() {
           </div>
 
           {tersaring.length === 0 ? (
-            <Kosong judul="Tidak ada Penegak" teks="Ubah kata kunci, sangga, atau kelas pada filter." />
+            <Kosong judul="Tidak ada anggota" teks="Ubah kata kunci, sangga, atau kelas pada filter." />
           ) : (
             <ul className="panel divide-y divide-pramuka-100">
               {tersaring.map((d) => (
@@ -113,7 +113,7 @@ export default function LembarIuran() {
               ))}
             </ul>
           )}
-          {!dewanAmbalan && <p className="mt-3 text-xs text-pramuka-500">Anda mencatat sebagai asisten bendahara. Iuran Anda sendiri dicatat oleh Dewan Ambalan.</p>}
+          {!pengelolaIuran && <p className="mt-3 text-xs text-pramuka-500">Anda mencatat sebagai asisten bendahara. Iuran Anda sendiri dicatat oleh Dewan Ambalan.</p>}
         </>
       )}
     </div>

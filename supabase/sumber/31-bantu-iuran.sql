@@ -17,7 +17,7 @@ begin
 end $$;
 
 create function sigarda.pencatat_iuran() returns boolean language plpgsql stable security definer set search_path = public as
-$$ begin return sigarda.dewan() or sigarda.asisten_iuran(); end $$;
+$$ begin return sigarda.dewan() or sigarda.pembina_saja() or sigarda.asisten_iuran(); end $$;   -- Pembina ikut (Siaga tidak punya Dewan Ambalan; Pembina yang mencatat)
 -- ---- akhir bantu iuran ----
 
 -- ---- Iuran bumbung: perhitungan untuk penilaian SKU (harus sama dengan src/lib/iuranLogic.js; dijaga oleh pengujian) ----

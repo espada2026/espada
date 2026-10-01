@@ -7,7 +7,7 @@ grant select on public.profiles, public.sku_butir, public.sku_unit, public.pf_it
   public.materi, public.pengaturan, public.sidang_dk, public.sidang_urut, public.raport,
   public.instrumen, public.instrumen_kriteria, public.instrumen_penguji, public.instrumen_panduan, public.sku_penilaian,
   public.sesi_ujian, public.sesi_ujian_butir, public.sesi_ujian_peserta,
-  public.iuran, public.iuran_log, public.iuran_kas, public.asisten_iuran,
+  public.iuran, public.iuran_log, public.iuran_kas, public.asisten_iuran, public.tabungan_cek,
   public.penugasan_rombel, public.penugasan_log, public.guru_agama, public.dokumen_terbit, public.dokumen_urut, public.notifikasi,
   public.naik_kelas_batch, public.naik_kelas_log, public.penugasan_peserta, public.kepengurusan_log, public.agenda, public.kegiatan_usulan, public.pengukuhan_dewan, public.sku_pra_uji, public.pelantikan, public.saka_anggota, public.tkk_katalog, public.tkk_capaian, public.tkk_krida, public.tkk_pengajuan, public.spg_penetapan, public.tanggal_lahir, public.tim_penilai, public.tim_penilai_anggota, public.garuda_tahap, public.penegak_isian, public.dokumen_templat, public.portofolio_snapshot, public.sfh_catatan,
   public.beranda_berita, public.beranda_prestasi, public.beranda_galeri, public.beranda_sosial, public.beranda_faq to authenticated;
@@ -38,6 +38,7 @@ grant execute on function
   public.sg_iuran_set(date, uuid, int), public.sg_iuran_set_banyak(date, uuid[], int, boolean), public.sg_iuran_lembar(date),
   public.sg_iuran_agregat(date, date), public.sg_iuran_kas_simpan(date, int, text), public.sg_asisten_iuran_atur(uuid, boolean),
   public.sg_iuran_pengaturan(), public.sg_iuran_pengaturan_simpan(jsonb), public.sg_iuran_ringkas(uuid, date), public.sg_iuran_susulan(uuid, date, int, int),
+  public.sg_tabungan_catat(uuid, date, int, text), public.sg_tabungan_hapus(uuid, date),
   public.sg_penugasan_atur(text, uuid, text[], boolean), public.sg_penugasan_salin(text, text), public.sg_rombel_perbarui(jsonb),
   public.sg_guru_agama_simpan(bigint, text, text, text), public.sg_guru_agama_hapus(bigint),
   public.sg_penguji_pilihan(text, uuid), public.sg_sku_alihkan(uuid, text, uuid, text),

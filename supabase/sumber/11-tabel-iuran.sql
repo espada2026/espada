@@ -38,5 +38,19 @@ create table public.asisten_iuran (
   ditunjuk_oleh uuid references public.profiles(id) on delete set null,
   ditunjuk_pada timestamptz not null default now()
 );
--- ===== akhir tabel iuran =====
+-- ===== Tabungan Siaga (Fase 3): tabel =====
+-- Tabungan Siaga (Pramuka Siaga, Fase 3; SK Kwarnas 119/2011 butir 4 tiap tingkat: punya buku tabungan dan menabung teratur beberapa minggu; kebiasaan menabung SK 186/1979).
+-- Uang tabungan milik anak dan disimpan di bukunya sendiri, BUKAN di aplikasi: satu baris = pada tanggal itu Pembina memeriksa buku tabungan dan melihat setoran minggu itu.
+-- Tidak ada baris = tidak diperiksa. Minggu menabung dihitung aplikasi dari baris-baris ini (src/lib/tabunganLogic.js).
+create table public.tabungan_cek (
+  peserta_id uuid not null references public.profiles(id) on delete cascade,
+  tanggal date not null check (tanggal >= date '2015-01-01'),
+  jumlah int not null check (jumlah between 1 and 100000000),
+  catatan text not null default '' check (char_length(catatan) <= 200),
+  oleh uuid references public.profiles(id) on delete set null,
+  waktu timestamptz not null default now(),
+  primary key (peserta_id, tanggal)
+);
+-- ===== akhir tabel tabungan =====
 
+-- ===== akhir tabel iuran =====

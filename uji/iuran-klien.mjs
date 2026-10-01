@@ -83,7 +83,7 @@ r = await K.dewan.a.aturIuran(T, ahmad, null); ok(r.ok && (await q(`select count
 await K.dewan.a.aturIuran(T, ahmad, 1500);
 const ids = (await q(`select id from public.profiles where role = 'peserta' order by username limit 5`)).map((x) => x.id);
 r = await K.dewan.a.aturIuranBanyak(T, ids, 1000, true); ok(r.ok && r.data === (ids.includes(ahmad) ? 4 : 5), 'aturIuranBanyak (hanya kosong) mengembalikan jumlah baris baru: ' + r.data);
-r = await K.pembina.a.aturIuran(T, ahmad, 1); ok(!r.ok && /Dewan Ambalan atau asisten/.test(r.pesan), 'Pembina ditolak lewat api: ' + r.pesan);
+r = await K.admin.a.aturIuran(T, ahmad, 1); ok(!r.ok && /Dewan Ambalan atau asisten/.test(r.pesan), 'Admin ditolak lewat api: ' + r.pesan);
 r = await K.dewan.a.muatIuran(T, T); ok(r.ok && Object.keys(r.data[T]).length === (ids.includes(ahmad) ? 5 : 6) && r.data[T][ahmad].jumlah === 1500, 'Dewan memuat iuran satu tanggal (bentuk { tanggal: { peserta: {...} } })');
 r = await K.ahmad.a.muatIuran('2000-01-01', '2100-01-01'); ok(r.ok && Object.values(r.data).every((per) => Object.keys(per).length === 1 && ahmad in per), 'Penegak hanya memuat iuran miliknya lewat api');
 r = await K.dewan.a.muatIuran('2000-01-01', '2000-12-31'); ok(r.ok && Object.keys(r.data).length === 0, 'rentang tanpa iuran: objek kosong');

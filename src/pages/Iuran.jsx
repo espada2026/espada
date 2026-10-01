@@ -31,7 +31,7 @@ export default function Iuran() {
     <div className="animasi-naik">
       <div className="mb-4">
         <h1 className="text-2xl font-bold">Iuran bumbung kepramukaan</h1>
-        <p className="text-sm text-pramuka-600">Iuran rutin latihan Jumat, dicatat oleh Dewan Ambalan atau asisten bendahara.</p>
+        <p className="text-sm text-pramuka-600">Iuran rutin latihan, dicatat oleh Pembina, Dewan Ambalan, atau asisten bendahara.</p>
         <SumberPeraturan
           className="mt-1"
           rujukan={[

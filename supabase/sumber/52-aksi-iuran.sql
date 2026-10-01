@@ -102,7 +102,7 @@ $$
 declare v_cat text := btrim(coalesce(p_catatan, ''));
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.dewan() then raise exception 'Hanya Dewan Ambalan yang dapat menutup kas.'; end if;
+  if not (sigarda.dewan() or sigarda.pembina_saja()) then raise exception 'Hanya Dewan Ambalan atau Pembina yang dapat menutup kas.'; end if;
   if not exists (select 1 from public.absensi_sesi where tanggal = p_tanggal) then raise exception 'Sesi absensi belum dibuat.'; end if;
   if p_total is null then
     delete from public.iuran_kas where tanggal = p_tanggal;
@@ -203,7 +203,7 @@ $$
 declare h record; v_t date; v_n int := 0;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.dewan() then raise exception 'Hanya Dewan Ambalan yang dapat mencatat iuran susulan.'; end if;
+  if not (sigarda.dewan() or sigarda.pembina_saja()) then raise exception 'Hanya Dewan Ambalan atau Pembina yang dapat mencatat iuran susulan.'; end if;
   if p_tanggal is null then raise exception 'Tanggal uji wajib diisi.'; end if;
   if p_jumlah is null or p_jumlah < 1 or p_jumlah > 1000000 then raise exception 'Jumlah iuran harus antara Rp 1 dan Rp 1.000.000.'; end if;
   if p_pertemuan is null or p_pertemuan < 1 or p_pertemuan > 60 then raise exception 'Jumlah pertemuan susulan harus antara 1 dan 60.'; end if;
@@ -222,5 +222,37 @@ begin
   if v_n = 0 then raise exception 'Tidak ada pertemuan tanpa iuran yang dapat ditebus pada semester ini.'; end if;
   return v_n;
 end $$;
+-- ===== Tabungan Siaga (Fase 3): aksi =====
+-- Pembina (atau Admin) mencatat bahwa pada p_tanggal buku tabungan seorang anak Siaga diperiksa dan ada setoran sebesar p_jumlah (rupiah) pada minggu itu.
+-- Mencatat ulang tanggal yang sama = koreksi. Hanya anggota Siaga (kelas SD, dengan atau tanpa akun) yang aktif; uang tetap di buku anak, aplikasi hanya mencatat pemeriksaannya.
+-- Aturan isian dicerminkan src/lib/tabunganLogic.js (periksaTabungan) dan dibandingkan langsung dengan fungsi ini oleh uji/tabungan-klien.mjs.
+create function public.sg_tabungan_catat(p_peserta_id uuid, p_tanggal date, p_jumlah int, p_catatan text default null) returns void
+language plpgsql security definer set search_path = public as
+$$
+declare v_p record; v_cat text := btrim(coalesce(p_catatan, ''));
+begin
+  perform sigarda.wajib_aktif();
+  if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina atau Admin Gudep yang dapat mencatat tabungan.'; end if;
+  select id, nama, kelas, status, tanpa_akun into v_p from public.profiles where id = p_peserta_id and role = 'peserta';
+  if v_p.id is null then raise exception 'Anggota tidak ditemukan.'; end if;
+  if not (v_p.tanpa_akun or sigarda.kelas_siaga(v_p.kelas)) then raise exception 'Tabungan hanya dicatat untuk anggota Siaga.'; end if;
+  if p_tanggal is null then raise exception 'Tanggal pemeriksaan wajib diisi.'; end if;
+  if p_tanggal < date '2015-01-01' or p_tanggal > sigarda.hari_ini() then raise exception 'Tanggal pemeriksaan harus antara 1 Januari 2015 dan hari ini.'; end if;
+  if p_jumlah is null or p_jumlah < 1 or p_jumlah > 100000000 then raise exception 'Setoran harus antara Rp 1 dan Rp 100.000.000.'; end if;
+  if char_length(v_cat) > 200 then raise exception 'Catatan maksimal 200 karakter.'; end if;
+  insert into public.tabungan_cek (peserta_id, tanggal, jumlah, catatan, oleh) values (p_peserta_id, p_tanggal, p_jumlah, v_cat, auth.uid())
+  on conflict (peserta_id, tanggal) do update set jumlah = excluded.jumlah, catatan = excluded.catatan, oleh = excluded.oleh, waktu = now();
+end $$;
+
+create function public.sg_tabungan_hapus(p_peserta_id uuid, p_tanggal date) returns void
+language plpgsql security definer set search_path = public as
+$$
+begin
+  perform sigarda.wajib_aktif();
+  if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina atau Admin Gudep yang dapat menghapus catatan tabungan.'; end if;
+  if exists (select 1 from public.profiles where id = p_peserta_id and status <> 'aktif') then raise exception 'Anggota nonaktif atau alumni tidak dapat diubah.'; end if;
+  delete from public.tabungan_cek where peserta_id = p_peserta_id and tanggal = p_tanggal;
+end $$;
+-- ===== akhir aksi tabungan =====
 -- ===== akhir fungsi iuran =====
 

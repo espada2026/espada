@@ -34,7 +34,7 @@ const potret = async (db) => {
   };
 };
 
-const A = await baru('baru');
+const A = await baru('git:7799464'); // skema TEPAT sebelum migrasi Fase 3 (skema terbaru sudah memuat migrasi sesudahnya)
 const pa = await potret(A);
 
 console.log('--- Database berisi data: kesetaraan, data utuh, idempoten ---');

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { AMBANG_HADIR } from '../config';
 import {
-  adalahJumat, jumatBerdekatan, jumatTerakhir, KODE_STATUS, namaBulan, namaHari, periodeDari, PERIODE,
+  geserHari, KODE_STATUS, namaBulan, namaHari, periodeDari, PERIODE,
   rekapAbsensi, ringkasAbsensi, sesiPeriode, STATUS_ABSEN, tahunAjaranDari, tanggalValid,
 } from '../lib/absensiLogic';
 import { unduhAbsensiXlsx } from '../lib/exportLaporan';
@@ -42,8 +42,8 @@ export function AbsensiPeserta() {
     <div className="animasi-naik">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Absensi latihan Jumat</h1>
-          <p className="text-sm text-pramuka-600">Kehadiran latihan rutin ambalan setiap hari Jumat, dicatat oleh pengurus.</p>
+          <h1 className="text-2xl font-bold">Absensi latihan</h1>
+          <p className="text-sm text-pramuka-600">Kehadiran latihan rutin, dicatat oleh Pembina (hari latihan bebas).</p>
           <SumberPeraturan
             className="mt-1"
             rujukan={[
@@ -77,7 +77,7 @@ export function AbsensiPeserta() {
 
       <h2 className="mb-2 text-lg font-bold">Riwayat pertemuan ({PERIODE[per.periode]} {per.ta})</h2>
       {sesi.length === 0 ? (
-        <Kosong judul="Belum ada pertemuan tercatat" teks="Pengurus akan mencatat absensi setiap latihan Jumat." />
+        <Kosong judul="Belum ada pertemuan tercatat" teks="Pengurus akan mencatat absensi setiap latihan." />
       ) : (
         <ul className="panel divide-y divide-pramuka-100">
           {[...sesi].reverse().map((s) => (
@@ -105,22 +105,20 @@ function Kotak({ label, nilai }) {
 }
 
 function InputAbsensi() {
-  const { daftarPeserta, absensi, buatSesiAbsen, setStatusAbsen, tandaiBanyakAbsen, hapusSesiAbsen, dewanAmbalan, aturIuran, aturIuranBanyak } = useApp();
+  const { daftarPeserta, absensi, buatSesiAbsen, setStatusAbsen, tandaiBanyakAbsen, hapusSesiAbsen, pengelolaIuran, aturIuran, aturIuranBanyak } = useApp();
   const [nominalMassal, setNominalMassal] = useState(1000);
-  const [tanggal, setTanggal] = useState(() => jumatTerakhir(hariIni()));
+  const [tanggal, setTanggal] = useState(() => hariIni());
   const [filter, setFilter] = useState(FILTER_AWAL);
 
   const valid = tanggalValid(tanggal);
-  const jumat = valid && adalahJumat(tanggal);
   const belumTiba = valid && tanggal > hariIni();
-  const bisaCatat = jumat && !belumTiba;
+  const bisaCatat = valid && !belumTiba;
 
   // Tahun ajaran dan semester dihitung dari tanggal, sehingga berlaku untuk tahun berapa pun
   const ta = valid ? tahunAjaranDari(tanggal) : '';
   const periode = valid ? periodeDari(tanggal) : '';
   const abs = useAbsensiPeriode(ta, periode); // kehadiran semester dari tanggal terpilih (tahun lama dimuat saat dipilih)
-  const tanggalLain = valid && !jumat ? { sebelum: jumatBerdekatan(tanggal, -1), sesudah: jumatBerdekatan(tanggal, 1) } : null;
-  const jumatBerikut = valid ? jumatBerdekatan(tanggal, 1) : '';
+  const pekanBerikut = valid ? geserHari(tanggal, 7) : '';
 
   const sesiSemester = useMemo(() => (valid ? [...sesiPeriode(absensi, ta, periode)].reverse() : []), [absensi, valid, ta, periode]);
 
@@ -160,13 +158,13 @@ function InputAbsensi() {
             max="2100-12-31"
             onChange={(e) => setTanggal(e.target.value)}
           />
-          <button className="btn btn-outline btn-sm" disabled={!valid} onClick={() => setTanggal(jumatBerdekatan(tanggal, -1))}>
-            <Icon nama="kembali" className="h-3.5 w-3.5" /> Jumat sebelumnya
+          <button className="btn btn-outline btn-sm" disabled={!valid} onClick={() => setTanggal(geserHari(tanggal, -7))}>
+            <Icon nama="kembali" className="h-3.5 w-3.5" /> Pekan sebelumnya
           </button>
-          <button className="btn btn-outline btn-sm" disabled={!valid || jumatBerikut > hariIni()} onClick={() => setTanggal(jumatBerikut)}>
-            Jumat berikutnya <Icon nama="panahKanan" className="h-3.5 w-3.5" />
+          <button className="btn btn-outline btn-sm" disabled={!valid || pekanBerikut > hariIni()} onClick={() => setTanggal(pekanBerikut)}>
+            Pekan berikutnya <Icon nama="panahKanan" className="h-3.5 w-3.5" />
           </button>
-          <button className="btn btn-outline btn-sm" onClick={() => setTanggal(jumatTerakhir(hariIni()))}>Jumat terakhir</button>
+          <button className="btn btn-outline btn-sm" onClick={() => setTanggal(hariIni())}>Hari ini</button>
         </div>
 
         {valid ? (
@@ -204,24 +202,7 @@ function InputAbsensi() {
         )}
       </section>
 
-      {tanggalLain && (
-        <div className="jahitan mb-4 rounded-lg bg-white p-4">
-          <p className="font-semibold text-pramuka-900">{fmtHariTanggal(tanggal)} bukan hari Jumat</p>
-          <p className="text-sm text-pramuka-600">Latihan rutin dicatat pada hari Jumat. Pilih Jumat terdekat:</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button className="btn btn-primary btn-sm" onClick={() => setTanggal(tanggalLain.sebelum)}>
-              {fmtHariTanggal(tanggalLain.sebelum)}
-            </button>
-            {tanggalLain.sesudah <= hariIni() && (
-              <button className="btn btn-outline btn-sm" onClick={() => setTanggal(tanggalLain.sesudah)}>
-                {fmtHariTanggal(tanggalLain.sesudah)}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {belumTiba && jumat && (
+      {belumTiba && (
         <Kosong judul="Tanggal ini belum tiba" teks="Absensi hanya dapat dicatat pada hari latihan atau sesudahnya." />
       )}
 
@@ -270,7 +251,7 @@ function InputAbsensi() {
             <button className="btn btn-outline btn-sm" onClick={() => tandaiBanyakAbsen(tanggal, idTersaring, 'A')}>Tandai alpa</button>
           </div>
 
-          {dewanAmbalan && tampilIuran && (
+          {pengelolaIuran && tampilIuran && (
             <div className="no-print mb-3 flex flex-wrap items-center gap-2 text-sm">
               <span className="text-pramuka-600">Iuran bumbung untuk yang hadir dan belum berisi iuran:</span>
               <select className="input w-auto py-1" aria-label="Nominal iuran massal" value={nominalMassal} onChange={(e) => setNominalMassal(Number(e.target.value))}>
@@ -324,7 +305,7 @@ function InputAbsensi() {
                         <span className="w-full shrink-0 text-xs font-semibold text-pramuka-600 sm:w-auto sm:pt-1.5">
                           Iuran bumbung (Rp){iur.baris[u.id]?.jenis === 'susulan' ? ' - susulan' : ''}
                         </span>
-                        {dewanAmbalan ? (
+                        {pengelolaIuran ? (
                           <PilihNominal
                             label={`Iuran ${u.nama}`}
                             nilai={iur.baris[u.id]?.jumlah ?? null}
@@ -396,7 +377,7 @@ function RekapAbsensi() {
       </section>
 
       <div role="tablist" aria-label="Tampilan rekap" className="no-print mb-3 inline-flex flex-wrap rounded-lg bg-pramuka-100 p-1">
-        {[['ringkas', 'Ringkas'], ['jumat', 'Per Jumat']].map(([k, v]) => (
+        {[['ringkas', 'Ringkas'], ['jumat', 'Per pertemuan']].map(([k, v]) => (
           <button
             key={k}
             role="tab"
@@ -412,7 +393,7 @@ function RekapAbsensi() {
       {rekap.length === 0 ? (
         <Kosong judul="Tidak ada data" teks="Ubah kata kunci, sangga, kelas, atau peran pada filter." />
       ) : sesiList.length === 0 ? (
-        <Kosong judul="Belum ada pertemuan pada periode ini" teks="Rekap terisi setelah pengurus mencatat absensi latihan Jumat." />
+        <Kosong judul="Belum ada pertemuan pada periode ini" teks="Rekap terisi setelah pengurus mencatat absensi latihan." />
       ) : tampil === 'ringkas' ? (
         <div className="panel overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-sm">
@@ -507,9 +488,9 @@ export function AbsensiPengurus() {
   const [tab, setTab] = useState('rekap');
   return (
     <div className="animasi-naik">
-      <h1 className="mb-1 text-2xl font-bold">Absensi latihan Jumat</h1>
+      <h1 className="mb-1 text-2xl font-bold">Absensi latihan</h1>
       <p className="mb-4 text-sm text-pramuka-600">
-        Catat kehadiran latihan rutin setiap Jumat dan pantau rekapnya per semester atau per tahun ajaran.
+        Catat kehadiran latihan rutin dan pantau rekapnya per semester atau per tahun ajaran.
       </p>
       <div role="tablist" aria-label="Menu absensi" className="mb-4 inline-flex flex-wrap rounded-lg bg-pramuka-100 p-1">
         {[['rekap', 'Rekap', 'tabel'], ['input', 'Catat absensi', 'absensi']].map(([k, v, ikon]) => (

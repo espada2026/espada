@@ -1,5 +1,5 @@
 ﻿/**
- * LOGIKA ABSENSI LATIHAN RUTIN JUMAT (murni, tanpa React)
+ * LOGIKA ABSENSI LATIHAN RUTIN (hari latihan bebas; sebelum Fase 3 Siaga hanya Jumat) (murni, tanpa React)
  *
  *   absensi.sesi[tanggal]  = { tanggal, dibuatOleh, dibuatPada }
  *   absensi.hadir[tanggal] = { [pesertaId]: { status: 'H'|'I'|'S'|'A', waktu, oleh } }
@@ -98,7 +98,14 @@ export function gabungHadirSemester(absensi, sesiBaru, daftarKunci, hadirBaru) {
   return { sesi: sesiBaru, hadir };
 }
 
-/** Hari Jumat terakhir pada atau sebelum tanggal ini. */
+/** Tanggal ISO sesudah menggeser `hari` hari (negatif = mundur). Latihan Siaga tidak terikat hari Jumat: tombol pekan sebelumnya/berikutnya memakai ini. */
+export function geserHari(iso, hari) {
+  const d = new Date(`${iso}T00:00:00`);
+  d.setDate(d.getDate() + hari);
+  return keIso(d);
+}
+
+/** Hari Jumat terakhir pada atau sebelum tanggal ini (dipakai bagian Penegak lama). */
 export function jumatTerakhir(iso) {
   const d = new Date(`${iso}T00:00:00`);
   while (d.getDay() !== 5) d.setDate(d.getDate() - 1);

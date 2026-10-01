@@ -5,6 +5,7 @@ import { DAFTAR_TINGKAT_SIAGA } from '../data/skuSiaga';
 import { hitungProgres, prasyaratTerpenuhi } from '../lib/skuLogic';
 import { tingkatSiagaAwal } from './SiagaSku';
 import SkuChecklist from '../components/SkuChecklist';
+import PanelLatihanTabungan from '../components/PanelLatihanTabungan';
 import TingkatTabs from '../components/TingkatTabs';
 import AjukanModal from '../components/AjukanModal';
 import SumberPeraturan from '../components/SumberPeraturan';
@@ -79,6 +80,7 @@ export default function SiagaSkuSaya() {
         </p>
       )}
 
+      <PanelLatihanTabungan peserta={user} tingkat={tingkat} progressAnak={progress[user.id]} dapatMencatat={false} />
       <SkuChecklist tingkat={tingkat} peserta={user} renderAksi={renderAksi} />
       {ajukanPoin && <AjukanModal poin={ajukanPoin} onTutup={() => setAjukanPoin(null)} />}
     </div>

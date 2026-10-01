@@ -162,7 +162,7 @@ console.log('\n--- Render beranda dan SKU anak ---');
   const ctx = {
     user, akun: user, users, progress, daftarPesertaSemua: users, hanyaLihatSaya: false, batalkanAjuan: async () => {}, dokumen: [], materi: [], praUjiAktif: false,
     pastikanRiwayat: () => {}, pastikanPraUji: () => {}, praUjiPeserta: () => [], instrumen: {}, instrumenSiap: true, pastikanInstrumen: () => {}, pengaturan: {},
-    pengujiPilihan: async () => ({ ok: true, data: { penguji: [] } }), ajukan: async () => ({ ok: true }), notify: () => {},
+    absensi: { sesi: {}, hadir: {} }, semesterSiap: {}, pastikanAbsensi: async () => ({ ok: true }), api: () => ({ muatTabungan: async () => ({ ok: true, data: [] }) }), pengujiPilihan: async () => ({ ok: true, data: { penguji: [] } }), ajukan: async () => ({ ok: true }), notify: () => {},
   };
   const render = (komp) => renderToStaticMarkup(h(KonteksApp.Provider, { value: ctx }, h(komp, { setTab: () => {} }))).replace(/<!-- -->/g, '');
   let html = render(SiagaBeranda);
