@@ -33,8 +33,9 @@ export function waLink(nomor, teks = '') {
 }
 
 /** Pesan siap-kirim untuk satu entri daftar Tindak Lanjut ({ nama, jenis, hari }); nada ramah, tanpa menyebut hasil lulus/ulang. */
-export function teksWaSiap({ nama, jenis, hari }) {
+export function teksWaSiap({ nama, jenis, hari, tanpaAkun }) {
   const soal = jenis === 'sku' ? 'belum ada aktivitas SKU' : jenis === 'absensi' ? 'tidak hadir latihan tanpa keterangan' : 'iuran belum tercatat';
+  if (tanpaAkun) return `Selamat pagi Bapak/Ibu, ini dari Pembina Pramuka. Ananda ${nama} sudah ${hari} hari ${soal}. Apakah ada kendala? Kabari kami ya, supaya bisa dibantu bersama.`;
   return `Halo ${nama}, ini dari Pembina/Dewan Ambalan. Sudah ${hari} hari ${soal}. Ada kendala? Kabari kami ya, biar bisa dibantu.`;
 }
 

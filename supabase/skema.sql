@@ -452,7 +452,8 @@ create table public.agenda (
   tahun_ajaran text not null check (tahun_ajaran ~ '^[0-9]{4}/[0-9]{4}$'),
   jenis text not null check (jenis in (
     'musyawarah','naik_kelas','sidang','pelantikan_bantara','pelantikan_laksana','pelantikan_garuda','lainnya',
-    'pengembaraan','perkemahan','gelora_saka_expo','gladi_tangguh_1','gladi_tangguh_2','penempuhan_sku_laksana','ptgd','pembekalan_dewan'
+    'pengembaraan','perkemahan','gelora_saka_expo','gladi_tangguh_1','gladi_tangguh_2','penempuhan_sku_laksana','ptgd','pembekalan_dewan',
+    'pesta_siaga','persari','pertemuan_siaga','pelantikan_siaga'
   )),
   judul text not null check (char_length(btrim(judul)) between 1 and 120),
   tanggal date not null,
@@ -6304,10 +6305,10 @@ $$
     when 'sku1' then 'Belum ada pengajuan atau hasil baru sejak ' || to_char(p_mulai - 7, 'DD-MM-YYYY') || '.'
     when 'sku2' then 'Sudah beberapa hari tidak ada aktivitas SKU. Sempatkan mengajukan butir berikutnya.'
     when 'sku3' then 'Sudah lama tidak ada aktivitas SKU. Hubungi Pembina atau Dewan bila ada kendala.'
-    when 'absensi1' then 'Tidak hadir latihan Jumat lalu tanpa keterangan.'
+    when 'absensi1' then 'Tidak hadir latihan terakhir tanpa keterangan.'
     when 'absensi2' then 'Sudah 2 kali berturut-turut tidak hadir latihan tanpa keterangan.'
     when 'absensi3' then 'Sudah lama tidak hadir latihan tanpa keterangan. Hubungi Pembina atau Dewan bila ada kendala.'
-    when 'iuran1' then 'Iuran latihan Jumat lalu belum tercatat.'
+    when 'iuran1' then 'Iuran latihan terakhir belum tercatat.'
     when 'iuran2' then 'Sudah 2 kali berturut-turut iuran belum tercatat.'
     when 'iuran3' then 'Sudah lama iuran belum tercatat. Hubungi Dewan atau asisten bendahara bila ada kendala.'
   end
@@ -6320,7 +6321,18 @@ create function sigarda.eskalasi_proses() returns void language plpgsql security
 $$
 declare v_hari date := sigarda.hari_ini(); r record; v_mulai date; v_elapsed int; v_tingkat int; v_x uuid;
 begin
-  -- Anak Siaga tanpa akun (tanpa_akun) tidak diingatkan dan tidak masuk Tindak Lanjut: tangga ini dirancang untuk Penegak yang dapat dihubungi sendiri.
+  -- Anak Siaga tanpa akun (tanpa_akun) tidak punya akun untuk diingatkan: hanya satu kejadian (absensi, 2 sesi terakhir Alpa) dan hanya pada tingkat
+  -- mendesak (hari 8+) memberi tahu pengurus, tanpa notifikasi ke anak. SKU dan iuran tidak dipakai (SKU dinilai langsung Pembina; tabungan tidak = iuran).
+  for r in select id, nama from public.profiles where role = 'peserta' and status = 'aktif' and tanpa_akun loop
+    v_mulai := sigarda.eskalasi_mulai_absensi(r.id);
+    continue when v_mulai is null;
+    v_elapsed := v_hari - v_mulai;
+    continue when sigarda.eskalasi_tingkat(v_elapsed) < 3;
+    for v_x in select id from public.profiles where status = 'aktif' and (role in ('penguji','admin') or (role = 'peserta' and jabatan_dewan is not null)) loop
+      perform sigarda.notif_buat(v_x, 'eskalasi', 'Perlu tindak lanjut: ' || r.nama, sigarda.eskalasi_isi('absensi', 3, v_mulai),
+        '{"tab":"tindaklanjut"}', 'eskalasi-p:absensi:' || r.id || ':' || v_hari);
+    end loop;
+  end loop;
   for r in select id, nama from public.profiles where role = 'peserta' and status = 'aktif' and not tanpa_akun loop
     declare v_jenis text; v_fn text[] := array['sku','absensi','iuran'];
     begin
@@ -6354,8 +6366,9 @@ declare v_hari date := sigarda.hari_ini(); v_hasil jsonb := '[]'::jsonb; r recor
 begin
   perform sigarda.wajib_aktif();
   if not sigarda.pengurus() then raise exception 'Hanya Pembina, Dewan Ambalan, dan Admin Gudep yang dapat melihat daftar ini.'; end if;
-  for r in select id, nama, kelas, sangga, whatsapp from public.profiles where role = 'peserta' and status = 'aktif' and not tanpa_akun loop
-    foreach v_jenis in array array['sku','absensi','iuran'] loop
+  for r in select id, nama, kelas, sangga, whatsapp, tanpa_akun from public.profiles where role = 'peserta' and status = 'aktif' loop
+    -- Anak Siaga tanpa akun: hanya kejadian absensi (lihat sigarda.eskalasi_proses).
+    foreach v_jenis in array case when r.tanpa_akun then array['absensi'] else array['sku','absensi','iuran'] end loop
       v_mulai := case v_jenis
         when 'sku' then sigarda.eskalasi_mulai_sku(r.id)
         when 'absensi' then sigarda.eskalasi_mulai_absensi(r.id)
@@ -6365,7 +6378,7 @@ begin
       v_elapsed := v_hari - v_mulai;
       continue when sigarda.eskalasi_tingkat(v_elapsed) < 3;
       v_hasil := v_hasil || jsonb_build_object(
-        'pesertaId', r.id, 'nama', r.nama, 'kelas', r.kelas, 'sangga', r.sangga, 'whatsapp', r.whatsapp,
+        'pesertaId', r.id, 'nama', r.nama, 'kelas', r.kelas, 'sangga', r.sangga, 'whatsapp', r.whatsapp, 'tanpaAkun', r.tanpa_akun,
         'jenis', v_jenis, 'mulai', v_mulai, 'hari', v_elapsed
       );
     end loop;
@@ -6397,7 +6410,8 @@ begin
   if not sigarda.tahun_ajaran_sah(p_tahun_ajaran) then raise exception 'Tahun ajaran tidak sah. Contoh: 2026/2027.'; end if;
   if p_jenis not in (
     'musyawarah','naik_kelas','sidang','pelantikan_bantara','pelantikan_laksana','pelantikan_garuda','lainnya',
-    'pengembaraan','perkemahan','gelora_saka_expo','gladi_tangguh_1','gladi_tangguh_2','penempuhan_sku_laksana','ptgd','pembekalan_dewan'
+    'pengembaraan','perkemahan','gelora_saka_expo','gladi_tangguh_1','gladi_tangguh_2','penempuhan_sku_laksana','ptgd','pembekalan_dewan',
+    'pesta_siaga','persari','pertemuan_siaga','pelantikan_siaga'
   ) then
     raise exception 'Jenis kegiatan tidak dikenal.';
   end if;

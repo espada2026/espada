@@ -12,7 +12,7 @@ function Baris({ entri, onNav }) {
           {entri.nama}
         </button>
         <p className="text-xs text-pramuka-500">
-          {[entri.kelas, entri.sangga].filter(Boolean).join(', ')} &middot; {labelJenisEskalasi(entri.jenis)} &middot; {entri.hari} hari
+          {[entri.kelas, entri.sangga].filter(Boolean).join(', ')}{entri.tanpaAkun ? ' (tanpa akun, hubungi orang tua/wali)' : ''} &middot; {labelJenisEskalasi(entri.jenis)} &middot; {entri.hari} hari
         </p>
       </div>
       <a

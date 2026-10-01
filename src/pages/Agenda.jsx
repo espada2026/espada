@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { JENIS_AGENDA, batasMusyawarah, hariMenuju, judulBawaanJenis, labelJenisAgenda, periksaAgenda } from '../lib/agendaLogic';
+import { JENIS_AGENDA, batasMusyawarah, hariMenuju, jenisSiaga, judulBawaanJenis, labelJenisAgenda, periksaAgenda } from '../lib/agendaLogic';
+import { anggotaSiaga } from '../lib/siagaLogic';
 import { JENIS_USULAN, bolehIngatkan, labelJenisUsulan, periksaTinjauan, periksaUsulan, usulanMenunggu, usulanTerakhir } from '../lib/kegiatanLogic';
 import { adalahPembina, tahunAjaranKini } from '../lib/rombelLogic';
 import { pembinaAtauAdmin, pembinaSaja, pradanaAtauPradani } from '../lib/hakLogic';
@@ -10,13 +11,13 @@ import { Field, Icon, Kosong, Modal } from '../components/ui';
 const BARU = { tahunAjaran: tahunAjaranKini(), jenis: 'musyawarah', judul: judulBawaanJenis('musyawarah'), tanggal: '', keterangan: '', pesertaTerkait: [], lewatiBatas: false };
 
 /** Pencarian + daftar centang Penegak aktif, untuk "peserta terkait" (opsional: calon sidang/pelantikan yang ikut diberi tahu). */
-function PilihPesertaTerkait({ nilai, onUbah }) {
+function PilihPesertaTerkait({ nilai, onUbah, siaga = false }) {
   const { users } = useApp();
   const [cari, setCari] = useState('');
   const [buka, setBuka] = useState(nilai.length > 0);
   const semua = useMemo(
-    () => users.filter((u) => u.role === 'peserta' && (u.status ?? 'aktif') === 'aktif').sort((a, b) => (a.kelas ?? '').localeCompare(b.kelas ?? '', 'id', { numeric: true }) || a.nama.localeCompare(b.nama, 'id')),
-    [users]
+    () => (siaga ? anggotaSiaga(users) : users.filter((u) => u.role === 'peserta')).filter((u) => (u.status ?? 'aktif') === 'aktif').sort((a, b) => (a.kelas ?? '').localeCompare(b.kelas ?? '', 'id', { numeric: true }) || a.nama.localeCompare(b.nama, 'id')),
+    [users, siaga]
   );
   const kata = cari.trim().toLowerCase();
   const tampil = kata ? semua.filter((u) => `${u.nama} ${u.kelas ?? ''} ${u.sangga ?? ''}`.toLowerCase().includes(kata)) : semua;
@@ -25,13 +26,13 @@ function PilihPesertaTerkait({ nilai, onUbah }) {
   if (!buka) {
     return (
       <button type="button" className="text-sm font-semibold text-pramuka-700 underline underline-offset-2" onClick={() => setBuka(true)}>
-        + Tandai Penegak terkait (opsional, {nilai.length > 0 ? `${nilai.length} dipilih` : 'mis. calon sidang/pelantikan'})
+        {siaga ? `+ Tandai anak yang ikut (${nilai.length > 0 ? `${nilai.length} dipilih` : 'dasar saran butir Siaga Garuda'})` : `+ Tandai Penegak terkait (opsional, ${nilai.length > 0 ? `${nilai.length} dipilih` : 'mis. calon sidang/pelantikan'})`}
       </button>
     );
   }
   return (
-    <Field label={`Penegak terkait (opsional, ${nilai.length} dipilih)`} bantuan="Ikut diberi tahu pengingat H-30/H-7/H-1, selain semua pengurus.">
-      <input className="input mb-2" type="search" value={cari} onChange={(e) => setCari(e.target.value)} placeholder="Cari nama, kelas, atau sangga" aria-label="Cari Penegak" />
+    <Field label={siaga ? `Anak Siaga yang ikut (${nilai.length} dipilih)` : `Penegak terkait (opsional, ${nilai.length} dipilih)`} bantuan={siaga ? 'Catat anak yang benar-benar ikut. Menjadi dasar saran butir Siaga Garuda (pertemuan Siaga dan Persari) dan ikut diberi tahu pengingat.' : 'Ikut diberi tahu pengingat H-30/H-7/H-1, selain semua pengurus.'}>
+      <input className="input mb-2" type="search" value={cari} onChange={(e) => setCari(e.target.value)} placeholder="Cari nama, kelas, atau sangga" aria-label={siaga ? 'Cari anak Siaga' : 'Cari Penegak'} />
       <ul className="max-h-48 divide-y divide-pramuka-100 overflow-y-auto rounded-lg border border-pramuka-200">
         {tampil.length === 0 && <li className="px-3 py-3 text-center text-sm text-pramuka-500">Tidak ada yang cocok.</li>}
         {tampil.map((u) => (
@@ -105,7 +106,7 @@ function EditorAgenda({ awal, onTutup, onSimpan }) {
         <Field label="Keterangan (opsional)" htmlFor="ag-ket">
           <textarea id="ag-ket" className="input" rows={2} maxLength={500} value={a.keterangan} onChange={(e) => ubah('keterangan', e.target.value)} />
         </Field>
-        <PilihPesertaTerkait nilai={a.pesertaTerkait} onUbah={(v) => ubah('pesertaTerkait', v)} />
+        <PilihPesertaTerkait key={jenisSiaga(a.jenis) ? 'siaga' : 'penegak'} siaga={jenisSiaga(a.jenis)} nilai={a.pesertaTerkait} onUbah={(v) => ubah('pesertaTerkait', v)} />
         {galatKirim && <p role="alert" className="mt-3 text-sm font-medium text-red-700">{galatKirim}</p>}
       </form>
     </Modal>
@@ -323,7 +324,7 @@ export default function Agenda() {
       <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold">Agenda</h1>
-          <p className="text-sm text-pramuka-600">Kegiatan tahunan Ambalan, dengan pengingat otomatis H-30, H-7, dan H-1.</p>
+          <p className="text-sm text-pramuka-600">Kegiatan tahunan gudep (termasuk Pesta Siaga, Persari, dan pelantikan Siaga), dengan pengingat otomatis H-30, H-7, dan H-1.</p>
         </div>
         {bolehKelola && <button className="btn btn-primary" onClick={() => setEditor({})}>+ Tambah kegiatan</button>}
       </div>
@@ -341,7 +342,7 @@ export default function Agenda() {
                   <p className="font-semibold text-pramuka-900">{a.judul}</p>
                   <p className="text-xs text-pramuka-500">
                     {labelJenisAgenda(a.jenis)} &middot; {fmtHariTanggal(a.tanggal)} &middot; {a.tahunAjaran}
-                    {a.pesertaTerkait.length > 0 && ` · ${a.pesertaTerkait.length} Penegak terkait`}
+                    {a.pesertaTerkait.length > 0 && ` · ${a.pesertaTerkait.length} ${jenisSiaga(a.jenis) ? 'anak ikut' : 'Penegak terkait'}`}
                   </p>
                   {a.keterangan && <p className="mt-1 text-sm text-pramuka-700">{a.keterangan}</p>}
                 </div>

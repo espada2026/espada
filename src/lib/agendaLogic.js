@@ -22,8 +22,18 @@ export const JENIS_AGENDA = [
   { id: 'penempuhan_sku_laksana', label: 'Penempuhan SKU Laksana', judulBawaan: 'Penempuhan SKU Laksana' },
   { id: 'ptgd', label: 'PTGD (Penerimaan Tamu Gugus Depan)', judulBawaan: 'PTGD (Penerimaan Tamu Gugus Depan)' },
   { id: 'pembekalan_dewan', label: 'Pembekalan Dewan Ambalan Angkatan Berikutnya', judulBawaan: 'Pembekalan Dewan Ambalan Angkatan Berikutnya' },
+  { id: 'pesta_siaga', label: 'Pesta Siaga', judulBawaan: 'Pesta Siaga' },
+  { id: 'persari', label: 'Persari (Perkemahan Siaga Sari)', judulBawaan: 'Persari (Perkemahan Siaga Sari)' },
+  { id: 'pertemuan_siaga', label: 'Pertemuan Siaga di Kwartir', judulBawaan: 'Pertemuan Siaga di Kwartir' },
+  { id: 'pelantikan_siaga', label: 'Pelantikan Siaga', judulBawaan: 'Pelantikan Siaga' },
   { id: 'lainnya', label: 'Lainnya', judulBawaan: '' },
 ];
+/** Jenis kegiatan Siaga (Fase 8): kolom peserta terkait = anak yang IKUT; dasar saran butir Siaga Garuda (pertemuan Siaga dan Persari). */
+export const JENIS_SIAGA = ['pesta_siaga', 'persari', 'pertemuan_siaga', 'pelantikan_siaga'];
+export const jenisSiaga = (jenis) => JENIS_SIAGA.includes(jenis);
+/** Kegiatan Agenda berjenis `jenis` yang sudah berlangsung (tanggal <= hariIni) dan diikuti anak `pesertaId`; terbaru lebih dulu. */
+export const kegiatanDiikuti = (agenda = [], pesertaId, jenis, hariIni = hariIniWib()) =>
+  agenda.filter((a) => a.jenis === jenis && a.tanggal <= hariIni && (a.pesertaTerkait ?? []).includes(pesertaId)).sort((a, b) => b.tanggal.localeCompare(a.tanggal));
 const PETA_JENIS = Object.fromEntries(JENIS_AGENDA.map((j) => [j.id, j]));
 
 export const labelJenisAgenda = (jenis) => PETA_JENIS[jenis]?.label ?? jenis;
