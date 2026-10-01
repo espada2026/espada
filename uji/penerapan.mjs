@@ -25,7 +25,7 @@ const urutanReadme = urutanMigrasiReadme(readFileSync(`${P}/README.md`, 'utf8'))
 ok(migrasi.map((m) => m.nama).join() === urutanReadme.join(), `urutan yang dijalankan = urutan README (${migrasi.length} migrasi)`);
 ok(migrasi.length === readdirSync(`${P}/supabase/migrasi`).filter((f) => f.endsWith('.sql')).length, 'setiap berkas migrasi terdaftar di README (tanpa yang tertinggal)');
 ok(migrasi.every((m) => m.sql.length > 100 && !m.sql.startsWith('﻿')), 'isi tiap migrasi terbaca dan tanpa BOM');
-ok(migrasi.at(-1).nama === '2026-10-siaga-garuda', 'migrasi terbaru ada di ujung daftar: ' + migrasi.at(-1).nama);
+ok(migrasi.at(-1).nama === '2026-10-kegiatan-siaga', 'migrasi terbaru ada di ujung daftar: ' + migrasi.at(-1).nama);
 {
   const tmp = `${P}/.uji/tmp/penerapan-readme`;
   rmSync(tmp, { recursive: true, force: true });
@@ -55,7 +55,7 @@ console.log('\n--- Menimbang rencana (murni) ---');
 
 console.log('\n--- Menerapkan migrasi terbaru pada basis data lama ---');
 {
-  const db = await baru(skemaLama('00dbf6f', P)); // keadaan TEPAT sebelum migrasi siaga-garuda
+  const db = await baru(skemaLama('8ebcbd7', P)); // keadaan TEPAT sebelum migrasi kegiatan-siaga
   const a = adapter(db);
   ok(/BEDA/.test(JSON.stringify((await jalankanPeriksa({ db: a, sql: sqlPeriksa, log: () => {} })).masalah)), 'sebelum: pemeriksaan pemasangan melihat sg_siaga_ubah bukan versi terbaru (BEDA)');
   const { log, baris } = tangkap();
@@ -66,11 +66,11 @@ console.log('\n--- Menerapkan migrasi terbaru pada basis data lama ---');
   ok(hakPelacak.length === 0, 'pelacak tanpa hak untuk anon/authenticated (bukan bagian API aplikasi)');
   ok(/Pelacak masih kosong/.test(await galat(() => terapkanTertunda({ db: a, migrasi, log })) ?? ''), 'pelacak kosong: penerapan menolak (tidak menjalankan seluruh riwayat migrasi)');
   for (const m of migrasi.slice(0, -1)) await db.query(`insert into sigarda.migrasi_terapan (nama, cara) values ($1, 'ditandai')`, [m.nama]); // seolah sudah dijalankan tangan
-  const lama = (await db.query(`select md5(prosrc) m from pg_proc where proname = 'sg_cadangan_admin'`)).rows[0].m;
+  const lama = (await db.query(`select md5(prosrc) m from pg_proc where proname = 'sg_agenda_simpan'`)).rows[0].m;
   const hasil = await terapkanTertunda({ db: a, migrasi, log });
-  ok(hasil.diterapkan.join() === '2026-10-siaga-garuda', 'hanya migrasi tertunda yang dijalankan: ' + hasil.diterapkan.join());
-  ok((await db.query(`select md5(prosrc) m from pg_proc where proname = 'sg_cadangan_admin'`)).rows[0].m !== lama, 'isi fungsi benar-benar berubah');
-  ok((await db.query(`select cara from sigarda.migrasi_terapan where nama = '2026-10-siaga-garuda'`)).rows[0].cara === 'dijalankan', 'tercatat sebagai "dijalankan"');
+  ok(hasil.diterapkan.join() === '2026-10-kegiatan-siaga', 'hanya migrasi tertunda yang dijalankan: ' + hasil.diterapkan.join());
+  ok((await db.query(`select md5(prosrc) m from pg_proc where proname = 'sg_agenda_simpan'`)).rows[0].m !== lama, 'isi fungsi benar-benar berubah');
+  ok((await db.query(`select cara from sigarda.migrasi_terapan where nama = '2026-10-kegiatan-siaga'`)).rows[0].cara === 'dijalankan', 'tercatat sebagai "dijalankan"');
   const sesudah = await jalankanPeriksa({ db: a, sql: sqlPeriksa, log: () => {} });
   ok(sesudah.masalah.length === 0, 'sesudah: pemeriksaan pemasangan bersih');
   const ulang = await terapkanTertunda({ db: a, migrasi, log });

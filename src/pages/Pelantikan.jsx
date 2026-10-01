@@ -35,7 +35,7 @@ function FormPelantikan({ data, onSelesai }) {
     return k ? calon.filter((u) => `${u.nama} ${u.kelas ?? ''} ${u.sangga ?? ''} ${u.perindukan ?? ''} ${u.barung ?? ''}`.toLowerCase().includes(k)) : calon;
   }, [calon, cari]);
   const siaga = tingkatSiaga(tingkat);
-  const agendaTingkat = agenda.filter((a) => siaga || a.jenis === `pelantikan_${tingkat}`);   // Siaga: belum ada jenis Agenda khusus, semua kegiatan boleh ditautkan
+  const agendaTingkat = agenda.filter((a) => a.jenis === (siaga ? 'pelantikan_siaga' : `pelantikan_${tingkat}`));
   const sudahTercatat = (id) => data.pelantikan.some((p) => p.pesertaId === id && p.tingkat === tingkat);
 
   const ubahPilih = (id) => setPilih((s) => { const b = new Set(s); if (b.has(id)) b.delete(id); else b.add(id); return b; });
@@ -74,7 +74,7 @@ function FormPelantikan({ data, onSelesai }) {
         <Field label="Tempat" htmlFor="pl-tempat">
           <input id="pl-tempat" className="input" maxLength={120} value={tempat} onChange={(e) => setTempat(e.target.value)} placeholder="Contoh: Lapangan upacara sekolah" />
         </Field>
-        <Field label="Kegiatan di Agenda (opsional)" htmlFor="pl-agenda" bantuan={agendaTingkat.length ? undefined : (siaga ? 'Belum ada kegiatan di Agenda.' : `Belum ada kegiatan Agenda berjenis pelantikan ${labelTingkatPelantikan(tingkat)}.`)}>
+        <Field label="Kegiatan di Agenda (opsional)" htmlFor="pl-agenda" bantuan={agendaTingkat.length ? undefined : (siaga ? 'Belum ada kegiatan Agenda berjenis Pelantikan Siaga.' : `Belum ada kegiatan Agenda berjenis pelantikan ${labelTingkatPelantikan(tingkat)}.`)}>
           <select id="pl-agenda" className="input" value={agendaId} onChange={(e) => setAgendaId(e.target.value)} disabled={!agendaTingkat.length}>
             <option value="">Tanpa tautan</option>
             {agendaTingkat.map((a) => <option key={a.id} value={a.id}>{a.judul}, {fmtTanggal(a.tanggal)}</option>)}

@@ -1,7 +1,7 @@
 /**
  * SYARAT SIAGA GARUDA (murni, tanpa React; Pramuka Siaga, Fase 6)
  *
- * Server hanya menyimpan PENETAPAN Pembina (sg_siaga_garuda_catat/_hapus). Saran otomatis butir 1 (SKU Tata + 2 bulan sejak pelantikan Tata) dan butir 2 (TKK per bidang) dihitung
+ * Server hanya menyimpan PENETAPAN Pembina (sg_siaga_garuda_catat/_hapus). Saran otomatis butir 1 (SKU Tata + 2 bulan sejak pelantikan Tata), butir 2 (TKK per bidang), butir 4 dan 5 (ikut kegiatan Agenda berjenis pertemuan_siaga/persari) dihitung
  * di sini dari data yang sudah ada, tanpa padanan SQL. Yang dicerminkan dan DIBANDINGKAN LANGSUNG dengan SQL pada kisi masukan (uji/siaga-garuda.mjs) hanyalah `periksaSiagaGaruda`.
  * Penetapan Pembina (bila ada) menang; tanpa penetapan, butir otomatis mengikuti saran dan butir manual berstatus 'belum'. Tanggal memakai WIB (`hariIni`).
  */
@@ -11,6 +11,7 @@ import { tambahBulan } from './spgLogic';
 import { tingkatSelesai } from './skuLogic';
 import { pelantikanPeserta } from './pelantikanLogic';
 import { ringkasTkkSiaga } from './tkkSiagaLogic';
+import { kegiatanDiikuti } from './agendaLogic';
 import { BIDANG_TKK } from '../data/tkkData';
 import { BUTIR_SIAGA_GARUDA, BULAN_LATIH_TATA, TKK_PER_BIDANG } from '../data/siagaGarudaData';
 
@@ -38,7 +39,13 @@ export function periksaSiagaGaruda({ butir, nilai, tanggal, catatan = '' }, hari
   return { ok: true, nilai: { butir, nilai, tanggal: tgl, catatan: c } };
 }
 
-function saran(butir, { peserta, progress, pelantikan, tkk, hari }) {
+function saran(butir, { peserta, progress, pelantikan, tkk, agenda, hari }) {
+  if (butir.aturan === 'agenda') {
+    const ikut = kegiatanDiikuti(agenda, peserta.id, butir.jenisAgenda, hari);
+    return ikut.length
+      ? { terpenuhi: true, teks: `Tercatat ikut: ${ikut[0].judul}, ${fmtTanggal(ikut[0].tanggal)}${ikut.length > 1 ? ` (dan ${ikut.length - 1} kegiatan lain)` : ''}.` }
+      : { terpenuhi: false, teks: 'Belum ada kegiatan ini di Agenda yang menandai anak ini ikut (menu Agenda, kolom anak yang ikut).' };
+  }
   if (butir.aturan === 'sku-tata') {
     if (!tingkatSelesai(progress, peserta, 'Tata')) return { terpenuhi: false, teks: 'SKU Tata belum selesai.' };
     const pl = pelantikanPeserta(pelantikan, peserta.id).tata;
@@ -60,7 +67,7 @@ function saran(butir, { peserta, progress, pelantikan, tkk, hari }) {
 
 /**
  * Keadaan 6 butir satu anak: [{ no, judul, uraian, jenis, saran: { terpenuhi, teks }, penetapan, status ('terpenuhi'|'belum'), nilai (100|0), sumber ('pembina'|'otomatis'|null) }].
- * `data` = { peserta, progress, pelantikan, tkk (baris TKK anak ini), penetapan (semua), hari }.
+ * `data` = { peserta, progress, pelantikan, tkk (baris TKK anak ini), agenda (semua kegiatan Agenda), penetapan (semua), hari }.
  */
 export function hitungSiagaGaruda(data) {
   const { peserta, penetapan = [], hari = hariIni() } = data;

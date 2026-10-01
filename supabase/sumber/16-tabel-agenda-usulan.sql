@@ -10,7 +10,8 @@ create table public.agenda (
   tahun_ajaran text not null check (tahun_ajaran ~ '^[0-9]{4}/[0-9]{4}$'),
   jenis text not null check (jenis in (
     'musyawarah','naik_kelas','sidang','pelantikan_bantara','pelantikan_laksana','pelantikan_garuda','lainnya',
-    'pengembaraan','perkemahan','gelora_saka_expo','gladi_tangguh_1','gladi_tangguh_2','penempuhan_sku_laksana','ptgd','pembekalan_dewan'
+    'pengembaraan','perkemahan','gelora_saka_expo','gladi_tangguh_1','gladi_tangguh_2','penempuhan_sku_laksana','ptgd','pembekalan_dewan',
+    'pesta_siaga','persari','pertemuan_siaga','pelantikan_siaga'
   )),
   judul text not null check (char_length(btrim(judul)) between 1 and 120),
   tanggal date not null,

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import useSiagaGaruda from '../hooks/useSiagaGaruda';
 import useTkkSiaga from '../hooks/useTkkSiaga';
@@ -9,7 +9,7 @@ import { fmtTanggal, hariIni } from '../lib/format';
 import SumberPeraturan from './SumberPeraturan';
 
 /**
- * Syarat Siaga Garuda satu anak (Pramuka Siaga, Fase 6): enam butir Jukran Kwarnas 038/2017. Butir 1 (SKU Tata + 2 bulan sesudah dilantik) dan 2 (TKK) diberi SARAN dari data
+ * Syarat Siaga Garuda satu anak (Pramuka Siaga, Fase 6): enam butir Jukran Kwarnas 038/2017. Butir 1 (SKU Tata + 2 bulan sesudah dilantik), 2 (TKK), 4 dan 5 (ikut pertemuan Siaga/Persari di Agenda) diberi SARAN dari data
  * aplikasi; Pembina atau Admin menetapkan tiap butir (menang atas saran). Anak dan orang tua hanya melihat. `dapatMencatat` = Pembina atau Admin dan anaknya aktif.
  * Hanya catatan: isi rubrik penilaian tidak ada di aplikasi.
  */
@@ -19,10 +19,12 @@ export default function PanelSiagaGaruda({ peserta, dapatMencatat }) {
   const sg = useSiagaGaruda(peserta.id);
   const tkk = useTkkSiaga(peserta.id);
   const pl = usePelantikanSaka();
+  const [agenda, setAgenda] = useState([]);
+  useEffect(() => { let batal = false; api().muatAgenda().then((r) => { if (!batal && r.ok) setAgenda(r.data); }); return () => { batal = true; }; }, [api]);
   const tataSelesai = tingkatSelesai(progress, peserta, 'Tata');
   const butir = useMemo(
-    () => hitungSiagaGaruda({ peserta, progress, pelantikan: pl.pelantikan, tkk: tkk.baris, penetapan: sg.baris, hari }),
-    [peserta, progress, pl.pelantikan, tkk.baris, sg.baris, hari],
+    () => hitungSiagaGaruda({ peserta, progress, pelantikan: pl.pelantikan, tkk: tkk.baris, agenda, penetapan: sg.baris, hari }),
+    [peserta, progress, pl.pelantikan, tkk.baris, agenda, sg.baris, hari],
   );
   const ringkas = ringkasSiagaGaruda(butir);
 
@@ -65,7 +67,7 @@ export default function PanelSiagaGaruda({ peserta, dapatMencatat }) {
     <section className="panel mb-5 min-w-0 p-4" aria-label="Syarat Siaga Garuda">
       <h2 className="text-base font-bold">Syarat Siaga Garuda</h2>
       <p className="text-xs text-pramuka-600">
-        Enam butir, dinilai perseorangan oleh Pembina. Butir 1 dan 2 diberi saran dari data aplikasi; penetapan Pembina yang menentukan.
+        Enam butir, dinilai perseorangan oleh Pembina. Butir 1, 2, 4, dan 5 diberi saran dari data aplikasi (SKU, pelantikan, TKK, dan kegiatan Agenda yang diikuti); penetapan Pembina yang menentukan.
       </p>
       <SumberPeraturan rujukan="garuda-038-2017" className="mt-1" />
       {sg.galat ? (
