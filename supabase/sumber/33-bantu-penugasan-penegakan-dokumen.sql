@@ -49,6 +49,8 @@ begin
   select tingkat, agama into v_tingkat, v_agama_butir from public.sku_unit where id = p_sku;
   if not found then return false; end if;
   v_pembina := v_u.role = 'penguji' and v_u.jabatan = 'Pembina';
+  -- Anak Siaga (kelas SD) hanya diuji Pembina (tanpa Dewan Ambalan maupun pra-uji).
+  if not v_pembina and sigarda.kelas_siaga((select kelas from public.profiles where id = p_peserta)) then return false; end if;
   if not v_pembina and v_agama_butir is not null then return false; end if;
   if not v_pembina and v_tingkat = 'Laksana' and not sigarda.ditugaskan(p_peserta, p_penguji) then return false; end if;
   if v_agama_butir is not null

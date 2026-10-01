@@ -1763,6 +1763,8 @@ begin
   select tingkat, agama into v_tingkat, v_agama_butir from public.sku_unit where id = p_sku;
   if not found then return false; end if;
   v_pembina := v_u.role = 'penguji' and v_u.jabatan = 'Pembina';
+  -- Anak Siaga (kelas SD) hanya diuji Pembina (tanpa Dewan Ambalan maupun pra-uji).
+  if not v_pembina and sigarda.kelas_siaga((select kelas from public.profiles where id = p_peserta)) then return false; end if;
   if not v_pembina and v_agama_butir is not null then return false; end if;
   if not v_pembina and v_tingkat = 'Laksana' and not sigarda.ditugaskan(p_peserta, p_penguji) then return false; end if;
   if v_agama_butir is not null
@@ -2668,6 +2670,8 @@ begin
   select * into v_u from public.sku_unit where id = p_sku_id and (agama is null or agama = v_p.agama);
   if not found then raise exception 'Poin SKU tidak ditemukan.'; end if;
 
+  -- Butir Siaga (Mula, Bantu, Tata) hanya untuk anak berkelas SD; butir Penegak hanya untuk Penegak.
+  if sigarda.kelas_siaga(v_p.kelas) <> (v_u.tingkat in ('Mula', 'Bantu', 'Tata')) then raise exception 'Butir ini bukan untuk tingkat kelasmu.'; end if;
   select status into v_status from public.sku_progress where peserta_id = v_uid and sku_id = p_sku_id;
   if v_status = 'lulus' then raise exception 'Poin ini sudah lulus.'; end if;
   if v_status in ('diajukan','proses') then raise exception 'Poin ini sedang menunggu atau dalam pengujian.'; end if;
@@ -2677,7 +2681,7 @@ begin
   if p_jadwal is null then raise exception 'Tanggal pengujian wajib diisi.'; end if;
   if char_length(coalesce(p_catatan, '')) > 500 then raise exception 'Catatan maksimal 500 karakter.'; end if;
   -- Sakelar pra-uji hidup: pengajuan lebih dulu melewati pra-uji Pinsa/Bina Damping (p_penguji_id diabaikan; uji resmi selalu ke antrian Pembina rombel).
-  if sigarda.pra_uji_aktif() then
+  if sigarda.pra_uji_aktif() and not sigarda.kelas_siaga(v_p.kelas) then   -- anak Siaga tidak melewati pra-uji (langsung ke antrian Pembina)
     perform sigarda.pra_uji_mulai(v_uid, p_sku_id, p_jadwal, p_catatan);
     return;
   end if;
@@ -2815,6 +2819,9 @@ begin
   if not found then raise exception 'Peserta tidak ditemukan.'; end if;
   if not exists (select 1 from public.sku_unit where id = p_sku_id and (agama is null or agama = v_p.agama)) then
     raise exception 'Poin SKU tidak ditemukan.';
+  end if;
+  if sigarda.kelas_siaga(v_p.kelas) <> exists (select 1 from public.sku_unit where id = p_sku_id and tingkat in ('Mula', 'Bantu', 'Tata')) then
+    raise exception 'Butir ini bukan untuk tingkat kelas peserta (butir Siaga hanya untuk anak berkelas SD).';
   end if;
   -- Butir agama (sub-butir Butir 1) hanya dinilai Pembina yang seagama, dan butir Laksana hanya oleh Pembina atau penguji yang ditugaskan untuk Penegak
   -- itu, untuk semua hasil (mulai uji, lulus, perlu diulang, dikembalikan). Aturan ini sama dengan pemilihan penguji (sigarda.penguji_peran_ok).
@@ -3793,7 +3800,7 @@ begin
   end if;
   -- Agama Penegak baru diisi sendiri sesudah akun dibuat (Tahap 3, H1). Tanpa agama, butir agama tidak tampak baginya sehingga progres SKU-nya tidak lengkap: penulisan progres SKU ditolak sampai agama diisi.
   if v_status = 'aktif' and v_agama is null and TG_TABLE_NAME in ('sku_progress', 'sku_riwayat', 'sku_pra_uji', 'sesi_ujian_peserta') then
-    if v_tanpa_akun then
+    if v_tanpa_akun or (new.peserta_id is distinct from auth.uid() and sigarda.kelas_siaga((select kelas from public.profiles where id = new.peserta_id))) then
       raise exception '% belum dicatat agamanya. Isi agamanya di menu Anggota Siaga (ubah data anak) sebelum mencatat SKU.', v_nama;
     end if;
     if new.peserta_id = auth.uid() then
@@ -5970,7 +5977,7 @@ begin
               case when not exists (select 1 from public.penegak_isian i where i.peserta_id = p.id and i.kunci = 'alamat') then 'alamat' end,
               case when not exists (select 1 from public.penegak_isian i where i.peserta_id = p.id and i.kunci in ('ayah_nama', 'ibu_nama', 'wali_nama')) then 'ortu' end
             ], null) as kurang
-          from public.profiles p where p.role = 'peserta' and p.status = 'aktif' and not p.tanpa_akun
+          from public.profiles p where p.role = 'peserta' and p.status = 'aktif' and not p.tanpa_akun and not sigarda.kelas_siaga(p.kelas)
         ) y where cardinality(y.kurang) > 0 order by y.kelas, y.nama limit 300
       ) x
     ), '[]'::jsonb),
@@ -6010,7 +6017,7 @@ begin
     'tanpaJk', case when jsonb_array_length(v_hasil -> 'tanpaJk') < 300 then jsonb_array_length(v_hasil -> 'tanpaJk')
       else (select count(*) from public.profiles where status = 'aktif' and jenis_kelamin is null) end,
     'dataDiriBelum', case when jsonb_array_length(v_hasil -> 'dataDiriBelum') < 300 then jsonb_array_length(v_hasil -> 'dataDiriBelum')
-      else (select count(*) from public.profiles p where p.role = 'peserta' and p.status = 'aktif' and not p.tanpa_akun and (
+      else (select count(*) from public.profiles p where p.role = 'peserta' and p.status = 'aktif' and not p.tanpa_akun and not sigarda.kelas_siaga(p.kelas) and (
         p.whatsapp is null or btrim(p.whatsapp) = '' or p.jenis_kelamin is null or p.agama is null
         or not exists (select 1 from public.tanggal_lahir t where t.peserta_id = p.id)
         or not exists (select 1 from public.penegak_isian i where i.peserta_id = p.id and i.kunci = 'tempat_lahir')
@@ -7672,6 +7679,10 @@ begin
 end $$;
 -- ===== akhir aksi perlindungan anggota =====
 -- ===== Anggota Siaga tanpa akun (Pramuka Siaga, Fase 1): fungsi =====
+-- Anggota Siaga = anak berkelas SD (angka 1-6 + paralel opsional): TANPA akun (tanpa_akun) ATAU dengan akun masuk (dibuat Pembina/Admin lewat Edge Function
+-- buat-akun, sama seperti Penegak; Siaga Fase 2b). Pengenal "Siaga" yang dipakai fungsi di bawah dan klien (siagaLogic.kelasSiagaSah) adalah KELAS-nya.
+create function sigarda.kelas_siaga(p_kelas text) returns boolean language sql immutable as
+$$ select coalesce(p_kelas, '') ~ '^[1-6][A-Z]?$' $$;
 -- Anak Siaga TIDAK punya akun masuk: profilnya (role 'peserta', tanpa_akun = true) dibuat dan dirawat Pembina/Admin lewat fungsi di bawah,
 -- tanpa auth.users, PIN, WhatsApp, atau isian mandiri. Kelas berupa angka 1-6 dengan paralel opsional (1, 4A, 5B): sigarda.rombel_sah.
 -- Kelompok: perindukan (3-4 barung) dan barung (6-8 anak); penulisan nama disamakan dengan yang sudah ada (tanpa membedakan huruf besar/kecil).
@@ -7743,10 +7754,11 @@ declare v_h jsonb;
 begin
   perform sigarda.wajib_aktif();
   if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat mengubah data anggota Siaga.'; end if;
-  if not exists (select 1 from public.profiles where id = p_id and tanpa_akun) then raise exception 'Anggota Siaga tidak ditemukan.'; end if;
+  if not exists (select 1 from public.profiles where id = p_id and (tanpa_akun or sigarda.kelas_siaga(kelas))) then raise exception 'Anggota Siaga tidak ditemukan.'; end if;
   v_h := sigarda.siaga_periksa(p_data, p_id);
-  update public.profiles set nama = v_h ->> 'nama', kelas = v_h ->> 'kelas', jenis_kelamin = v_h ->> 'jk', agama = v_h ->> 'agama', nis = v_h ->> 'nis',
-    perindukan = v_h ->> 'perindukan', barung = v_h ->> 'barung'
+  -- NIS anak berakun = nama penggunanya: tidak diubah dari sini (Admin Gudep mengubah nama pengguna di menu Anggota).
+  update public.profiles set nama = v_h ->> 'nama', kelas = v_h ->> 'kelas', jenis_kelamin = v_h ->> 'jk', agama = v_h ->> 'agama',
+    nis = case when tanpa_akun then v_h ->> 'nis' else nis end, perindukan = v_h ->> 'perindukan', barung = v_h ->> 'barung'
   where id = p_id;
 end $$;
 
@@ -7756,7 +7768,8 @@ $$
 begin
   perform sigarda.wajib_aktif();
   if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat menghapus anggota Siaga.'; end if;
-  if not exists (select 1 from public.profiles where id = p_id and tanpa_akun) then raise exception 'Anggota Siaga tidak ditemukan.'; end if;
+  if not exists (select 1 from public.profiles where id = p_id and (tanpa_akun or sigarda.kelas_siaga(kelas))) then raise exception 'Anggota Siaga tidak ditemukan.'; end if;
+  if not exists (select 1 from public.profiles where id = p_id and tanpa_akun) then raise exception 'Anggota ini punya akun masuk. Hapus akunnya lewat menu Anggota (Admin Gudep), atau ubah statusnya menjadi nonaktif.'; end if;
   if exists (select 1 from public.sku_progress where peserta_id = p_id) or exists (select 1 from public.sku_riwayat where peserta_id = p_id)
      or exists (select 1 from public.absensi_hadir where peserta_id = p_id) or exists (select 1 from public.iuran where peserta_id = p_id) then
     raise exception 'Anggota ini sudah punya catatan (SKU, kehadiran, atau iuran). Ubah statusnya menjadi nonaktif, jangan dihapus.';
@@ -7773,7 +7786,7 @@ begin
   if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat mengatur barung.'; end if;
   if p_ids is null or cardinality(p_ids) = 0 then raise exception 'Pilih anggota lebih dulu.'; end if;
   if cardinality(p_ids) > 300 then raise exception 'Paling banyak 300 anggota sekali atur.'; end if;
-  if (select count(*) from public.profiles where id = any (p_ids) and tanpa_akun) <> (select count(distinct x) from unnest(p_ids) x) then
+  if (select count(*) from public.profiles where id = any (p_ids) and (tanpa_akun or sigarda.kelas_siaga(kelas))) <> (select count(distinct x) from unnest(p_ids) x) then
     raise exception 'Ada anggota yang bukan anggota Siaga atau tidak ditemukan.';
   end if;
   v_h := sigarda.siaga_periksa(jsonb_build_object('nama', 'x', 'kelas', '1', 'perindukan', p_perindukan, 'barung', p_barung));

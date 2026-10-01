@@ -5,7 +5,7 @@
 //   masuk          login dengan nama pengguna + PIN, dibatasi 5 kali salah = kunci 5 menit (di server)
 //   ganti-pin      pengguna mengganti PIN sendiri (PIN lama diperiksa, aturan PIN baru diterapkan di server)
 //   reset-pin      pengurus mereset PIN (PIN acak 6 angka; hak reset sesuai matriks peran)
-//   buat-akun      Admin membuat akun (satu atau banyak, dipakai import Excel)
+//   buat-akun      Admin membuat akun (satu atau banyak, dipakai import Excel); Pembina hanya untuk kelompok peserta (Penegak dan anak Siaga)
 //   hapus-akun     Admin menghapus akun
 //   ubah-username  Admin mengubah nama pengguna (NIS untuk Penegak)
 //   catat-hasil    penguji mencatat hasil uji SKU; PIN penguji diverifikasi di server. Bila body memuat `rincian`
@@ -185,7 +185,8 @@ const KELOMPOK: any = {
 };
 
 async function aksiBuatAkun(b: any, me: any, d: any) {
-  if (me.role !== 'admin') return gagal('Hanya Admin Gudep yang dapat membuat akun.');
+  const pembina = me.role === 'penguji' && me.jabatan === 'Pembina' && (me.status ?? 'aktif') === 'aktif';
+  if (me.role !== 'admin' && !(pembina && b.kelompok === 'peserta')) return gagal('Hanya Admin Gudep yang dapat membuat akun. Pembina hanya dapat membuat akun anggota (Penegak atau anak Siaga).');
   const k = KELOMPOK[b.kelompok];
   if (!k) return gagal('Kelompok anggota tidak dikenal.');
   const baris: any[] = Array.isArray(b.baris) ? b.baris : [];

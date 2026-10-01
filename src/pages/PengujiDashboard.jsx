@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
+import '../data/skuSiaga'; // mendaftarkan katalog SKU Siaga supaya pengajuan anak Siaga ikut tampil di antrian
 import { antrianPengujian, bolehMenilaiPoin, hitungProgres, pesanTidakBolehMenilai } from '../lib/skuLogic';
 import { ringkasDaftarRombel, rombelSaya as rombelDariPenugasan, tahunAjaranKini } from '../lib/rombelLogic';
 import { useFilterRombel } from '../hooks/useRombelSaya';

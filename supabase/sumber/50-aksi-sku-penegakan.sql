@@ -15,6 +15,8 @@ begin
   select * into v_u from public.sku_unit where id = p_sku_id and (agama is null or agama = v_p.agama);
   if not found then raise exception 'Poin SKU tidak ditemukan.'; end if;
 
+  -- Butir Siaga (Mula, Bantu, Tata) hanya untuk anak berkelas SD; butir Penegak hanya untuk Penegak.
+  if sigarda.kelas_siaga(v_p.kelas) <> (v_u.tingkat in ('Mula', 'Bantu', 'Tata')) then raise exception 'Butir ini bukan untuk tingkat kelasmu.'; end if;
   select status into v_status from public.sku_progress where peserta_id = v_uid and sku_id = p_sku_id;
   if v_status = 'lulus' then raise exception 'Poin ini sudah lulus.'; end if;
   if v_status in ('diajukan','proses') then raise exception 'Poin ini sedang menunggu atau dalam pengujian.'; end if;
@@ -24,7 +26,7 @@ begin
   if p_jadwal is null then raise exception 'Tanggal pengujian wajib diisi.'; end if;
   if char_length(coalesce(p_catatan, '')) > 500 then raise exception 'Catatan maksimal 500 karakter.'; end if;
   -- Sakelar pra-uji hidup: pengajuan lebih dulu melewati pra-uji Pinsa/Bina Damping (p_penguji_id diabaikan; uji resmi selalu ke antrian Pembina rombel).
-  if sigarda.pra_uji_aktif() then
+  if sigarda.pra_uji_aktif() and not sigarda.kelas_siaga(v_p.kelas) then   -- anak Siaga tidak melewati pra-uji (langsung ke antrian Pembina)
     perform sigarda.pra_uji_mulai(v_uid, p_sku_id, p_jadwal, p_catatan);
     return;
   end if;
@@ -162,6 +164,9 @@ begin
   if not found then raise exception 'Peserta tidak ditemukan.'; end if;
   if not exists (select 1 from public.sku_unit where id = p_sku_id and (agama is null or agama = v_p.agama)) then
     raise exception 'Poin SKU tidak ditemukan.';
+  end if;
+  if sigarda.kelas_siaga(v_p.kelas) <> exists (select 1 from public.sku_unit where id = p_sku_id and tingkat in ('Mula', 'Bantu', 'Tata')) then
+    raise exception 'Butir ini bukan untuk tingkat kelas peserta (butir Siaga hanya untuk anak berkelas SD).';
   end if;
   -- Butir agama (sub-butir Butir 1) hanya dinilai Pembina yang seagama, dan butir Laksana hanya oleh Pembina atau penguji yang ditugaskan untuk Penegak
   -- itu, untuk semua hasil (mulai uji, lulus, perlu diulang, dikembalikan). Aturan ini sama dengan pemilihan penguji (sigarda.penguji_peran_ok).

@@ -1,4 +1,8 @@
 -- ===== Anggota Siaga tanpa akun (Pramuka Siaga, Fase 1): fungsi =====
+-- Anggota Siaga = anak berkelas SD (angka 1-6 + paralel opsional): TANPA akun (tanpa_akun) ATAU dengan akun masuk (dibuat Pembina/Admin lewat Edge Function
+-- buat-akun, sama seperti Penegak; Siaga Fase 2b). Pengenal "Siaga" yang dipakai fungsi di bawah dan klien (siagaLogic.kelasSiagaSah) adalah KELAS-nya.
+create function sigarda.kelas_siaga(p_kelas text) returns boolean language sql immutable as
+$$ select coalesce(p_kelas, '') ~ '^[1-6][A-Z]?$' $$;
 -- Anak Siaga TIDAK punya akun masuk: profilnya (role 'peserta', tanpa_akun = true) dibuat dan dirawat Pembina/Admin lewat fungsi di bawah,
 -- tanpa auth.users, PIN, WhatsApp, atau isian mandiri. Kelas berupa angka 1-6 dengan paralel opsional (1, 4A, 5B): sigarda.rombel_sah.
 -- Kelompok: perindukan (3-4 barung) dan barung (6-8 anak); penulisan nama disamakan dengan yang sudah ada (tanpa membedakan huruf besar/kecil).
@@ -70,10 +74,11 @@ declare v_h jsonb;
 begin
   perform sigarda.wajib_aktif();
   if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat mengubah data anggota Siaga.'; end if;
-  if not exists (select 1 from public.profiles where id = p_id and tanpa_akun) then raise exception 'Anggota Siaga tidak ditemukan.'; end if;
+  if not exists (select 1 from public.profiles where id = p_id and (tanpa_akun or sigarda.kelas_siaga(kelas))) then raise exception 'Anggota Siaga tidak ditemukan.'; end if;
   v_h := sigarda.siaga_periksa(p_data, p_id);
-  update public.profiles set nama = v_h ->> 'nama', kelas = v_h ->> 'kelas', jenis_kelamin = v_h ->> 'jk', agama = v_h ->> 'agama', nis = v_h ->> 'nis',
-    perindukan = v_h ->> 'perindukan', barung = v_h ->> 'barung'
+  -- NIS anak berakun = nama penggunanya: tidak diubah dari sini (Admin Gudep mengubah nama pengguna di menu Anggota).
+  update public.profiles set nama = v_h ->> 'nama', kelas = v_h ->> 'kelas', jenis_kelamin = v_h ->> 'jk', agama = v_h ->> 'agama',
+    nis = case when tanpa_akun then v_h ->> 'nis' else nis end, perindukan = v_h ->> 'perindukan', barung = v_h ->> 'barung'
   where id = p_id;
 end $$;
 
@@ -83,7 +88,8 @@ $$
 begin
   perform sigarda.wajib_aktif();
   if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat menghapus anggota Siaga.'; end if;
-  if not exists (select 1 from public.profiles where id = p_id and tanpa_akun) then raise exception 'Anggota Siaga tidak ditemukan.'; end if;
+  if not exists (select 1 from public.profiles where id = p_id and (tanpa_akun or sigarda.kelas_siaga(kelas))) then raise exception 'Anggota Siaga tidak ditemukan.'; end if;
+  if not exists (select 1 from public.profiles where id = p_id and tanpa_akun) then raise exception 'Anggota ini punya akun masuk. Hapus akunnya lewat menu Anggota (Admin Gudep), atau ubah statusnya menjadi nonaktif.'; end if;
   if exists (select 1 from public.sku_progress where peserta_id = p_id) or exists (select 1 from public.sku_riwayat where peserta_id = p_id)
      or exists (select 1 from public.absensi_hadir where peserta_id = p_id) or exists (select 1 from public.iuran where peserta_id = p_id) then
     raise exception 'Anggota ini sudah punya catatan (SKU, kehadiran, atau iuran). Ubah statusnya menjadi nonaktif, jangan dihapus.';
@@ -100,7 +106,7 @@ begin
   if not sigarda.pembina_atau_admin() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat mengatur barung.'; end if;
   if p_ids is null or cardinality(p_ids) = 0 then raise exception 'Pilih anggota lebih dulu.'; end if;
   if cardinality(p_ids) > 300 then raise exception 'Paling banyak 300 anggota sekali atur.'; end if;
-  if (select count(*) from public.profiles where id = any (p_ids) and tanpa_akun) <> (select count(distinct x) from unnest(p_ids) x) then
+  if (select count(*) from public.profiles where id = any (p_ids) and (tanpa_akun or sigarda.kelas_siaga(kelas))) <> (select count(distinct x) from unnest(p_ids) x) then
     raise exception 'Ada anggota yang bukan anggota Siaga atau tidak ditemukan.';
   end if;
   v_h := sigarda.siaga_periksa(jsonb_build_object('nama', 'x', 'kelas', '1', 'perindukan', p_perindukan, 'barung', p_barung));
