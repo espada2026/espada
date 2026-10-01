@@ -92,7 +92,7 @@ console.log('--- Halaman memakai registri (tidak menulis nomor SK dan alamat sen
     'src/pages/Absensi.jsx': 'admin-satuan-041-1995',
     'src/pages/Sangga.jsx': 'polmekbin-176-2013',
     'src/components/BeritaAcaraSidang.jsx': 'gudep-05-2026',
-    'src/components/Footer.jsx': 'sku-penegak-2011',
+    'src/components/Footer.jsx': 'sku-siaga-2011',
     'src/components/PanelSuratAgama.jsx': 'agama-182-1979',
   };
   for (const [j, id] of Object.entries(wajib)) {

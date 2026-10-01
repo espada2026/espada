@@ -23,7 +23,7 @@ const potret = async (db) => {
   const q = async (sql) => (await db.query(sql)).rows;
   return {
     fungsi: await q(`select n.nspname, p.proname, pg_get_function_identity_arguments(p.oid) args, p.prosecdef, p.provolatile, pg_get_function_result(p.oid) hasil, md5(p.prosrc) badan
-      from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname in ('public', 'sigarda') and p.prokind = 'f' and p.proname not in ('sg_agenda_simpan', 'eskalasi_isi', 'eskalasi_proses', 'sg_eskalasi_daftar') order by 1, 2, 3`),
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname in ('public', 'sigarda') and p.prokind = 'f' and p.proname not in ('sg_sertifikat_tingkat', 'sg_agenda_simpan', 'eskalasi_isi', 'eskalasi_proses', 'sg_eskalasi_daftar') order by 1, 2, 3`),
     hakFungsi: await q(`select routine_schema, routine_name, grantee, privilege_type from information_schema.role_routine_grants
       where routine_schema in ('public', 'sigarda') and grantee in ('anon','authenticated','service_role') order by 1, 2, 3, 4`),
     batasan: await q(`select conrelid::regclass::text tabel, conname, pg_get_constraintdef(oid) def from pg_constraint where conrelid = 'public.siaga_garuda'::regclass order by 1, 2`),

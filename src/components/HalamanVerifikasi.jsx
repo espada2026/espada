@@ -118,13 +118,15 @@ function HasilDokumen({ d }) {
   );
 }
 
+const labelSkuTingkat = (t) => (['Mula', 'Bantu', 'Tata'].includes(t) ? `SKU Siaga ${t}` : `SKU Penegak ${t}`);
+
 function HasilToken({ d }) {
   if (d.jenis === 'dokumen') return <HasilDokumen d={d} />;
   if (d.jenis === 'tingkat') {
     return (
-      <Sah judul={`Surat Tanda Lulus SKU Penegak ${d.tingkat}`}>
+      <Sah judul={`Surat Tanda Lulus ${labelSkuTingkat(d.tingkat)}`}>
         <Baris label="Nama">{d.nama}</Baris>
-        <Baris label="Tingkat">SKU Penegak {d.tingkat} ({d.jumlah_butir} butir seluruhnya lulus)</Baris>
+        <Baris label="Tingkat">{labelSkuTingkat(d.tingkat)} ({d.jumlah_butir} butir seluruhnya lulus)</Baris>
         <Baris label="Butir terakhir lulus">{fmtTanggal(d.tanggal)}</Baris>
         <Baris label="Penguji">{d.penguji ? `${d.penguji}${d.jabatan_penguji ? `, ${d.jabatan_penguji}` : ''}` : '-'}</Baris>
         <Baris label="Surat diterbitkan">{fmtTanggal(d.diterbitkan)}</Baris>

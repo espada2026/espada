@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { DAFTAR_TINGKAT } from '../data/skuData';
+import { DAFTAR_TINGKAT_SIAGA } from '../data/skuSiaga'; // juga mendaftarkan katalog SKU Siaga (kartu dan surat tanda lulus anak Siaga)
 import { hitungProgres, tingkatSelesai } from '../lib/skuLogic';
+import { anggotaSiaga } from '../lib/siagaLogic';
+import { pelantikanPeserta } from '../lib/pelantikanLogic';
+import usePelantikanSaka from '../hooks/usePelantikanSaka';
 import { KartuSku, SuratTandaLulus } from '../components/DokumenSku';
+import PiagamPelantikanSiaga from '../components/PiagamPelantikanSiaga';
 import PanelSuratAgama from '../components/PanelSuratAgama';
 import SuratPengantarAgama from '../components/SuratPengantarAgama';
 import TingkatTabs from '../components/TingkatTabs';
 import { Icon, Kosong } from '../components/ui';
 
 /**
- * Cetak kartu SKU, Surat Tanda Lulus, dan surat pengantar ke guru agama.
+ * Cetak kartu SKU, Surat Tanda Lulus, piagam pelantikan (anak Siaga), dan surat pengantar ke guru agama.
  * PDF: klik "Cetak", lalu pilih "Simpan sebagai PDF" pada dialog cetak browser.
  */
 export default function CetakDokumen({ pesertaId: idAwal, bolehPilih, jenisAwal = 'kartu' }) {
@@ -18,12 +24,18 @@ export default function CetakDokumen({ pesertaId: idAwal, bolehPilih, jenisAwal 
   const daftar = [...(termasukArsip || (awal && (awal.status ?? 'aktif') !== 'aktif') ? daftarPesertaSemua : daftarPeserta)].sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
 
   const [id, setId] = useState(idAwal ?? daftar[0]?.id);
-  const [jenis, setJenis] = useState(jenisAwal);
+  const [jenisPilih, setJenis] = useState(jenisAwal);
   const [suratId, setSuratId] = useState(null); // surat pengantar agama yang dipilih untuk dicetak
-  const [tingkat, setTingkat] = useState('Bantara');
+  const [tingkatPilih, setTingkat] = useState('Bantara');
   const [surat, setSurat] = useState({ kunci: '', token: null, galat: '' }); // token QR Surat Tanda Lulus untuk peserta dan tingkat `kunci`
 
   const peserta = daftarPesertaSemua.find((u) => u.id === id);
+  const siaga = !!peserta && anggotaSiaga([peserta]).length > 0;
+  const jenis = jenisPilih === 'piagam' && !siaga ? 'kartu' : jenisPilih; // piagam hanya untuk anak Siaga
+  const daftarTingkat = siaga ? DAFTAR_TINGKAT_SIAGA : DAFTAR_TINGKAT;
+  const tingkat = daftarTingkat.includes(tingkatPilih) ? tingkatPilih : daftarTingkat[0]; // pilihan menyesuaikan jenis anggota (Penegak: Bantara/Laksana; Siaga: Mula/Bantu/Tata)
+  const { pelantikan: daftarPelantikan } = usePelantikanSaka();
+  const catatPelantikan = peserta && siaga ? pelantikanPeserta(daftarPelantikan, peserta.id)[tingkat.toLowerCase()] : null;
   const selesai = peserta ? tingkatSelesai(progress, peserta, tingkat) : false;
   const kunciSurat = `${peserta?.id}|${tingkat}`;
 
@@ -52,12 +64,12 @@ export default function CetakDokumen({ pesertaId: idAwal, bolehPilih, jenisAwal 
   const suratSiap = surat.kunci === kunciSurat; // hasil permintaan token sudah untuk pilihan yang tampil sekarang
   const daftarSurat = (dokumen ?? []).filter((d) => d.pesertaId === peserta.id).sort((a, b) => b.id - a.id);
   const suratPilih = jenis === 'surat' ? daftarSurat.find((d) => d.id === suratId) ?? daftarSurat[0] ?? null : null;
-  const bisaCetak = jenis === 'kartu' || (jenis === 'surat' ? !!suratPilih : selesai);
+  const bisaCetak = jenis === 'kartu' || (jenis === 'surat' ? !!suratPilih : jenis === 'piagam' ? !!catatPelantikan : selesai);
   const menungguToken = jenis === 'stl' && selesai && !suratSiap;
 
   return (
     <div className="animasi-naik">
-      <style>{`@page { size: ${jenis === 'stl' ? 'A4 landscape' : 'A4 portrait'}; margin: 10mm; }`}</style>
+      <style>{`@page { size: ${jenis === 'stl' || jenis === 'piagam' ? 'A4 landscape' : 'A4 portrait'}; margin: 10mm; }`}</style>
 
       <div className="no-print mb-4">
         <h1 className="mb-3 text-2xl font-bold">Cetak dokumen</h1>
@@ -75,10 +87,10 @@ export default function CetakDokumen({ pesertaId: idAwal, bolehPilih, jenisAwal 
             </label>
           )}
 
-          {jenis !== 'surat' && <TingkatTabs nilai={tingkat} onUbah={setTingkat} />}
+          {jenis !== 'surat' && <TingkatTabs nilai={tingkat} onUbah={setTingkat} daftar={daftarTingkat} />}
 
           <div role="tablist" aria-label="Jenis dokumen" className="inline-flex flex-wrap rounded-lg bg-pramuka-100 p-1">
-            {[['kartu', 'Kartu SKU'], ['stl', 'Surat Tanda Lulus'], ['surat', 'Surat pengantar agama']].map(([k, v]) => (
+            {[['kartu', 'Kartu SKU'], ['stl', 'Surat Tanda Lulus'], ...(siaga ? [['piagam', 'Piagam pelantikan']] : []), ['surat', 'Surat pengantar agama']].map(([k, v]) => (
               <button
                 key={k}
                 role="tab"
@@ -98,7 +110,12 @@ export default function CetakDokumen({ pesertaId: idAwal, bolehPilih, jenisAwal 
 
         {jenis === 'surat' && <PanelSuratAgama key={peserta.id} peserta={peserta} terpilihId={suratPilih?.id ?? null} setTerpilihId={setSuratId} />}
 
-        {!bisaCetak && jenis !== 'surat' && (
+        {!bisaCetak && jenis === 'piagam' && (
+          <p className="jahitan mt-3 rounded-lg bg-white px-4 py-3 text-sm text-pramuka-700">
+            Piagam pelantikan {tingkat} baru bisa dicetak setelah pelantikannya dicatat Pembina di menu Pelantikan.
+          </p>
+        )}
+        {!bisaCetak && jenis !== 'surat' && jenis !== 'piagam' && (
           <p className="jahitan mt-3 rounded-lg bg-white px-4 py-3 text-sm text-pramuka-700">
             Surat Tanda Lulus {tingkat} baru bisa dicetak setelah seluruh butir lulus. Saat ini {h.lulus} dari {h.total} butir lulus.
           </p>
@@ -115,6 +132,7 @@ export default function CetakDokumen({ pesertaId: idAwal, bolehPilih, jenisAwal 
         <div className="overflow-x-auto pb-4">
           {jenis === 'kartu' && <KartuSku peserta={peserta} tingkat={tingkat} />}
           {jenis === 'stl' && <SuratTandaLulus peserta={peserta} tingkat={tingkat} token={suratSiap ? surat.token : null} />}
+          {jenis === 'piagam' && catatPelantikan && <PiagamPelantikanSiaga peserta={peserta} pelantikan={catatPelantikan} />}
           {jenis === 'surat' && <SuratPengantarAgama dokumen={suratPilih} />}
         </div>
       )}

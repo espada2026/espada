@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
+import '../data/skuSiaga'; // mendaftarkan katalog SKU Siaga supaya hitungan Mula/Bantu/Tata bekerja
 import { daftarTahunAjaran, ringkasAbsensi, rekapAbsensi, tahunAjaranDari } from '../lib/absensiLogic';
 import {
-  daftarTahunKalender, JENIS_PERIODE, namaFileLaporan, rekapKeanggotaan, rekapKegiatan, rekapPencapaianSku, rentangLaporan, sesiRentang,
+  daftarTahunKalender, JENIS_PERIODE, namaFileLaporan, rekapKeanggotaanSiaga, rekapKegiatan, rekapPencapaianSiaga, rentangLaporan, sesiRentang,
 } from '../lib/laporanLogic';
 import { ringkasAgregat } from '../lib/iuranLogic';
-import { daftarPengurusDewan } from '../lib/dewanLogic';
 import { AMBANG_HADIR } from '../config';
 import { unduhLaporanTahunanXlsx } from '../lib/exportLaporanTahunan';
 import { fmtTanggal, hariIni } from '../lib/format';
@@ -14,7 +14,7 @@ import { Icon, Kosong } from '../components/ui';
 
 /**
  * Laporan berjenjang tahunan (tahap L8): satu berkas gabungan (Excel banyak lembar + PDF) berisi rekap keanggotaan,
- * kepengurusan Dewan Ambalan, kegiatan, pencapaian SKU, kehadiran, dan keuangan iuran untuk satu periode pilihan --
+ * kegiatan, pencapaian SKU, kehadiran, dan keuangan iuran untuk satu periode pilihan --
  * Tahun Ajaran (Juli-Juni) atau Tahun Kalender (Januari-Desember). Untuk diserahkan ke Kwartir Ranting/Cabang.
  * TANPA API pengiriman otomatis: hanya menghasilkan berkas siap diunduh dan dikirim manual. Pembina dan Admin.
  */
@@ -55,10 +55,11 @@ export default function Laporan() {
 
     setData({
       rentang,
-      keanggotaan: rekapKeanggotaan(users, progress),
-      pengurus: daftarPengurusDewan(users),
+      siaga: true,
+      keanggotaan: rekapKeanggotaanSiaga(users, progress),
+      pengurus: [],
       kegiatan: rekapKegiatan(rAgenda.data, rentang.mulai, rentang.akhir),
-      sku: rekapPencapaianSku(users, progress, rentang.mulai, rentang.akhir),
+      sku: rekapPencapaianSiaga(users, progress, rentang.mulai, rentang.akhir),
       kehadiran,
       iuran: ringkasAgregat(rIuran.data),
     });
@@ -144,8 +145,8 @@ export default function Laporan() {
         <>
           <section className="panel mb-4 grid grid-cols-2 divide-pramuka-100 md:grid-cols-4 md:divide-x">
             {[
-              { nilai: data.keanggotaan.find((r) => r.tingkat === 'Total')?.total ?? 0, label: 'Penegak aktif' },
-              { nilai: data.pengurus.length, label: 'Pengurus Dewan Ambalan' },
+              { nilai: data.keanggotaan.find((r) => r.tingkat === 'Total')?.total ?? 0, label: 'Anggota Siaga aktif' },
+              { nilai: data.sku.mulaLulus + data.sku.bantuLulus + data.sku.tataLulus, label: 'Kenaikan tingkat SKU pada periode ini' },
               { nilai: data.kegiatan.length, label: 'Kegiatan pada periode ini' },
               { nilai: `${data.kehadiran.rata ?? '-'}%`, label: 'Rata-rata kehadiran' },
             ].map((a, i) => (

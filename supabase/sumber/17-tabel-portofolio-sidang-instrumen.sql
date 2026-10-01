@@ -159,7 +159,7 @@ create index on public.sku_penilaian (peserta_id, sku_id);
 create table public.sertifikat_tingkat (
   token text primary key check (token ~ '^[0-9a-f]{32}$'),
   peserta_id uuid not null references public.profiles(id) on delete cascade,
-  tingkat text not null check (tingkat in ('Bantara','Laksana')),
+  tingkat text not null constraint sertifikat_tingkat_tingkat_check check (tingkat in ('Bantara','Laksana','Mula','Bantu','Tata')),
   diterbitkan_oleh uuid references public.profiles(id) on delete set null,
   diterbitkan_pada timestamptz not null default now(),
   unique (peserta_id, tingkat)

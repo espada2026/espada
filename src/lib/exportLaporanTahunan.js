@@ -30,6 +30,24 @@ function sheetSampul(rentang) {
   };
 }
 
+function sheetKeanggotaanSiaga(rekap) {
+  return {
+    nama: 'Rekap Keanggotaan',
+    judul: ['Rekap Keanggotaan Siaga', 'Snapshot pada tanggal laporan dibuat (bukan rata-rata sepanjang periode)'],
+    kolom: [
+      { header: 'Kelas', key: 'tingkat', lebar: 14, ...RATA_TENGAH },
+      { header: 'Laki-laki', key: 'lakiLaki', lebar: 12, ...RATA_TENGAH },
+      { header: 'Perempuan', key: 'perempuan', lebar: 12, ...RATA_TENGAH },
+      { header: 'Menempuh Mula', key: 'menempuhMula', lebar: 16, ...RATA_TENGAH },
+      { header: 'Menempuh Bantu', key: 'menempuhBantu', lebar: 16, ...RATA_TENGAH },
+      { header: 'Menempuh Tata', key: 'menempuhTata', lebar: 16, ...RATA_TENGAH },
+      { header: 'Selesai Tata', key: 'selesaiTata', lebar: 14, ...RATA_TENGAH },
+      { header: 'Total', key: 'total', lebar: 10, ...RATA_TENGAH },
+    ],
+    baris: rekap,
+  };
+}
+
 function sheetKeanggotaan(rekap) {
   return {
     nama: 'Rekap Keanggotaan',
@@ -76,6 +94,19 @@ function sheetKegiatan(daftar) {
   };
 }
 
+function sheetSkuSiaga(sku) {
+  return {
+    nama: 'Pencapaian SKU',
+    judul: ['Rekap Pencapaian SKU Siaga pada Periode Laporan'],
+    kolom: [{ header: 'Uraian', key: 'u', lebar: 40 }, { header: 'Jumlah', key: 'n', lebar: 12, ...RATA_TENGAH }],
+    baris: [
+      { u: 'Anak yang menyelesaikan (lulus) seluruh SKU Mula', n: sku.mulaLulus },
+      { u: 'Anak yang menyelesaikan (lulus) seluruh SKU Bantu', n: sku.bantuLulus },
+      { u: 'Anak yang menyelesaikan (lulus) seluruh SKU Tata', n: sku.tataLulus },
+    ],
+  };
+}
+
 function sheetSku(sku) {
   return {
     nama: 'Pencapaian SKU',
@@ -89,10 +120,10 @@ function sheetSku(sku) {
   };
 }
 
-function sheetKehadiran(ringkas) {
+function sheetKehadiran(ringkas, siaga = false) {
   return {
     nama: 'Rekap Kehadiran',
-    judul: ['Rekap Kehadiran Latihan Rutin Jumat pada Periode Laporan'],
+    judul: [siaga ? 'Rekap Kehadiran Latihan Perindukan pada Periode Laporan' : 'Rekap Kehadiran Latihan Rutin Jumat pada Periode Laporan'],
     kolom: [{ header: 'Uraian', key: 'u', lebar: 40 }, { header: 'Nilai', key: 'n', lebar: 12, ...RATA_TENGAH }],
     baris: [
       { u: 'Jumlah pertemuan terlaksana', n: ringkas.pertemuan },
@@ -124,8 +155,8 @@ function sheetKeterangan() {
     baris: [
       { v: 'Rekap Keanggotaan adalah SNAPSHOT (potret) pada tanggal laporan dibuat, bukan rata-rata sepanjang periode -- sama seperti sensus keanggotaan Kwartir Cabang.' },
       { v: 'Rekap Pencapaian SKU, Rekap Kegiatan, Rekap Kehadiran, dan Rekap Keuangan dihitung untuk RENTANG TANGGAL periode laporan yang dipilih.' },
-      { v: 'Seorang Penegak yang lulus SKU lalu menjadi alumni/nonaktif pada periode yang sama tetap terhitung pada Rekap Pencapaian SKU.' },
-      { v: 'Laporan ini disusun dari data yang tercatat di aplikasi SIGASI; keakuratan bergantung pada kelengkapan pencatatan Pembina dan Dewan Ambalan.' },
+      { v: 'Seorang anggota yang lulus SKU lalu menjadi alumni/nonaktif pada periode yang sama tetap terhitung pada Rekap Pencapaian SKU.' },
+      { v: 'Laporan ini disusun dari data yang tercatat di aplikasi SIGASI; keakuratan bergantung pada kelengkapan pencatatan Pembina.' },
     ],
   };
 }
@@ -135,13 +166,14 @@ function sheetKeterangan() {
  * (lihat src/lib/laporanLogic.js dan src/pages/Laporan.jsx untuk cara menyiapkan tiap bagian).
  */
 export function susunLaporanTahunanXlsx(data) {
+  const siaga = !!data.siaga;
   return [
     sheetSampul(data.rentang),
-    sheetKeanggotaan(data.keanggotaan),
-    sheetKepengurusan(data.pengurus),
+    siaga ? sheetKeanggotaanSiaga(data.keanggotaan) : sheetKeanggotaan(data.keanggotaan),
+    ...(siaga ? [] : [sheetKepengurusan(data.pengurus)]),
     sheetKegiatan(data.kegiatan),
-    sheetSku(data.sku),
-    sheetKehadiran(data.kehadiran),
+    siaga ? sheetSkuSiaga(data.sku) : sheetSku(data.sku),
+    sheetKehadiran(data.kehadiran, siaga),
     sheetIuran(data.iuran),
     sheetKeterangan(),
   ];
