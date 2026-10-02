@@ -33,7 +33,6 @@ const Pelantikan = lazy(() => import('./pages/Pelantikan'));
 const Perlindungan = lazy(() => import('./pages/Perlindungan'));
 const Siaga = lazy(() => import('./pages/Siaga'));
 const PesertaDetail = lazy(() => import('./pages/PesertaDetail'));
-const AdminAnggota = lazy(() => import('./pages/AdminAnggota'));
 const AbsensiPeserta = lazy(() => import('./pages/Absensi').then((m) => ({ default: m.AbsensiPeserta })));
 const AbsensiPengurus = lazy(() => import('./pages/Absensi').then((m) => ({ default: m.AbsensiPengurus })));
 const CetakDokumen = lazy(() => import('./pages/CetakDokumen'));
@@ -60,6 +59,9 @@ const KelolaBeranda = lazy(() => import('./pages/KelolaBeranda')); // isi halama
  *  Pengelolaan    : Anggota, Anggota Siaga, Data Gudep, Kelola Beranda, Perlindungan, Periksa Data (Admin)
  * Akun saya dan Reset PIN anggota (pengurus) tidak ada di daftar ini: keduanya di menu akun (nama pengguna di menu samping atau header).
  */
+/** Id menu lama yang digabung ke menu Anggota ('siaga'): 'anggota' (akun, Admin) dan 'peserta' (daftar Pembina). */
+const aliasMenu = (t) => (t === 'anggota' || t === 'peserta' ? 'siaga' : t);
+
 function buatNav(user, peran, belumDibaca = 0, pendampingan = null, praUjiAktif = false) {
   const materi = { id: 'materi', label: 'Materi', ikon: 'buku' };
   const kelola = { id: 'kelolamateri', label: 'Kelola Materi', ikon: 'pustaka' };
@@ -73,7 +75,7 @@ function buatNav(user, peran, belumDibaca = 0, pendampingan = null, praUjiAktif 
   const kelolaBeranda = { id: 'kelolaberanda', label: 'Kelola Beranda', ikon: 'beranda' }; // pengurus: Pembina, Admin, Dewan Ambalan (tampilan Dewan)
   const pelantikan = { id: 'pelantikan', label: 'Pelantikan', ikon: 'lencana' };
   const perlindungan = { id: 'perlindungan', label: 'Perlindungan', ikon: 'perisai' }; // Safe From Harm (Tahap 4; Pembina dan Admin)
-  const siaga = { id: 'siaga', label: 'Anggota Siaga', ikon: 'anggota' }; // anak Siaga tanpa akun (Pembina dan Admin)
+  const siaga = { id: 'siaga', label: 'Anggota', ikon: 'anggota' }; // satu menu anggota (Pembina dan Admin); Admin: tab tambahan Akun masuk
   const ujiResmi = ujiResmiTampil(user, praUjiAktif); // pra-uji hidup: uji resmi hanya Pembina, jadi Antrian dan Sesi ujian tidak untuk Dewan Ambalan
   const kelolaBoleh = bolehKelolaMateri(user);
   const notifikasi = { id: 'notifikasi', label: 'Notifikasi', ikon: 'lonceng', lencana: belumDibaca };
@@ -90,7 +92,7 @@ function buatNav(user, peran, belumDibaca = 0, pendampingan = null, praUjiAktif 
   if (user.role === 'penguji') {
     return [
       { judul: 'Utama', item: [{ id: 'dashboard', label: 'Dashboard', ikon: 'dashboard' }, notifikasi, bantuan] },
-      { judul: 'Pengujian SKU', item: [...(ujiResmi ? [{ id: 'antrian', label: 'Antrian', ikon: 'jam' }] : []), { id: 'peserta', label: 'Peserta', ikon: 'anggota' }, ...(kelolaBoleh ? [pelantikan, perlindungan] : []), pemeriksaan, cetak] },
+      { judul: 'Pengujian SKU', item: [...(ujiResmi ? [{ id: 'antrian', label: 'Antrian', ikon: 'jam' }] : []), ...(kelolaBoleh ? [pelantikan, perlindungan] : []), pemeriksaan, cetak] },
       { judul: 'Kegiatan Gudep', item: [...(kelolaBoleh ? [siaga] : []), absensi, iuran, tindakLanjut, agenda, ...(kelolaBoleh ? [laporan] : []), kelolaBeranda] },
       { judul: 'Materi', item: [materi, ...(kelolaBoleh ? [kelola] : [])] },
     ];
@@ -100,7 +102,7 @@ function buatNav(user, peran, belumDibaca = 0, pendampingan = null, praUjiAktif 
     { judul: 'Pengujian SKU', item: [pelantikan, cetak] },
     { judul: 'Kegiatan Gudep', item: [absensi, iuran, tindakLanjut, agenda, laporan] },
     { judul: 'Materi', item: [materi, kelola] },
-    { judul: 'Pengelolaan', item: [{ id: 'anggota', label: 'Anggota', ikon: 'anggota' }, siaga, { id: 'gudep', label: 'Data Gudep', ikon: 'perisai' }, kelolaBeranda, perlindungan, pemeriksaan] },
+    { judul: 'Pengelolaan', item: [siaga, { id: 'gudep', label: 'Data Gudep', ikon: 'perisai' }, kelolaBeranda, perlindungan, pemeriksaan] },
   ];
 }
 function Toast() {
@@ -165,6 +167,7 @@ function Shell() {
   const [tingkat, setTingkat] = useState('Bantara');
   const [materiButir, setMateriButir] = useState(null); // butir SKU yang dituju tombol "Materi"
   const [kelolaId, setKelolaId] = useState(null); // materi yang langsung dibuka di Kelola Materi ('baru' = tambah)
+  const [tabAnggota, setTabAnggota] = useState('anak'); // tab awal menu Anggota (Admin): 'anak' | 'akun'
   const [tabKelolaBeranda, setTabKelolaBeranda] = useState(null); // tab awal Kelola Beranda dari pensil sunting di halaman muka
   const akunSiaga = akun?.role === 'peserta' && kelasSd(akun.kelas); // anak Siaga berakun: tanpa ajakan data diri Penegak maupun nomor WhatsApp
   const [waTutup, setWaTutup] = useState(false); // ajakan isi nomor WhatsApp ditutup/dilewati untuk sesi masuk ini (tahap L5)
@@ -237,6 +240,8 @@ function Shell() {
   const tabAktif = halamanAkun || nav.some((n) => n.id === tab) ? tab : nav[0].id;
 
   const pilihTab = (t) => {
+    setTabAnggota(t === 'anggota' ? 'akun' : 'anak');
+    t = aliasMenu(t);
     setTab(t);
     setFokusId(null);
     setJenisCetak('kartu');
@@ -257,6 +262,8 @@ function Shell() {
   };
   /** Pindah menu sambil membuka peserta tertentu (dari ringkasan dashboard). */
   const pindah = (t, id = null) => {
+    setTabAnggota(t === 'anggota' ? 'akun' : 'anak');
+    t = aliasMenu(t);
     setTab(t);
     setFokusId(id);
   };
@@ -280,7 +287,7 @@ function Shell() {
   } else if (tabAktif === 'kelolaberanda' && user.role !== 'peserta') {
     isi = <KelolaBeranda tabAwal={tabKelolaBeranda} />;
   } else if (tabAktif === 'siaga' && pembinaAtauAdmin(user)) {
-    isi = <Siaga />;
+    isi = <Siaga key={tabAnggota} tabAwal={tabAnggota} />;
   } else if (tabAktif === 'perlindungan' && pembinaAtauAdmin(user)) {
     isi = <Perlindungan />;
   } else if (tabAktif === 'pemeriksaan' && user.role !== 'peserta') {
@@ -325,7 +332,7 @@ function Shell() {
   } else if (user.role === 'penguji') {
     isi = <PengujiDashboard mode={tabAktif} onBuka={setFokusId} onNav={pindah} />;
   } else {
-    isi = tabAktif === 'anggota' ? <AdminAnggota /> : <AdminDashboard onBuka={setFokusId} onNav={pindah} />;
+    isi = <AdminDashboard onBuka={setFokusId} onNav={pindah} />;
   }
 
   return (

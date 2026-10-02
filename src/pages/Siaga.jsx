@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import AdminAnggota from './AdminAnggota';
 import { useApp } from '../context/AppContext';
 import { AGAMA } from '../data/skuData';
 import {
@@ -211,7 +212,7 @@ function TabKelompok({ users, onUbah }) {
 /**
  * Anggota Siaga (Pembina dan Admin): anak Siaga tidak punya akun; datanya dibuat dan dirawat di sini, termasuk pembagian ke perindukan dan barung.
  */
-export default function Siaga() {
+function DaftarSiaga() {
   const { users, progress } = useApp();
   const semua = useMemo(() => anggotaSiaga(users), [users]);
   const [skuId, setSkuId] = useState(null); // anak yang SKU-nya sedang dibuka (SiagaSku)
@@ -293,6 +294,29 @@ export default function Siaga() {
       {akunBaru && <AkunBaru akun={akunBaru} onTutup={() => setAkunBaru(null)} />}
       {modal?.jenis === 'tempel' && <ModalTempel onTutup={tutup} />}
       {modal?.jenis === 'barung' && <ModalBarung ids={terpilih} onTutup={tutup} />}
+    </div>
+  );
+}
+
+/**
+ * Menu Anggota (satu menu untuk Pembina dan Admin): daftar anak Siaga beserta SKU, perindukan, dan barung. Admin mendapat satu tab tambahan,
+ * "Akun masuk", untuk mengelola akun Pembina, Admin, dan anak berakun (ubah, status, hapus; reset PIN lewat menu akun).
+ */
+export default function Siaga({ tabAwal = 'anak' }) {
+  const { user } = useApp();
+  const [tab, setTab] = useState(user.role === 'admin' ? tabAwal : 'anak');
+  if (user.role !== 'admin') return <DaftarSiaga />;
+  return (
+    <div>
+      <div role="tablist" aria-label="Jenis data anggota" className="mb-4 inline-flex rounded-lg bg-pramuka-100 p-1">
+        {[['anak', 'Anak Siaga'], ['akun', 'Akun masuk']].map(([id, label]) => (
+          <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
+            className={`rounded-md px-4 py-2 text-sm font-semibold ${tab === id ? 'bg-pramuka-800 text-pramuka-50' : 'text-pramuka-700 hover:bg-pramuka-200'}`}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {tab === 'anak' ? <DaftarSiaga /> : <AdminAnggota />}
     </div>
   );
 }
