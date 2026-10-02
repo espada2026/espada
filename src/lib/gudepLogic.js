@@ -85,8 +85,8 @@ export function periksaGudep(gudep) {
 /** Sama persis (setelah dirapikan)? Dipakai untuk menandai formulir yang berubah. */
 export const samaGudep = (a, b) => JSON.stringify(untukForm(a)) === JSON.stringify(untukForm(b));
 
-/** "Ambalan Gajah Mada/Christina M.T": kata Ambalan ditambahkan bila belum ada di depan nama. */
-export const namaAmbalan = (g) => (/^ambalan\b/i.test(g.singkat) ? g.singkat : `Ambalan ${g.singkat}`);
+/** "Perindukan Melati": kata Perindukan ditambahkan bila belum ada di depan nama (Ambalan, data lama, dibiarkan). */
+export const namaAmbalan = (g) => (/^(ambalan|perindukan)\b/i.test(g.singkat) ? g.singkat : `Perindukan ${g.singkat}`);
 
 /** Baris identitas kop surat: "Gudep No. 10.701. Alamat" dan kontak (telepon, email) bila ada. */
 export const barisKop = (g) => ({

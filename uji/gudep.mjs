@@ -129,7 +129,7 @@ console.log('\n--- Klien: gabung, pemeriksaan, dan bentuk ---');
   ok(g.pembina.nama === 'Orang' && g.pembina.nta === '' && g.pembina.jabatan === GUDEP_BAWAAN.pembina.jabatan && !('ngawur' in g), 'gabungGudep: bagian orang digabung per bagian; isian tidak dikenal dibuang');
   ok(untukForm(null).nama === '' && untukForm(null).pembina.nta === '', 'untukForm: semua isian berupa teks');
   ok(samaGudep(contoh, { ...salin(contoh), nama: ' Gugus Depan   SMAN 2 Contoh ' }) && !samaGudep(contoh, { ...salin(contoh), kota: 'Lain' }), 'samaGudep: setelah dirapikan');
-  ok(namaAmbalan({ singkat: 'Gajah Mada' }) === 'Ambalan Gajah Mada' && namaAmbalan({ singkat: 'ambalan Gajah Mada' }) === 'ambalan Gajah Mada', 'namaAmbalan menambah kata Ambalan bila belum ada');
+  ok(namaAmbalan({ singkat: 'Melati' }) === 'Perindukan Melati' && namaAmbalan({ singkat: 'perindukan Melati' }) === 'perindukan Melati' && namaAmbalan({ singkat: 'Ambalan Gajah Mada' }) === 'Ambalan Gajah Mada', 'namaAmbalan menambah kata Perindukan bila belum ada');
   const kop = barisKop(contoh);
   ok(kop.alamat === 'Gudep No. 12.345/12.346. Jl. Merdeka No. 1, Contoh' && kop.kontak === 'Telp. (0281) 123-456, gudep@sman2.sch.id', 'barisKop: alamat dengan nomor gudep, dan kontak');
   ok(barisKop({ ...contoh, telepon: '', email: '' }).kontak === '' && barisKop({ ...contoh, nomorGudep: '' }).alamat === 'Jl. Merdeka No. 1, Contoh', 'barisKop: bagian kosong tidak tercetak');

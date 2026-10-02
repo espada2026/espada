@@ -1,4 +1,14 @@
-# SIGARDA, Gudep SMAN 1 Bukateja
+# SIGASI, Sistem Informasi Gudep Siaga
+
+> **Catatan (Fase 11, peluncuran):** proyek ini kini aplikasi untuk **gugus depan Pramuka Siaga di SD** (nama **SIGASI**, dikukuhkan pemilik 2 Okt 2026).
+> Ia berawal dari SIGARDA (Gudep SMAN 1 Bukateja, untuk Penegak), sehingga bagian README di bawah, kode SQL, nama fungsi `sigarda.*`,
+> Edge Function `sigarda`, nama rahasia `SIGARDA_*`, dan `Cadangkan-SIGARDA.bat` masih memakai nama lama (sengaja tidak diganti agar tidak
+> memutus pemasangan). Modul Penegak tidak lagi tampil di aplikasi. Langkah yang harus dikerjakan pemilik sebelum dipakai:
+> [`docs/peluncuran.md`](docs/peluncuran.md).
+
+**SIGASI** = **S**istem **I**nformasi **G**udep **Siaga**. Aplikasi web untuk Pembina: mencatat SKU Siaga (Mula, Bantu, Tata), TKK, latihan,
+tabungan, pelantikan, dan Siaga Garuda, ditambah agenda, laporan, dan dokumen cetak. (Uraian di bawah ini sebagian besar masih menjelaskan
+SIGARDA untuk Penegak; rincian fitur Siaga ada di CLAUDE.md dan panduan di menu Bantuan.)
 
 **SIGARDA** = **S**istem **I**nformasi **Gar**uda dan SKU Penegak. Aplikasi web yang menjadi wadah pengujian
 SKU Bantara dan Laksana serta penyusunan portofolio Penegak Garuda, ditambah absensi latihan Jumat dan materi SKU.
