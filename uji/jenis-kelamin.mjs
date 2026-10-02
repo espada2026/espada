@@ -224,7 +224,7 @@ console.log('\n--- Filter jenis kelamin ---');
   ok(render(pes, { ...FILTER_AWAL, jk: 'P' }, ['jk']).includes('Bersihkan filter') && !render(pes, { ...FILTER_AWAL }, ['jk']).includes('Bersihkan filter'), '"Bersihkan filter" muncul saat jenis kelamin dipilih');
   for (const [file, cari] of [
     ['src/pages/AdminAnggota.jsx', "'agama', 'jk'"], ['src/pages/AdminDashboard.jsx', "'agama', 'jk'"], ['src/pages/PengujiDashboard.jsx', "'agama', 'jk'"],
-    ['src/pages/Portofolio.jsx', "'kelas', 'jk'"], ['src/pages/Raport.jsx', "'sangga', 'jk'"], ['src/pages/ResetPin.jsx', "'peran', 'jk'"], ['src/components/RekapIuran.jsx', "'kelas', 'jk'"],
+    ['src/pages/ResetPin.jsx', "'peran', 'jk'"], ['src/components/RekapIuran.jsx', "'kelas', 'jk'"],
   ]) ok(sumber(file).includes(cari), `${file}: filter jenis kelamin dipasang`);
   ok(!/'jk'/.test(sumber('src/components/LembarIuran.jsx')), 'LembarIuran (data dari fungsi iuran, tanpa jenis kelamin) tidak diberi filter ini');
   ok(/labelJenisKelamin/.test(sumber('src/lib/exportLaporan.js')) && /jenis kelamin belum diisi/.test(sumber('src/lib/exportLaporan.js')), 'keterangan filter pada Excel menyebut jenis kelamin');

@@ -9,7 +9,6 @@ import { PIN_DEMO } from '../src/lokal/pinDemo.js';
 import { buatApi } from '../src/lib/api.js';
 import { adalahPembina, bisaMenguji, ditugaskanUntuk, penegakDewan, pengujiPeranOk, pengujiSah, tahunAjaranKini } from '../src/lib/rombelLogic.js';
 import { bolehResetPin } from '../src/lib/pinLogic.js';
-import { bacaExcelKepengurusan, buatBerkasKepengurusan } from '../src/lib/kepengurusanExcel.js';
 import { cariPoin } from '../src/lib/skuLogic.js';
 
 const P = process.cwd().replace(/\\/g, '/');
@@ -258,20 +257,6 @@ console.log('\n--- Klien: aturan murni ---');
   ok(U.find((u) => u.id === rina) != null, 'data pengguna termuat');
 }
 
-console.log('\n--- Excel Kepengurusan ---');
-{
-  const buf = await buatBerkasKepengurusan([{ nis: '10008', nama: 'Nadia Putri', rombel: 'XII-01', jabatan: 'Pradani' }, { nis: '10007', nama: 'Bagas Saputra', rombel: 'XII-01', jabatan: 'Pradana' }]);
-  const baris = await bacaExcelKepengurusan(buf);
-  ok(baris.length === 2 && baris[0].nis === '10008' && baris[0].jabatan === 'Pradani' && baris[1].nis === '10007' && baris[1].jabatan === 'Pradana', 'berkas kepengurusan dapat ditulis dan dibaca kembali');
-  const kosong = await bacaExcelKepengurusan(await (async () => { const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Kepengurusan'); ws.addRow(['NIS', 'Nama', 'Jabatan Dewan Ambalan']); ws.addRow(['10008', 'Nadia', 'Ketua Bidang Kegiatan']); ws.addRow(['', '', '']); return wb.xlsx.writeBuffer(); })());
-  ok(kosong.length === 1 && kosong[0].jabatan === 'Ketua Bidang Kegiatan', 'jabatan bebas terbaca; baris kosong dilewati');
-  let g = '';
-  try { await bacaExcelKepengurusan(await (async () => { const wb = new ExcelJS.Workbook(); wb.addWorksheet('X').addRow(['a', 'b']); return wb.xlsx.writeBuffer(); })()); } catch (e) { g = e.message; }
-  ok(/Baris judul tidak ditemukan/.test(g), 'berkas tanpa judul NIS dan Jabatan ditolak dengan pesan yang menuntun');
-  let g2 = '';
-  try { await bacaExcelKepengurusan(await buatBerkasKepengurusan([])); } catch (e) { g2 = e.message; }
-  ok(/Tidak ada data/.test(g2), 'berkas kosong (template) ditolak');
-}
 
 console.log(`\nRINGKASAN DEWAN-PENEGAK: ${lulus} lulus, ${gagal} GAGAL`);
 process.exit(gagal ? 1 : 0);

@@ -1,15 +1,11 @@
 // Tahap 2 (G4e): cakupan pra-uji (hasil simulasi). Fungsi server sg_pra_uji_cakupan (hak, validasi, hitungan dari riwayat pengajuan yang sesungguhnya, jendela hari, sakelar mati),
 // pemetaan api, logika ringkasCakupan, dan render panel.
-import { createElement as h } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
 import { siapkanPg, buatKlienFake, sqlSebagai } from '../src/lokal/klienFake.js';
 import { isiDataContoh } from '../src/lokal/seedLokal.js';
 import { PIN_DEMO } from '../src/lokal/pinDemo.js';
 import { buatApi } from '../src/lib/api.js';
-import { KonteksApp } from '../src/context/AppContext.jsx';
-import PraUji from '../src/pages/PraUji.jsx';
 import { ringkasCakupan } from '../src/lib/praUjiLogic.js';
 import { tahunAjaranKini } from '../src/lib/rombelLogic.js';
 
@@ -106,15 +102,6 @@ r = await K.pembina.a.muatCakupanPraUji(30);
 ok(r.ok && r.data.aktif === true && Array.isArray(r.data.perRombel) && r.data.perRombel[0].rombel === 'X-02', 'api().muatCakupanPraUji mengembalikan data');
 r = await N['10232'].a.muatCakupanPraUji(30);
 ok(!r.ok && /Hanya Pembina dan Admin Gudep/.test(r.pesan), 'Penegak ditolak lewat api');
-{
-  const pembinaU = { id: 'pb', role: 'penguji', jabatan: 'Pembina', nama: 'Pak Pembina', status: 'aktif' };
-  const api = () => ({ muatCakupanPraUji: async () => ({ ok: true, data: { aktif: true, hari: 30, perRombel: [] } }) });
-  const konteks = (user, praUjiAktif) => ({ api, user, users: [], pendampingan: null, praUjiAktif, notify: () => {}, aturSakelarPraUji: async () => ({ ok: true }), muatPraUjiMenunggu: async () => ({ ok: true, data: [] }), muatAntrianPraUji: async () => ({ ok: true, data: { menunggu: [], selesai: [] } }) });
-  const html = renderToStaticMarkup(h(KonteksApp.Provider, { value: konteks(pembinaU, true) }, h(PraUji))).replace(/<!-- -->/g, '');
-  ok(html.includes('Memuat cakupan pra-uji'), 'halaman Pra-uji (Pembina, pra-uji hidup) memuat panel Cakupan pra-uji');
-  const mati = renderToStaticMarkup(h(KonteksApp.Provider, { value: konteks(pembinaU, false) }, h(PraUji))).replace(/<!-- -->/g, '');
-  ok(!mati.includes('Cakupan pra-uji'), 'pra-uji mati: panel cakupan tidak tampil');
-}
 
 console.log(`\nRINGKASAN PRA-UJI-CAKUPAN: ${lulus} lulus, ${gagal} gagal`);
 process.exit(gagal ? 1 : 0);

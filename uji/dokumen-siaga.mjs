@@ -98,7 +98,7 @@ console.log('\n--- Footer dan rute halaman ---');
   const dasbor = sumber('src/pages/AdminDashboard.jsx');
   ok(!/Bantara|Laksana|sangga/i.test(dasbor) && /rekapSiaga/.test(dasbor), 'dasbor Admin tidak lagi menyebut Bantara, Laksana, sangga');
   ok(!/Garuda|portofolio|Jumat/.test(sumber('src/components/RingkasanGudep.jsx').replace(/Siaga Garuda/g, '')), 'ringkasan gudep tanpa portofolio Garuda dan "Jumat"');
-  ok(/'raport'/.test(sumber('src/config.js')), 'menu Raport (instrumen Penegak) disembunyikan');
+  ok(!/'raport'/.test(sumber('src/App.jsx')), 'menu Raport (instrumen Penegak) sudah dihapus dari aplikasi');
   const cetak = sumber('src/pages/CetakDokumen.jsx');
   ok(/PiagamPelantikanSiaga/.test(cetak) && /DAFTAR_TINGKAT_SIAGA/.test(cetak), 'halaman Cetak memuat piagam dan tingkat Siaga');
 }

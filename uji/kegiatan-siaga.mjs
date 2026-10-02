@@ -85,6 +85,9 @@ console.log('\n--- Server: jenis Agenda Siaga ---');
   console.log('\n--- Server: pengingat anak tanpa akun ---');
   const hari = (await q('select sigarda.hari_ini()::text d'))[0].d;
   const mundur = (n) => { const d = new Date(hari + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - n); return d.toISOString().slice(0, 10); };
+  // Sesi data contoh (tanggalnya bergantung hari uji) dapat menyela atau memutus runtun Alpa: kosongkan agar uji deterministik.
+  await q('delete from public.absensi_hadir');
+  await q('delete from public.absensi_sesi');
   for (const n of [20, 13, 6]) {
     await q('insert into public.absensi_sesi (tanggal) values ($1) on conflict do nothing', [mundur(n)]);
     await q("insert into public.absensi_hadir (tanggal, peserta_id, status) values ($1, $2, 'A') on conflict (tanggal, peserta_id) do update set status = 'A'", [mundur(n), id['Anak Satu']]);
