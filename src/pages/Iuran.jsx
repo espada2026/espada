@@ -21,7 +21,7 @@ export default function Iuran() {
   const tab = [
     ...(pencatatIuran ? [{ id: 'catat', label: 'Catat' }] : []),
     { id: 'rekap', label: 'Rekap' },
-    ...(pengurus ? [{ id: 'kas', label: 'Kas' }, { id: 'asisten', label: 'Asisten' }] : []),
+    ...(pengurus ? [{ id: 'kas', label: 'Kas' }] : []), // tab Asisten tidak dipakai di gugus depan Siaga
     ...(pembinaAtauAdmin(user) ? [{ id: 'pengaturan', label: 'Pengaturan' }] : []),
   ];
   const [aktif, setAktif] = useState(tab[0].id);
@@ -36,7 +36,7 @@ export default function Iuran() {
           className="mt-1"
           rujukan={[
             { id: 'iuran-049-1987', bagian: 'Pertama butir 1 (peserta didik membayar iuran kepada gugusdepannya)' },
-            { id: 'admin-satuan-041-1995', bagian: 'buku administrasi ambalan dipercayakan kepada Dewan Ambalan' },
+            { id: 'admin-satuan-041-1995', bagian: 'administrasi keuangan satuan (iuran dan kas)' },
           ]}
         />
       </div>

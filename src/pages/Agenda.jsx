@@ -25,13 +25,13 @@ function PilihPesertaTerkait({ nilai, onUbah, siaga = false }) {
   if (!buka) {
     return (
       <button type="button" className="text-sm font-semibold text-pramuka-700 underline underline-offset-2" onClick={() => setBuka(true)}>
-        {siaga ? `+ Tandai anak yang ikut (${nilai.length > 0 ? `${nilai.length} dipilih` : 'dasar saran butir Siaga Garuda'})` : `+ Tandai Penegak terkait (opsional, ${nilai.length > 0 ? `${nilai.length} dipilih` : 'mis. calon sidang/pelantikan'})`}
+        {siaga ? `+ Tandai anak yang ikut (${nilai.length > 0 ? `${nilai.length} dipilih` : 'dasar saran butir Siaga Garuda'})` : `+ Tandai anggota terkait (opsional, ${nilai.length > 0 ? `${nilai.length} dipilih` : 'mis. calon sidang/pelantikan'})`}
       </button>
     );
   }
   return (
-    <Field label={siaga ? `Anak Siaga yang ikut (${nilai.length} dipilih)` : `Penegak terkait (opsional, ${nilai.length} dipilih)`} bantuan={siaga ? 'Catat anak yang benar-benar ikut. Menjadi dasar saran butir Siaga Garuda (pertemuan Siaga dan Persari) dan ikut diberi tahu pengingat.' : 'Ikut diberi tahu pengingat H-30/H-7/H-1, selain semua pengurus.'}>
-      <input className="input mb-2" type="search" value={cari} onChange={(e) => setCari(e.target.value)} placeholder="Cari nama, kelas, atau sangga" aria-label={siaga ? 'Cari anak Siaga' : 'Cari Penegak'} />
+    <Field label={siaga ? `Anak Siaga yang ikut (${nilai.length} dipilih)` : `Anggota terkait (opsional, ${nilai.length} dipilih)`} bantuan={siaga ? 'Catat anak yang benar-benar ikut. Menjadi dasar saran butir Siaga Garuda (pertemuan Siaga dan Persari) dan ikut diberi tahu pengingat.' : 'Ikut diberi tahu pengingat H-30/H-7/H-1, selain semua pengurus.'}>
+      <input className="input mb-2" type="search" value={cari} onChange={(e) => setCari(e.target.value)} placeholder="Cari nama, kelas, atau barung" aria-label={siaga ? 'Cari anak Siaga' : 'Cari anggota'} />
       <ul className="max-h-48 divide-y divide-pramuka-100 overflow-y-auto rounded-lg border border-pramuka-200">
         {tampil.length === 0 && <li className="px-3 py-3 text-center text-sm text-pramuka-500">Tidak ada yang cocok.</li>}
         {tampil.map((u) => (
@@ -99,7 +99,7 @@ function EditorAgenda({ awal, onTutup, onSimpan }) {
         {a.jenis === 'musyawarah' && pembina && (
           <label className="mb-3 flex cursor-pointer items-start gap-2 text-sm text-pramuka-700">
             <input type="checkbox" className="mt-0.5 h-4 w-4 accent-pramuka-800" checked={a.lewatiBatas} onChange={(e) => ubah('lewatiBatas', e.target.checked)} />
-            Lewati batas 1 Juli (Dewan Ambalan sudah mengusulkan ini kepada saya)
+            Lewati batas 1 Juli (sudah diusulkan pengurus kepada saya)
           </label>
         )}
         <Field label="Keterangan (opsional)" htmlFor="ag-ket">
@@ -160,7 +160,7 @@ export default function Agenda() {
                   <p className="font-semibold text-pramuka-900">{a.judul}</p>
                   <p className="text-xs text-pramuka-500">
                     {labelJenisAgenda(a.jenis)} &middot; {fmtHariTanggal(a.tanggal)} &middot; {a.tahunAjaran}
-                    {a.pesertaTerkait.length > 0 && ` · ${a.pesertaTerkait.length} ${jenisSiaga(a.jenis) ? 'anak ikut' : 'Penegak terkait'}`}
+                    {a.pesertaTerkait.length > 0 && ` · ${a.pesertaTerkait.length} ${jenisSiaga(a.jenis) ? 'anak ikut' : 'anggota terkait'}`}
                   </p>
                   {a.keterangan && <p className="mt-1 text-sm text-pramuka-700">{a.keterangan}</p>}
                 </div>

@@ -13,7 +13,7 @@ export const KATEGORI_PEMERIKSAAN = [
   { kunci: 'kelasLama', judul: 'Kelas belum format rombel baku', keterangan: 'Kelas anggota belum memakai format baku (angka 1-6 dengan huruf paralel bila ada, mis. 4 atau 5A). Rapikan lewat menu Anggota.', tab: { admin: 'anggota' } },
   { kunci: 'tanpaNta', judul: 'Belum ada Nomor Tanda Anggota (NTA)', keterangan: 'NTA diperoleh dari Kwartir setelah anggota terdaftar. Lengkapi lewat menu Anggota.', tab: { admin: 'anggota' } },
   { kunci: 'tanpaJk', judul: 'Belum diisi jenis kelamin', keterangan: 'Wajib untuk anggota baru; anggota lama boleh dilengkapi lewat tombol "Lengkapi jenis kelamin" di menu Anggota.', tab: { admin: 'anggota' } },
-  { kunci: 'rombelTanpaPenguji', judul: 'Rombel belum ada penugasan penguji', keterangan: 'Rombel berisi Penegak aktif tetapi belum ada penguji ditugaskan tahun ajaran ini. Atur lewat menu Penugasan.', tab: { pembina: 'penugasan' } },
+  { kunci: 'rombelTanpaPenguji', hanyaPenegak: true, judul: 'Rombel belum ada penugasan penguji', keterangan: 'Rombel berisi Penegak aktif tetapi belum ada penguji ditugaskan tahun ajaran ini. Atur lewat menu Penugasan.', tab: { pembina: 'penugasan' } },
   { kunci: 'pembinaTanpaAgama', judul: 'Pembina belum diisi agama', keterangan: 'Agama Pembina menentukan siapa yang boleh menilai butir agama. Lengkapi lewat menu Anggota.', tab: { admin: 'anggota' } },
   { kunci: 'belumPernahMasuk', judul: 'Akun belum pernah masuk', keterangan: 'Akun sudah dibuat tetapi belum pernah dipakai masuk. Ingatkan pemiliknya lewat tombol WhatsApp pada daftar, atau reset PIN lewat menu Anggota bila lupa.', tab: { admin: 'anggota' } },
   { kunci: 'dataDiriBelum', judul: 'Anggota belum melengkapi data diri', keterangan: 'Data diri untuk portofolio Garuda diisi Penegak sendiri di menu Akun saya (isian pokok: WhatsApp, jenis kelamin, agama, tanggal lahir, tempat lahir, alamat, nama orang tua/wali). Penegak tanpa agama belum dapat mengajukan SKU. Ingatkan lewat tombol WhatsApp pada daftar; hanya kode isian yang kurang yang tampil, bukan isinya.', tab: {} },
@@ -37,7 +37,7 @@ export const jumlahKategori = (hasil, kunci) => {
 };
 
 /** Kategori yang ditampilkan: kategori pra-uji hanya bila pra-uji hidup (hasil.praUjiAktif). */
-export const kategoriTampil = (hasil) => KATEGORI_PEMERIKSAAN.filter((k) => !k.praUji || !!hasil?.praUjiAktif);
+export const kategoriTampil = (hasil) => KATEGORI_PEMERIKSAAN.filter((k) => !k.hanyaPenegak && (!k.praUji || !!hasil?.praUjiAktif)); // hanyaPenegak: penugasan penguji per rombel tidak dipakai gugus depan Siaga (penguji = Pembina)
 
 /** Total seluruh kategori yang ditampilkan (untuk lencana/ringkasan). */
 export const totalMasalah = (hasil) => kategoriTampil(hasil).reduce((n, k) => n + jumlahKategori(hasil, k.kunci), 0);

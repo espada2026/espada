@@ -28,7 +28,7 @@ export const SKEMA_BERITA = {
   terbitPada: (form, item) => terbitPadaDari(form.terbitTanggal, item?.terbitPada ?? null),
   fields: [
     { kunci: 'kategori', label: 'Kategori', jenis: 'select', opsi: KATEGORI_BERITA.map((k) => [k, LABEL_KATEGORI_BERITA[k]]) },
-    { kunci: 'terbitTanggal', label: 'Tanggal terbit', jenis: 'date', bantuan: 'Pilih tanggal berita ini dianggap terbit, tidak harus hari ini: berita yang terlambat ditulis memakai tanggal kejadiannya, dan beberapa berita sekaligus dapat diberi tanggal berbeda. Tanggal yang akan datang = terjadwal (baru tampil pada tanggal itu). Bagi Dewan Ambalan, tanggal ini dipakai saat Pembina menyetujui.' },
+    { kunci: 'terbitTanggal', label: 'Tanggal terbit', jenis: 'date', bantuan: 'Pilih tanggal berita ini dianggap terbit, tidak harus hari ini: berita yang terlambat ditulis memakai tanggal kejadiannya, dan beberapa berita sekaligus dapat diberi tanggal berbeda. Tanggal yang akan datang = terjadwal (baru tampil pada tanggal itu). Bagi pengurus selain Pembina, tanggal ini dipakai saat Pembina menyetujui.' },
     { kunci: 'judul', label: 'Judul' },
     { kunci: 'ringkasan', label: 'Ringkasan (tampil di kartu)' },
     { kunci: 'isi', label: 'Isi berita', jenis: 'textarea', baris: 6 },

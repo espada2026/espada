@@ -116,7 +116,7 @@ export default function PanelKontenTinjau({ skema }) {
     const r = await api()[skema.fnTinjau](item.id, keputusan, catatan);
     setSibuk('');
     if (!r.ok) { notify(r.pesan, 'err'); return; }
-    notify(keputusan === 'terbit' ? 'Diterbitkan.' : 'Ditolak, Dewan Ambalan diberi catatan.');
+    notify(keputusan === 'terbit' ? 'Diterbitkan.' : 'Ditolak, penulis diberi catatan.');
     await muat();
   };
 
@@ -182,7 +182,7 @@ export default function PanelKontenTinjau({ skema }) {
             ? <button type="button" className="btn btn-gold" disabled={!!sibuk} onClick={() => simpan('terbit')}>{sibuk === 'simpan' ? 'Menyimpan...' : 'Terbitkan sekarang'}</button>
             : <button type="button" className="btn btn-gold" disabled={!!sibuk} onClick={() => simpan('menunggu')}>{sibuk === 'simpan' ? 'Mengirim...' : 'Ajukan ke Pembina'}</button>}
         </div>
-        {!bolehTerbit && <p className="text-xs text-pramuka-600">Sebagai Dewan Ambalan, {skema.labelSatuan} Anda diajukan ke Pembina lebih dulu sebelum tampil di beranda.</p>}
+        {!bolehTerbit && <p className="text-xs text-pramuka-600">Sebagai pengurus, {skema.labelSatuan} Anda diajukan ke Pembina lebih dulu sebelum tampil di beranda.</p>}
         {dicoba && Object.keys(galat).length > 0 && <p role="alert" className="text-sm font-medium text-red-700">Perbaiki isian yang bertanda merah.</p>}
       </form>
     </div>

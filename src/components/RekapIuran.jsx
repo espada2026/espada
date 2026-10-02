@@ -76,7 +76,7 @@ export default function RekapIuran() {
     <div>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <p className="max-w-xl text-sm text-pramuka-600">
-          Rekap iuran bumbung kepramukaan {PERIODE[per.periode]} {per.ta}. Angka per sangga, kelas, dan gudep terlihat oleh semua; rincian per anggota hanya untuk pengurus dan yang bersangkutan.
+          Rekap iuran bumbung kepramukaan {PERIODE[per.periode]} {per.ta}. Angka per barung, kelas, dan gudep terlihat oleh semua; rincian per anggota hanya untuk pengurus dan yang bersangkutan.
         </p>
         <PilihPeriode nilai={per} ubah={setPer} />
       </div>
@@ -140,7 +140,7 @@ export default function RekapIuran() {
                 <table className="w-full min-w-[420px] text-left text-sm">
                   <thead className="bg-pramuka-50 text-pramuka-700">
                     <tr>
-                      <th className="px-4 py-2 font-semibold">Jumat</th>
+                      <th className="px-4 py-2 font-semibold">Latihan</th>
                       <th className="px-3 py-2 text-right font-semibold">Anggota beriuran</th>
                       <th className="px-3 py-2 text-right font-semibold">Total</th>
                       {pengurus && <th className="px-3 py-2 text-right font-semibold">Kas fisik</th>}
@@ -175,7 +175,7 @@ export default function RekapIuran() {
           </section>
 
           <div className="grid gap-5 md:grid-cols-2">
-            <TabelKelompok judul="Per sangga" kolom="" daftar={ring.sangga} />
+            {ring.sangga.some((s) => s.kunci) && <TabelKelompok judul="Per sangga" kolom="" daftar={ring.sangga} />}
             <TabelKelompok judul="Per kelas" kolom="Kelas" daftar={ring.kelas} />
           </div>
 
@@ -189,14 +189,14 @@ export default function RekapIuran() {
               </div>
               <div className="mb-3"><FilterBar data={daftarPeserta} filter={filter} setFilter={setFilter} tampil={['sangga', 'kelas', 'jk']} /></div>
               {tersaring.length === 0 ? (
-                <Kosong judul="Tidak ada anggota" teks="Ubah kata kunci, sangga, atau kelas pada filter." />
+                <Kosong judul="Tidak ada anggota" teks="Ubah kata kunci, barung, atau kelas pada filter." />
               ) : (
                 <div className="panel overflow-x-auto">
                   <table className="w-full min-w-[560px] text-left text-sm">
                     <thead className="bg-pramuka-50 text-pramuka-700">
                       <tr>
                         <th className="px-4 py-2 font-semibold">Nama</th>
-                        <th className="px-3 py-2 font-semibold">Kelas, sangga</th>
+                        <th className="px-3 py-2 font-semibold">Kelas, barung</th>
                         <th className="px-3 py-2 text-right font-semibold">Beriuran</th>
                         <th className="px-3 py-2 text-right font-semibold">Rutin</th>
                         <th className="px-3 py-2 text-right font-semibold">Total</th>
@@ -206,7 +206,7 @@ export default function RekapIuran() {
                       {tersaring.map((x) => (
                         <tr key={x.peserta.id}>
                           <td className="px-4 py-2 font-medium">{x.peserta.nama}</td>
-                          <td className="px-3 py-2 text-xs text-pramuka-600">{x.peserta.kelas}, {x.peserta.sangga}</td>
+                          <td className="px-3 py-2 text-xs text-pramuka-600">{x.peserta.kelas}, {x.peserta.barung || x.peserta.sangga}</td>
                           <td className="px-3 py-2 text-right tabular-nums">{x.kali}/{sesi.length}{x.susulan > 0 ? ` (+${x.susulan} susulan)` : ''}</td>
                           <td className={`px-3 py-2 text-right tabular-nums ${x.persen !== null && x.persen < ambang ? 'font-semibold text-red-700' : 'text-pramuka-700'}`}>{x.persen === null ? '-' : `${x.persen}%`}</td>
                           <td className="px-3 py-2 text-right font-semibold tabular-nums">{rupiah(x.total)}</td>

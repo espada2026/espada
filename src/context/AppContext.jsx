@@ -990,7 +990,7 @@ export function AppProvider({ children }) {
       const daftarLahir = daftar.map((h) => ({ username: h.username, tanggal: lahirPerBaris.get(h.no) ?? '' })).filter((x) => x.tanggal);
       if (daftarLahir.length) {
         const l = await api().imporTanggalLahir(daftarLahir);
-        if (!l.ok) peringatan = `${peringatan ? `${peringatan} ` : ''}Tanggal lahir ${daftarLahir.length} Penegak belum tersimpan (isi lewat menu Kelayakan): ${l.pesan}`;
+        if (!l.ok) peringatan = `${peringatan ? `${peringatan} ` : ''}Tanggal lahir ${daftarLahir.length} anggota belum tersimpan: ${l.pesan}`;
       }
     }
     if (daftar.length) await segarkan.users();

@@ -88,7 +88,7 @@ export default function LembarIuran() {
           </div>
 
           {tersaring.length === 0 ? (
-            <Kosong judul="Tidak ada anggota" teks="Ubah kata kunci, sangga, atau kelas pada filter." />
+            <Kosong judul="Tidak ada anggota" teks="Ubah kata kunci atau kelas pada filter." />
           ) : (
             <ul className="panel divide-y divide-pramuka-100">
               {tersaring.map((d) => (
@@ -97,7 +97,7 @@ export default function LembarIuran() {
                     <Avatar nama={d.nama} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">{d.nama}</p>
-                      <p className="text-xs text-pramuka-500">Kelas {d.kelas}, {d.sangga}</p>
+                      <p className="text-xs text-pramuka-500">Kelas {d.kelas}{d.sangga ? `, ${d.sangga}` : ''}</p>
                     </div>
                     <BadgeAbsen status={d.status ?? 'B'} />
                   </div>

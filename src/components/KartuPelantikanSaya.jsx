@@ -15,8 +15,8 @@ export default function KartuPelantikanSaya() {
   const dilantik = TINGKAT_PELANTIKAN.filter((t) => p[t.id]);
   if (dilantik.length === 0 && s.length === 0) return null;
   return (
-    <section className="panel mb-5 p-4" aria-label="Pelantikan dan Saka saya">
-      <h2 className="mb-2 text-lg font-bold">Pelantikan dan Saka</h2>
+    <section className="panel mb-5 p-4" aria-label="Pelantikan saya">
+      <h2 className="mb-2 text-lg font-bold">Pelantikan</h2>
       <ul className="space-y-1 text-sm text-pramuka-800">
         {dilantik.map((t) => (
           <li key={t.id}><b>Dilantik {tingkatSiaga(t.id) ? 'Siaga ' : ''}{t.label}</b> pada {fmtTanggal(p[t.id].tanggal)}, {p[t.id].tempat}.</li>

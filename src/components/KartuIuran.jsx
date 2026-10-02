@@ -71,11 +71,11 @@ export default function KartuIuran({ onBuka }) {
         )}
         {pengurus && (
           <>
-            <div>
+            {ring.sangga.some((g) => g.kunci) && <div>
               <dt className="text-xs text-pramuka-500">Sangga teratas</dt>
               <dd className="font-semibold text-pramuka-900">{ring.sangga[0] ? `${ring.sangga[0].kunci || '-'}` : '-'}</dd>
               {ring.sangga[0] && <dd className="text-[11px] text-pramuka-500">{rupiah(ring.sangga[0].jumlah)}</dd>}
-            </div>
+            </div>}
             <div>
               <dt className="text-xs text-pramuka-500">Perlu perhatian</dt>
               <dd className={`font-semibold ${dibawah || kasBelum ? 'text-red-700' : 'text-emerald-800'}`}>

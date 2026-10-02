@@ -108,7 +108,7 @@ function Antrian({ onBuka }) {
                 <Avatar nama={peserta.nama} />
                 <div className="min-w-0">
                   <p className="font-semibold">{peserta.nama}</p>
-                  <p className="text-xs text-pramuka-500">Kelas {peserta.kelas}, {peserta.sangga}, SKU {poin.tingkat}</p>
+                  <p className="text-xs text-pramuka-500">Kelas {peserta.kelas}, {peserta.barung || peserta.sangga}, SKU {poin.tingkat}</p>
                   <div className="mt-1"><TeksPoin poin={poin} /></div>
                   <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-pramuka-600">
                     <Badge status={entry.status} />
@@ -161,7 +161,7 @@ function DaftarPeserta({ onBuka }) {
       <div className="mb-4"><FilterBar data={daftarPesertaSemua} filter={filter} setFilter={setFilter} tampil={['status', 'sangga', 'kelas', 'peran', 'agama', 'jk']} rombelSaya={rombelSaya} /></div>
 
       {daftar.length === 0 ? (
-        <Kosong judul="Tidak ada peserta" teks="Ubah kata kunci, sangga, kelas, peran, atau agama pada filter, atau matikan &quot;Hanya rombel saya&quot;." />
+        <Kosong judul="Tidak ada peserta" teks="Ubah kata kunci, barung, kelas, peran, atau agama pada filter, atau matikan &quot;Hanya rombel saya&quot;." />
       ) : (
         <ul className="panel divide-y divide-pramuka-100">
           {daftar.map((u) => {
