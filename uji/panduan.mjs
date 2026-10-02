@@ -8,7 +8,7 @@ const ok = (c, m) => { if (c) { lulus++; console.log('ok   :', m); } else { gaga
 
 console.log('--- Struktur isi (panduanData.js) ---');
 {
-  ok(PERAN_PANDUAN.length === 4, `PERAN_PANDUAN: 4 peran: ${PERAN_PANDUAN.join(', ')}`);
+  ok(PERAN_PANDUAN.length === 3, `PERAN_PANDUAN: 3 peran: ${PERAN_PANDUAN.join(', ')}`);
   ok(BAGIAN_UMUM.isi.length > 0, 'BAGIAN_UMUM: ada isi untuk semua peran');
   const semuaId = new Set();
   for (const kode of PERAN_PANDUAN) {
@@ -31,11 +31,10 @@ console.log('--- Struktur isi (panduanData.js) ---');
 
 console.log('\n--- panduanAwal (murni) ---');
 {
-  ok(panduanAwal(null) === 'penegak', 'tanpa pengguna: bawaan penegak');
-  ok(panduanAwal({ role: 'peserta' }) === 'penegak', 'Penegak (tampilan Penegak): panduan penegak');
+  ok(panduanAwal(null) === 'anggota', 'tanpa pengguna: bawaan anggota');
+  ok(panduanAwal({ role: 'peserta' }) === 'anggota', 'anggota Siaga berakun: panduan anggota');
   ok(panduanAwal({ role: 'penguji', jabatan: 'Pembina' }) === 'pembina', 'Pembina: panduan pembina');
-  ok(panduanAwal({ role: 'penguji', jabatan: 'Dewan Ambalan' }) === 'dewan', 'akun Dewan lama: panduan dewan');
-  ok(panduanAwal({ role: 'penguji', jabatan: 'Dewan Ambalan', jabatanDewan: 'Pradana' }) === 'dewan', 'Penegak berjabatan (tampilan Dewan): panduan dewan');
+  ok(panduanAwal({ role: 'penguji', jabatan: 'Dewan Ambalan' }) === 'pembina', 'akun lama berperan penguji: panduan pembina');
   ok(panduanAwal({ role: 'admin' }) === 'admin', 'Admin Gudep: panduan admin');
 }
 

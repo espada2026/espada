@@ -36,7 +36,7 @@ React 18, Vite 5, Tailwind 3; Supabase (Postgres, Auth, dua Edge Function Deno);
 (PGlite), dan mode lokal (`npm run dev:lokal`) memakai PGlite di peramban, jadi hampir seluruh aplikasi dapat dijalankan dan diuji tanpa Supabase.
 
 Perintah utama: `npm run dev:lokal` (jalankan lokal), `npm run build`, `npm run uji` (semua pengujian; `npm run uji -- <nama>` untuk sebagian), `npm run skema` dan `npm run periksa`
-(bangun ulang skema), `npm run profil` dan `npm run simulasi:beban` (kinerja), `npm run catatan-rilis`. Mode `?masuk=<akun>` di lokal masuk tanpa PIN (tidak masuk build produksi).
+(bangun ulang skema), `npm run profil` (kinerja), `npm run catatan-rilis`. Mode `?masuk=<akun>` di lokal masuk tanpa PIN (tidak masuk build produksi).
 
 ## 3. Peta kode
 
@@ -55,7 +55,7 @@ Perintah utama: `npm run dev:lokal` (jalankan lokal), `npm run build`, `npm run 
 | `src/data` | Katalog tetap: butir SKU resmi, TKK, SPG, dokumen portofolio, panduan, registri peraturan |
 | `src/lokal` | Backend lokal (klien tiruan di atas PGlite) dan data contoh; bukan untuk produksi |
 | `uji/` | Sekitar 130 berkas pengujian; tiap fitur punya uji server, uji klien, dan uji migrasi |
-| `docs/` | Cermin klien-server, laporan simulasi, dokumen ini |
+| `docs/` | Cermin klien-server, panduan pemasangan, dokumen ini |
 
 ## 4. Model data dan akses
 
@@ -116,7 +116,7 @@ punya uji yang membandingkannya LANGSUNG dengan SQL pada kisi masukan**, bukan s
 - **Tugas terjadwal:** pengingat harian 07.00 WIB (`sigarda.notif_pengingat` lewat pg_cron; lapisan bertumpuk: cadangan, eskalasi, agenda, usulan kegiatan, pra-uji, kalender Garuda);
   keep-alive harian supaya proyek Free tier tidak dijeda (workflow dan fungsi di database).
 - **Cadangan:** tombol "Unduh cadangan" (Data Gudep; data isian tanpa akun login, diingatkan tiap 30 hari) dan `Cadangkan-SIGARDA.bat` (penuh, termasuk akun). Ukuran cadangan tumbuh: 32 MB pada data
-  sekolah penuh ([simulasi](simulasi-beban-tahap3-4-2026-09.md)); pantau waktunya.
+  sekolah penuh; pantau waktunya.
 - **Batas paket gratis** yang perlu dipantau: ukuran basis data (500 MB), waktu permintaan, dan aktivitas proyek. Alat: `npm run profil`, `supabase/demo/ukur_muatan.sql`, `scripts/uji-beban/beban.mjs`.
 - **Kinerja klien:** `ambilSemua` membaca halaman berikutnya serempak (jangan dikembalikan berurutan); `sku_riwayat` dimuat malas per Penegak (`pastikanRiwayat`); halaman dimuat malas.
 
@@ -137,8 +137,6 @@ punya uji yang membandingkannya LANGSUNG dengan SQL pada kisi masukan**, bukan s
 - **Ambang jumlah Krida** (SPG butir 6) belum ada sumbernya; sekarang hanya keterangan. Nama dan bidang enam SKK tambahan dan bidang Cakap Keuangan perlu dipastikan ke Kwarcab.
 - **Asumsi yang belum dikonfirmasi pemilik:** mengajukan ulang sesudah hasil "ulang" memulai jalur pra-uji dari awal; satu Penegak hanya boleh menjadi Bina Damping di satu rombel per tahun ajaran
   (indeks `bina_damping_satu_rombel_idx`, cabut bila boleh merangkap).
-- **Uji coba pengguna nyata** dijadwalkan 2 dan 9 Oktober 2026 (BPH Dewan Ambalan dan tekpram; lalu Bina Damping, Pinsa, Dewan Ambalan). Simulasi sudah ada di
-  [simulasi-pra-uji-2026-10.md](simulasi-pra-uji-2026-10.md) dan [simulasi-beban-tahap3-4-2026-09.md](simulasi-beban-tahap3-4-2026-09.md); beban serentak di Supabase sungguhan belum diukur.
 - **Deploy Edge Function masih manual** (otomatisasi butuh token sensitif; belum diputuskan).
 - **Isi peraturan tidak disalin** ke repositori; hanya judul dan tautan. Periksa tautan dengan `npm run periksa-peraturan` (butuh internet) sebelum tahun ajaran baru; aturan gerbang Garuda dan ambang TKK diperbarui
   tiap tahun lewat menu Kelayakan dan TKK.

@@ -143,7 +143,7 @@ console.log('\n--- Tampilan ---');
 {
   const render = (user, el) => renderToStaticMarkup(h(KonteksApp.Provider, { value: { user, users: [], daftarPeserta: [], progress: {}, api: () => ({ muatAgenda: async () => ({ ok: true, data: [] }), muatPelantikanSaka: async () => ({ ok: true, data: { pelantikan: [], saka: [] } }) }), notify() {} } }, el));
   const html = render({ id: 'p', role: 'penguji', jabatan: 'Pembina', nama: 'Pembina' }, h(Pelantikan));
-  ok(html.includes('Siaga Mula') && html.includes('Siaga Tata') && html.includes('Bantara') && html.includes('Belum ada Penegak yang layak'), 'formulir menawarkan tingkat Penegak dan Siaga');
+  ok(html.includes('Siaga Mula') && html.includes('Siaga Tata') && !html.includes('Bantara') && html.includes('Belum ada anggota Siaga yang layak'), 'formulir hanya menawarkan tingkat Siaga');
   ok(html.includes('Keputusan Kwarnas 119/2011') || html.includes('119/2011') || html.includes('Siaga'), 'rujukan peraturan Siaga tampil');
   const kartu = renderToStaticMarkup(h(KonteksApp.Provider, { value: { user: { id: 'x', role: 'peserta' }, api: () => ({ muatPelantikanSaka: async () => ({ ok: true, data: { pelantikan: [], saka: [] } }) }) } }, h(KartuPelantikanSaya)));
   ok(kartu === '', 'kartu pelantikan kosong tidak tampil');

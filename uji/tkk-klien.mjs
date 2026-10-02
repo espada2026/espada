@@ -1,15 +1,11 @@
 // Tahap 2 (G2): TKK di klien. Katalog (kualitas data), logika murni (tingkat, kemajuan menuju ambang), cermin validasi yang DIBANDINGKAN LANGSUNG dengan SQL pada kisi
 // masukan, lapisan api, dan render halaman. Server: uji/tkk.mjs.
-import { createElement as h } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
 import { siapkanPg, buatKlienFake, sqlSebagai } from '../src/lokal/klienFake.js';
 import { isiDataContoh } from '../src/lokal/seedLokal.js';
 import { PIN_DEMO } from '../src/lokal/pinDemo.js';
 import { buatApi } from '../src/lib/api.js';
-import { KonteksApp } from '../src/context/AppContext.jsx';
-import Tkk from '../src/pages/Tkk.jsx';
 import { AMBANG_TKK_BAWAAN, BIDANG_TKK, INDEKS_TKK, KATALOG_TKK, TINGKAT_TKK, tkkUntukPenegak } from '../src/data/tkkData.js';
 import { hitungKemajuan, periksaAmbang, periksaCapaian, periksaKrida, pilihanTkk, teksKemajuan, tingkatBerikut, tingkatTertinggi } from '../src/lib/tkkLogic.js';
 import { PERATURAN } from '../src/data/peraturanData.js';
@@ -172,18 +168,6 @@ console.log('\n--- Lapisan api: pemetaan dan aksi ---');
   ok(r.ok, 'hapusTkk Madya');
   r = await pembina.a.hapusKrida((await siti.a.muatTkk(AMBANG_TKK_BAWAAN)).data.krida[0].id);
   ok(r.ok, 'hapusKrida');
-}
-
-console.log('\n--- Tampilan (render tanpa peramban) ---');
-{
-  const users = [{ id: 'pb', role: 'penguji', jabatan: 'Pembina', nama: 'Pak Pembina', status: 'aktif' }, { id: 'a', role: 'peserta', nama: 'Ani', kelas: 'X-01', status: 'aktif', agama: 'Islam' }];
-  const api = () => ({ muatTkk: async () => ({ ok: true, data: { capaian: [], krida: [], ambang: AMBANG_TKK_BAWAAN } }) });
-  const tampil = (user) => renderToStaticMarkup(h(KonteksApp.Provider, { value: { api, users, daftarPeserta: [users[1]], daftarPesertaSemua: [users[1]], notify: () => {}, user } }, h(Tkk)));
-  const pengurus = tampil(users[0]);
-  ok(pengurus.includes('Tanda Kecakapan Khusus') && pengurus.includes('data-sumber-peraturan') && pengurus.includes('role="tablist"') && pengurus.includes('Cari nama atau kelas Penegak'), 'pengurus: judul, rujukan peraturan, tab, dan pencarian Penegak');
-  const penegak = tampil(users[1]);
-  ok(penegak.includes('Kemajuan menuju syarat Garuda') && penegak.includes('0 dari 45') && !penegak.includes('role="tablist"') && !penegak.includes('Catat TKK'), 'Penegak: kemajuan miliknya, tanpa tab dan tanpa tombol catat');
-  ok(penegak.includes('Belum ada TKK tercatat') && penegak.includes('Sudah lulus uji TKK?'), 'Penegak tanpa capaian: pesan kosong yang ramah');
 }
 
 console.log(`\nRINGKASAN TKK-KLIEN: ${lulus} lulus, ${gagal} gagal`);

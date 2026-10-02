@@ -13,9 +13,7 @@
     "profil": "node scripts/profil-muat.mjs",
     "catatan-rilis": "node scripts/catatan-rilis.mjs",
     "periksa-peraturan": "node scripts/periksa-peraturan.mjs",
-    "uji": "node uji/jalankan.mjs",
-    "simulasi:pra-uji": "node scripts/jalankan-simulasi.mjs scripts/simulasi-pra-uji.mjs",
-    "simulasi:beban": "node scripts/jalankan-simulasi.mjs scripts/simulasi-beban-tahap3-4.mjs"
+    "uji": "node uji/jalankan.mjs"
   },
   "dependencies": {
     "@supabase/auth-js": "^2.109.0",
