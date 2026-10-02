@@ -182,13 +182,13 @@ $$
   select case p_jenis || p_tingkat
     when 'sku1' then 'Belum ada pengajuan atau hasil baru sejak ' || to_char(p_mulai - 7, 'DD-MM-YYYY') || '.'
     when 'sku2' then 'Sudah beberapa hari tidak ada aktivitas SKU. Sempatkan mengajukan butir berikutnya.'
-    when 'sku3' then 'Sudah lama tidak ada aktivitas SKU. Hubungi Pembina atau Dewan bila ada kendala.'
+    when 'sku3' then 'Sudah lama tidak ada aktivitas SKU. Hubungi Pembina bila ada kendala.'
     when 'absensi1' then 'Tidak hadir latihan terakhir tanpa keterangan.'
     when 'absensi2' then 'Sudah 2 kali berturut-turut tidak hadir latihan tanpa keterangan.'
-    when 'absensi3' then 'Sudah lama tidak hadir latihan tanpa keterangan. Hubungi Pembina atau Dewan bila ada kendala.'
+    when 'absensi3' then 'Sudah lama tidak hadir latihan tanpa keterangan. Hubungi Pembina bila ada kendala.'
     when 'iuran1' then 'Iuran latihan terakhir belum tercatat.'
     when 'iuran2' then 'Sudah 2 kali berturut-turut iuran belum tercatat.'
-    when 'iuran3' then 'Sudah lama iuran belum tercatat. Hubungi Dewan atau asisten bendahara bila ada kendala.'
+    when 'iuran3' then 'Sudah lama iuran belum tercatat. Hubungi Pembina atau asisten bendahara bila ada kendala.'
   end
 $$;
 -- Tab tujuan notifikasi milik Penegak sendiri per jenis kejadian (menu yang relevan di navigasinya).
@@ -243,7 +243,7 @@ $$
 declare v_hari date := sigarda.hari_ini(); v_hasil jsonb := '[]'::jsonb; r record; v_mulai date; v_elapsed int; v_jenis text;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya Pembina, Dewan Ambalan, dan Admin Gudep yang dapat melihat daftar ini.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat melihat daftar ini.'; end if;
   for r in select id, nama, kelas, sangga, whatsapp, tanpa_akun from public.profiles where role = 'peserta' and status = 'aktif' loop
     -- Anak Siaga tanpa akun: hanya kejadian absensi (lihat sigarda.eskalasi_proses).
     foreach v_jenis in array case when r.tanpa_akun then array['absensi'] else array['sku','absensi','iuran'] end loop

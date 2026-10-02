@@ -40,10 +40,10 @@ begin
   end if;
 
   v_ids := coalesce((select array_agg(distinct x) from unnest(p_peserta_terkait) x), '{}');
-  if cardinality(v_ids) > 500 then raise exception 'Maksimal 500 Penegak terkait.'; end if;
+  if cardinality(v_ids) > 500 then raise exception 'Maksimal 500 anggota terkait.'; end if;
   foreach v_id in array v_ids loop
     if not exists (select 1 from public.profiles where id = v_id and role = 'peserta' and status = 'aktif') then
-      raise exception 'Salah satu Penegak terkait tidak ditemukan atau tidak aktif.';
+      raise exception 'Salah satu anggota terkait tidak ditemukan atau tidak aktif.';
     end if;
   end loop;
 

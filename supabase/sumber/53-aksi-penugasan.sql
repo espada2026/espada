@@ -119,7 +119,7 @@ language plpgsql security definer set search_path = public as
 $$
 declare v_e jsonb; v_user text; v_r text; v_n int := 0; v_k int;
 begin
-  perform sigarda.wajib_admin('Hanya Admin Gudep yang dapat memperbarui rombel Penegak.');
+  perform sigarda.wajib_admin('Hanya Admin Gudep yang dapat memperbarui rombel anggota.');
   if p_data is null or jsonb_typeof(p_data) <> 'array' then raise exception 'Data rombel tidak valid.'; end if;
   if jsonb_array_length(p_data) > 500 then raise exception 'Maksimal 500 baris per permintaan.'; end if;
   for v_e in select * from jsonb_array_elements(p_data) loop
@@ -132,7 +132,7 @@ begin
     end if;
     update public.profiles set kelas = v_r where username = v_user and role = 'peserta';
     get diagnostics v_k = row_count;
-    if v_k = 0 then raise exception 'Baris %: Penegak dengan NIS "%" tidak ditemukan.', v_n, v_user; end if;
+    if v_k = 0 then raise exception 'Baris %: anggota dengan NIS "%" tidak ditemukan.', v_n, v_user; end if;
   end loop;
   return v_n;
 end $$;

@@ -58,7 +58,7 @@ r = await set(K.dewan.k, T2, ahmad, 1000); ok(!r.err, 'Jumat sebelumnya (pengisi
 
 console.log('\n--- Yang TIDAK boleh mencatat ---');
 for (const [nama, kk] of [['Admin', K.admin], ['Penegak', K.ahmad]]) {
-  r = await set(kk.k, T, kevin, 3000); ok(/Dewan Ambalan atau asisten/.test(r.err ?? ''), `${nama} ditolak: ${r.err}`);
+  r = await set(kk.k, T, kevin, 3000); ok(/Pembina atau asisten/.test(r.err ?? ''), `${nama} ditolak: ${r.err}`);
   r = await rpc(kk.k, 'sg_iuran_set_banyak', { p_tanggal: T, p_peserta_ids: [kevin], p_jumlah: 1000, p_hanya_kosong: false }); ok(!!r.err, `${nama} ditolak untuk pengisian banyak`);
   r = await rpc(kk.k, 'sg_iuran_lembar', { p_tanggal: T }); ok(!!r.err, `${nama} tidak dapat membuka lembar catat`);
 }
@@ -93,8 +93,8 @@ console.log('\n--- Asisten bendahara ---');
 const cl = calonLaksana[0], cl2 = calonLaksana[1];
 r = await rpc(K.dewan.k, 'sg_asisten_iuran_atur', { p_peserta_id: cl.id, p_aktif: true }); ok(!r.err, `Dewan menunjuk Calon Laksana (${cl.username}) sebagai asisten`);
 r = await rpc(K.pembina.k, 'sg_asisten_iuran_atur', { p_peserta_id: cl2.id, p_aktif: true }); ok(!r.err, 'Pembina juga dapat menunjuk');
-r = await rpc(K.admin.k, 'sg_asisten_iuran_atur', { p_peserta_id: calonLaksana[2]?.id ?? cl.id, p_aktif: true }); ok(/Dewan Ambalan atau Pembina/.test(r.err ?? ''), 'Admin tidak dapat menunjuk: ' + r.err);
-r = await rpc(K.ahmad.k, 'sg_asisten_iuran_atur', { p_peserta_id: cl.id, p_aktif: false }); ok(/Dewan Ambalan atau Pembina/.test(r.err ?? ''), 'Penegak tidak dapat mengatur asisten');
+r = await rpc(K.admin.k, 'sg_asisten_iuran_atur', { p_peserta_id: calonLaksana[2]?.id ?? cl.id, p_aktif: true }); ok(/Hanya Pembina yang dapat menunjuk/.test(r.err ?? ''), 'Admin tidak dapat menunjuk: ' + r.err);
+r = await rpc(K.ahmad.k, 'sg_asisten_iuran_atur', { p_peserta_id: cl.id, p_aktif: false }); ok(/Hanya Pembina yang dapat menunjuk/.test(r.err ?? ''), 'Penegak tidak dapat mengatur asisten');
 r = await rpc(K.dewan.k, 'sg_asisten_iuran_atur', { p_peserta_id: calonBantara[0].id, p_aktif: true }); ok(/Calon Laksana/.test(r.err ?? ''), 'Calon Bantara tidak boleh ditunjuk: ' + r.err);
 if (calonGaruda.length) { r = await rpc(K.dewan.k, 'sg_asisten_iuran_atur', { p_peserta_id: calonGaruda[0].id, p_aktif: true }); ok(/Calon Laksana/.test(r.err ?? ''), 'Calon Garuda (Laksana selesai) tidak boleh ditunjuk'); }
 r = await rpc(K.dewan.k, 'sg_asisten_iuran_atur', { p_peserta_id: K.pembina.id, p_aktif: true }); ok(/Peserta tidak ditemukan/.test(r.err ?? ''), 'hanya Penegak yang dapat ditunjuk');
@@ -103,8 +103,8 @@ const A = await masuk(cl.username, PIN_DEMO.penegak); // asisten sungguhan
 ok((await baca(A.k, 'asisten_iuran')).n === 1, 'asisten membaca penunjukan miliknya sendiri');
 r = await set(A.k, T2, kevin, 1000); ok(!r.err, 'asisten dapat mencatat iuran Penegak lain');
 ok((await q(`select oleh from public.iuran where tanggal = $1 and peserta_id = $2`, [T2, kevin]))[0].oleh === A.id, '...dan tercatat atas namanya');
-r = await set(A.k, T, A.id, 1000); ok(/dicatat oleh Dewan Ambalan/.test(r.err ?? ''), 'asisten tidak dapat mencatat iurannya sendiri: ' + r.err);
-r = await rpc(A.k, 'sg_iuran_kas_simpan', { p_tanggal: T, p_total: 1, p_catatan: '' }); ok(/Dewan Ambalan/.test(r.err ?? ''), 'asisten tidak dapat menutup kas');
+r = await set(A.k, T, A.id, 1000); ok(/dicatat oleh Pembina/.test(r.err ?? ''), 'asisten tidak dapat mencatat iurannya sendiri: ' + r.err);
+r = await rpc(A.k, 'sg_iuran_kas_simpan', { p_tanggal: T, p_total: 1, p_catatan: '' }); ok(/Hanya Pembina/.test(r.err ?? ''), 'asisten tidak dapat menutup kas');
 const lembar = await rpc(A.k, 'sg_iuran_lembar', { p_tanggal: T });
 ok(!lembar.err && lembar.data.length === peserta.length - 1 && !lembar.data.some((x) => x.id === A.id), `lembar asisten: ${lembar.data?.length} Penegak, tanpa dirinya sendiri`);
 ok(lembar.data.every((x) => 'id' in x && 'nama' in x && 'jumlah' in x && 'status' in x) && Object.keys(lembar.data[0]).sort().join() === 'id,jenis,jumlah,kelas,nama,sangga,status', 'lembar hanya memuat bidang yang perlu (tanpa NIS, agama, dll.)');
@@ -112,7 +112,7 @@ ok(lembar.data.find((x) => x.id === ahmad).status === 'S' && lembar.data.find((x
 const bA = await baca(A.k, 'iuran'); ok(bA.data.every((x) => x.peserta_id === A.id), 'asisten membaca tabel iuran hanya miliknya (bukan milik Penegak lain)');
 const profilLain = await A.k.from('profiles').select('id'); ok((profilLain.data ?? []).filter((x) => x.id !== A.id && peserta.some((p) => p.id === x.id)).length === 0, 'asisten tetap tidak dapat membaca profil Penegak lain');
 r = await rpc(K.dewan.k, 'sg_asisten_iuran_atur', { p_peserta_id: cl.id, p_aktif: false }); ok(!r.err, 'Dewan mencabut penunjukan');
-r = await set(A.k, T2, kevin, 1500); ok(/Dewan Ambalan atau asisten/.test(r.err ?? ''), 'setelah dicabut, asisten tidak dapat mencatat lagi');
+r = await set(A.k, T2, kevin, 1500); ok(/Pembina atau asisten/.test(r.err ?? ''), 'setelah dicabut, asisten tidak dapat mencatat lagi');
 // batas 5
 const sisa = calonLaksana.length; const jumlahAsisten = async () => (await q(`select count(*)::int n from public.asisten_iuran`))[0].n;
 await q(`delete from public.asisten_iuran`);
@@ -149,7 +149,7 @@ ok((await q(`select jenis from public.iuran_log where peserta_id = $1 order by i
 console.log('\n--- Tutup kas ---');
 r = await rpc(K.dewan.k, 'sg_iuran_kas_simpan', { p_tanggal: T, p_total: 21500, p_catatan: 'Selisih Rp 500 (uang receh)' }); ok(!r.err, 'Dewan menutup kas');
 ok((await baca(K.pembina.k, 'iuran_kas')).n === 1 && (await baca(K.admin.k, 'iuran_kas')).n === 1, 'Pembina dan Admin membaca tutup kas');
-for (const [nama, kk] of [['Admin', K.admin], ['Penegak', K.ahmad]]) { r = await rpc(kk.k, 'sg_iuran_kas_simpan', { p_tanggal: T, p_total: 1, p_catatan: '' }); ok(/Hanya Dewan Ambalan/.test(r.err ?? ''), `${nama} tidak dapat menutup kas`); }
+for (const [nama, kk] of [['Admin', K.admin], ['Penegak', K.ahmad]]) { r = await rpc(kk.k, 'sg_iuran_kas_simpan', { p_tanggal: T, p_total: 1, p_catatan: '' }); ok(/Hanya Pembina/.test(r.err ?? ''), `${nama} tidak dapat menutup kas`); }
 r = await rpc(K.dewan.k, 'sg_iuran_kas_simpan', { p_tanggal: T, p_total: -1, p_catatan: '' }); ok(/tidak valid/.test(r.err ?? ''), 'total negatif ditolak');
 r = await rpc(K.dewan.k, 'sg_iuran_kas_simpan', { p_tanggal: T, p_total: 5, p_catatan: 'x'.repeat(301) }); ok(/Catatan maksimal/.test(r.err ?? ''), 'catatan terlalu panjang ditolak');
 r = await rpc(K.dewan.k, 'sg_iuran_kas_simpan', { p_tanggal: '2000-01-07', p_total: 5, p_catatan: '' }); ok(/Sesi absensi belum dibuat/.test(r.err ?? ''), 'kas untuk tanggal tanpa sesi ditolak');

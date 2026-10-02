@@ -72,7 +72,7 @@ create function public.sg_push_ringkasan() returns jsonb language plpgsql stable
 $$
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Dewan Ambalan, dan Admin Gudep) yang dapat melihat ringkasan perangkat.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat melihat ringkasan perangkat.'; end if;
   return (
     with a as (
       select p.id, p.nama, p.role, p.jabatan, p.kelas, exists (select 1 from public.push_langganan l where l.penerima_id = p.id) as ada
@@ -102,7 +102,7 @@ $$
 declare v_ta text := sigarda.tahun_ajaran_kini(); v_hasil jsonb;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Dewan Ambalan, dan Admin Gudep) yang dapat melihat pemeriksaan data.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat melihat pemeriksaan data.'; end if;
   v_hasil := jsonb_build_object(
     'praUjiAktif', sigarda.pra_uji_aktif(),
     'kelasLama', coalesce((

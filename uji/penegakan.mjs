@@ -137,7 +137,7 @@ ok(r.ok && r.rows[0].d.sumber === 'semua' && r.rows[0].d.penguji.length === 2, '
 r = await K.pembina.a.pengujiPilihan('BAN-05', made);
 ok(r.ok && r.data.penguji.length === 1 && r.data.penguji[0].id === dewan, 'Pembina dapat menanyakan daftar untuk Penegak tertentu');
 ok(cocok(await K.pembina.a.pengujiPilihan('BAN-05'), /Peserta tidak ditemukan/), 'Pembina tanpa menyebut Penegak: ditolak');
-ok(cocok(await K.dewan.a.pengujiPilihan('BAN-05', made), /hanya untuk Penegak, Pembina, dan Admin/), 'Dewan Ambalan tidak dapat memakai daftar untuk Penegak lain');
+ok(cocok(await K.dewan.a.pengujiPilihan('BAN-05', made), /hanya untuk anggota, Pembina, dan Admin/), 'Dewan Ambalan tidak dapat memakai daftar untuk Penegak lain');
 r = await K.admin.a.pengujiPilihan('BAN-05', made);
 ok(r.ok && r.data.penguji.length === 1, 'Admin Gudep dapat menanyakan daftar untuk Penegak tertentu');
 // beban antrian

@@ -22,7 +22,7 @@ declare
   v_sampul text := sigarda.rapikan(p_sampul_url); v_status text := coalesce(p_status, 'draf'); v_lama public.beranda_berita; v_id bigint;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Admin Gudep, dan Dewan Ambalan) yang dapat menulis berita.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat menulis berita.'; end if;
   if p_kategori not in ('kegiatan', 'pengumuman', 'lainnya') then raise exception 'Kategori berita tidak dikenal.'; end if;
   if char_length(v_judul) < 1 or char_length(v_judul) > 150 then raise exception 'Judul berita wajib diisi, maksimal 150 karakter.'; end if;
   if char_length(v_ringkasan) > 200 then raise exception 'Ringkasan berita maksimal 200 karakter.'; end if;
@@ -92,7 +92,7 @@ declare
   v_foto text := sigarda.rapikan(p_foto_url); v_status text := coalesce(p_status, 'draf'); v_lama public.beranda_prestasi; v_id bigint;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Admin Gudep, dan Dewan Ambalan) yang dapat menambah prestasi.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat menambah prestasi.'; end if;
   if p_tingkat not in ('gudep', 'ranting', 'cabang', 'provinsi', 'nasional') then raise exception 'Tingkat prestasi tidak dikenal.'; end if;
   if char_length(v_judul) < 1 or char_length(v_judul) > 150 then raise exception 'Nama lomba atau penghargaan wajib diisi, maksimal 150 karakter.'; end if;
   if char_length(v_peringkat) < 1 or char_length(v_peringkat) > 60 then raise exception 'Peringkat wajib diisi, maksimal 60 karakter.'; end if;
@@ -157,7 +157,7 @@ declare
   v_status text := coalesce(p_status, 'draf'); v_lama public.beranda_galeri; v_id bigint;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Admin Gudep, dan Dewan Ambalan) yang dapat menambah album galeri.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat menambah album galeri.'; end if;
   if char_length(v_judul) < 1 or char_length(v_judul) > 100 then raise exception 'Nama album wajib diisi, maksimal 100 karakter.'; end if;
   if v_tautan !~ '^https://[A-Za-z0-9.-]+\.[A-Za-z]{2,}([/?#][^ ]*)?$' then raise exception 'Tautan album harus diawali https:// dan berupa alamat yang sah.'; end if;
   if v_sampul <> '' and v_sampul !~ '^https://[A-Za-z0-9.-]+\.[A-Za-z]{2,}([/?#][^ ]*)?$' then raise exception 'Sampul album harus diawali https:// dan berupa alamat yang sah.'; end if;
@@ -221,7 +221,7 @@ declare
   v_lama public.beranda_sosial; v_id bigint;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Admin Gudep, dan Dewan Ambalan) yang dapat menempel kiriman media sosial.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat menempel kiriman media sosial.'; end if;
   if p_platform not in ('instagram', 'youtube', 'facebook', 'tiktok') then raise exception 'Platform tidak dikenal.'; end if;
   if v_tautan !~ '^https://[A-Za-z0-9.-]+\.[A-Za-z]{2,}([/?#][^ ]*)?$' then raise exception 'Tautan kiriman harus diawali https:// dan berupa alamat yang sah.'; end if;
   if char_length(v_ket) > 200 then raise exception 'Keterangan maksimal 200 karakter.'; end if;

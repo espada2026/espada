@@ -116,7 +116,7 @@ await K.pembina.a.simpanSesi({ id: null, nama: 'Sesi tanpa Ahmad', tanggal: '202
 r = await K.ahmad.a.muatSesiUjian();
 ok(r.ok && r.data.length === 1, 'Penegak tidak melihat sesi yang tidak mencantumkannya');
 r = await K.ahmad.a.simpanSesi({ id: null, nama: 'x', tanggal: '2026-09-18', tempat: '', catatan: '', status: 'terjadwal', butir: ['BAN-02'], peserta: [ahmad] });
-ok(!r.ok && /Dewan Ambalan/.test(r.pesan), 'Penegak tidak dapat membuat sesi: ' + r.pesan);
+ok(!r.ok && /Pembina atau Admin Gudep/.test(r.pesan), 'Penegak tidak dapat membuat sesi: ' + r.pesan);
 r = await K.dewan.a.simpanSesi({ id: null, nama: '', tanggal: '2026-09-18', tempat: '', catatan: '', status: 'terjadwal', butir: ['BAN-02'], peserta: [ahmad] });
 ok(!r.ok && /Nama sesi/.test(r.pesan), 'nama kosong ditolak server: ' + r.pesan);
 r = await K.dewan.a.simpanSesi({ id: null, nama: 'x', tanggal: '2026-09-18', tempat: '', catatan: '', status: 'terjadwal', butir: ['BAN-99'], peserta: [ahmad] });
