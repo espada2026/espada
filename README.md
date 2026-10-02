@@ -1,24 +1,17 @@
 # SIGASI, Sistem Informasi Gudep Siaga
 
-> **Catatan (Fase 11, peluncuran):** proyek ini kini aplikasi untuk **gugus depan Pramuka Siaga di SD** (nama **SIGASI**, dikukuhkan pemilik 2 Okt 2026).
-> Ia berawal dari SIGARDA (Gudep SMAN 1 Bukateja, untuk Penegak), sehingga bagian README di bawah, kode SQL, nama fungsi `sigarda.*`,
-> Edge Function `sigarda`, nama rahasia `SIGARDA_*`, dan `Cadangkan-SIGARDA.bat` masih memakai nama lama (sengaja tidak diganti agar tidak
-> memutus pemasangan). Modul Penegak tidak lagi tampil di aplikasi. Langkah yang harus dikerjakan pemilik sebelum dipakai:
-> [`docs/peluncuran.md`](docs/peluncuran.md).
+> Proyek ini berawal dari SIGARDA (Gudep SMAN 1 Bukateja, untuk Penegak) dan kini aplikasi untuk **gugus depan Pramuka Siaga di SD** (nama **SIGASI**).
+> Kode SQL, nama fungsi `sigarda.*`, Edge Function `sigarda`, nama rahasia `SIGARDA_*`, dan `Cadangkan-SIGARDA.bat` masih memakai nama lama (sengaja tidak diganti agar tidak
+> memutus pemasangan). Langkah yang harus dikerjakan pemilik sebelum dipakai: [`docs/peluncuran.md`](docs/peluncuran.md).
 
 **SIGASI** = **S**istem **I**nformasi **G**udep **Siaga**. Aplikasi web untuk Pembina: mencatat SKU Siaga (Mula, Bantu, Tata), TKK, latihan,
-tabungan, pelantikan, dan Siaga Garuda, ditambah agenda, laporan, dan dokumen cetak. (Uraian di bawah ini sebagian besar masih menjelaskan
-SIGARDA untuk Penegak; rincian fitur Siaga ada di CLAUDE.md dan panduan di menu Bantuan.)
-
-**SIGARDA** = **S**istem **I**nformasi **Gar**uda dan SKU Penegak. Aplikasi web yang menjadi wadah pengujian
-SKU Bantara dan Laksana serta penyusunan portofolio Penegak Garuda, ditambah absensi latihan Jumat dan materi SKU.
+tabungan, pelantikan, dan Siaga Garuda, ditambah agenda, laporan, dan dokumen cetak.
 
 Dibangun dengan React 18, Vite, dan Tailwind CSS. Data disimpan di **Supabase** (Postgres + Auth + Edge Functions) sehingga
 seluruh pengguna melihat data yang sama. Tanpa akun Supabase, aplikasi dapat dicoba dengan **mode lokal**
 (`npm run dev:lokal`, Postgres yang berjalan di dalam browser).
 
-Lambang SIGARDA: perisai cokelat-emas berisi elang bersayap tiga tingkat (Bantara, Laksana, Garuda) dengan
-tanda centang lulus di dada. Berkas: `src/components/LogoMark.jsx` dan `public/favicon.svg`.
+Lambang: perisai cokelat-emas berisi elang. Berkas: `src/components/LogoMark.jsx` dan `public/favicon.svg`.
 Nama dan tagline diatur di `APP` pada `src/config.js`.
 
 ## Daftar isi
@@ -31,45 +24,34 @@ Nama dan tagline diatur di `APP` pada `src/config.js`.
 
 ## Peran dan fitur
 
-Peran anggota penegak ditentukan otomatis dari progres SKU:
+Pengguna: **Pembina** (mencatat penilaian dan mengelola gugus depan), **Admin Gudep** (identitas gudep, akun, dan pengaturan), serta **anggota Siaga**.
+Anak Siaga boleh **tanpa akun** (dinilai langsung oleh Pembina) atau **berakun** (masuk dengan NIS dan PIN, melihat kemajuan sendiri dan mengajukan SKU).
+Hak ditegakkan di server; tampilan hanya menyembunyikan tombol.
 
-| Peran | Kapan | Yang dikerjakan |
-|---|---|---|
-| Penegak Calon Bantara | Belum lulus seluruh butir SKU Bantara | SKU Bantara (23 butir) |
-| Penegak Calon Laksana | SKU Bantara lulus semua | SKU Laksana (22 butir) |
-| Penegak Calon Garuda | SKU Bantara dan Laksana lulus, lalu **mendaftarkan diri** dari Beranda (atau ditetapkan admin) | Jurnal portofolio 26 dokumen |
+Jenjang: Calon Siaga, **Mula**, **Bantu**, **Tata**, lalu **Siaga Garuda** (SK Kwarnas 119/2011 dan Jukran 038/2017; rujukan ada di menu Bantuan).
 
-Pengguna lain: **Pembina** (penguji) dan **Admin Gudep**. **Dewan Ambalan bukan akun terpisah, melainkan jabatan pada akun Penegak** (fase 6b, lihat "Dewan Ambalan sebagai jabatan pada akun Penegak"): Penegak berjabatan tetap Penegak (NIS, rombel, progres SKU sendiri)
-dan dapat berganti ke **tampilan Dewan** untuk menguji sesuai penugasan, mencatat iuran, dan mengelola kegiatan. Akun Dewan yang dibuat sebelum fase 6b ("akun Dewan lama") tetap berfungsi sampai Admin mengarsipkannya.
-
-**Butir agama (sub-butir Butir 1) hanya dinilai oleh Pembina.** Dewan Ambalan menilai butir lainnya (butir Laksana pun bila ditugaskan, lihat penugasan). Aturan ini ditegakkan di server: pencatatan hasil (mulai uji, lulus, perlu diulang, dikembalikan, termasuk lewat instrumen) oleh Dewan Ambalan ditolak, dan pada pengajuan butir agama Penegak hanya dapat memilih Pembina sebagai penguji. Di layar, tombol dan chip butir agama tidak dapat dibuka Dewan Ambalan. Hasil yang sudah dicatat Dewan sebelum aturan ini tidak diubah; Pembina dapat meninjaunya.
-
-**Letak menu.** Di tablet, laptop, dan PC, menu ada di **samping kiri**, dikelompokkan menurut fungsinya (Utama, Pengujian SKU, Kegiatan Ambalan, Materi, dan Pengelolaan untuk Admin) dan dapat diciutkan menjadi ikon saja (pilihan diingat di peramban). Di ponsel, menu berupa ikon di bawah yang dapat digeser ke kiri dan kanan; panah bercahaya di tepi menunjukkan masih ada menu tersembunyi di sisi itu. **Nama tampilan** pengguna selalu terlihat di tempat yang sama (bawah menu samping, atau kanan atas header ponsel); diarahkan kursor atau diklik membuka kartu akun (tanpa PIN) dengan Pengaturan akun (ganti PIN), Reset PIN anggota (Dewan, Pembina, Admin), dan Keluar.
-
-| Menu | Penegak | Dewan Ambalan / Pembina | Admin |
+| Menu | Anggota Siaga berakun | Pembina | Admin |
 |---|---|---|---|
-| Dashboard | Beranda progres SKU. Calon Garuda: dashboard jurnal portofolio | Antrian uji, progres per rombel, rekap absensi, rekap portofolio | Rekap anggota, absensi, portofolio, kelulusan SKU |
-| Notifikasi | Kotak Notifikasi (jadwal ujian, pengujian dimulai, hasil tersedia, surat terbit), pengaturan notifikasi di perangkat | Pengajuan uji, dialihkan, pengingat, pengajuan menunggu lama; Pembina juga melihat perangkat anggota | Sama dengan Pembina |
-| Poin SKU | Lihat butir, ajukan uji; tombol **Materi** pada butir yang punya materi | Menilai butir (wajib PIN) | Lihat |
-| Materi | Baca materi (pratinjau PDF Google Drive, daftar isi, saringan tingkat dan butir) | Sama | Sama |
-| Kelola Materi | | Hanya **Pembina**: tambah, ubah, urutkan, hapus | Tambah, ubah, urutkan, hapus |
-| Absensi | Riwayat kehadiran sendiri (dicatat pengurus) | Catat absensi, rekap, unduh Excel | Sama dengan penguji |
-| Iuran | Rekap iuran sendiri, serta total sangga, kelas, dan gudep (tanpa nama Penegak lain) | **Dewan Ambalan** dan asisten bendahara mencatat; Pembina melihat rekap, kas, dan menunjuk asisten | Melihat rekap, kas, dan asisten. Pengaturan iuran: Admin dan Pembina |
-| Portofolio | (di dashboard Garuda) isi status, catatan, tautan | Tinjau dan beri catatan, rekap, unduh Excel | Rekap, unduh Excel |
-| Sidang | | Antrian sidang, lembar sidang (Layak dan Lulus / Ditunda-Remedi), riwayat, cetak Berita Acara, pengaturan nomor dan ketua. Hapus catatan: hanya Pembina | Sama dengan penguji, termasuk hapus |
-| Raport | | Hanya **Pembina**: nilai ekstrakurikuler per semester, cetak per Penegak, Excel per kelas, pengaturan | Sama dengan Pembina |
-| Sesi ujian | Melihat jadwal ujian bersama yang mencantumkannya (di Beranda) | Buat jadwal, pilih butir dan peserta, pantau papan sesi, dan menilai langsung dari papan (Dewan Ambalan dan Pembina) | Buat dan pantau (tidak menilai). Hapus sesi: Pembina dan Admin |
-| Instrumen | Melihat daftar kriteria penilaian per butir (pada butir yang instrumennya ditetapkan) | Menilai dengan instrumen (skor 1-5 per kriteria) di lembar penilaian | Hanya **Pembina** dan Admin: kelola instrumen, tetapkan, pengaturan |
-| Penugasan | | **Pembina** mengatur penugasan penguji per rombel dan per Penegak (Dewan hanya melihat) | Diatur di menu Penugasan atau Anggota > tab Penugasan |
-| Pengurus | | **Pembina**: jabatan Dewan Ambalan pada akun Penegak, ganti kepengurusan lewat berkas Excel, riwayat | Sama, ditambah mengarsipkan akun Dewan lama |
-| Anggota | | | Tambah, ubah, hapus anggota (termasuk jenis kelamin, wajib untuk anggota baru; tombol **Lengkapi jenis kelamin** untuk anggota lama); import Excel dan unduh template (Penegak, Dewan Ambalan, Pembina); perbarui rombel Penegak; tab **Penugasan** (penguji per rombel, guru agama) |
-| Data Gudep | | | Identitas gugus depan dan ambalan, alamat, kwartir, serta Pembina/Ka Gudep, Kamabigus/Kepala Sekolah beserta NTA (rujukan kop surat dan semua dokumen); Pradana dan Pradani diambil dari jabatan anggota Dewan Ambalan |
-| Reset PIN (menu akun) | | Sesuai kewenangan (lihat di bawah) | Semua kecuali Admin |
-| Pengaturan akun (menu akun) | Ganti PIN sendiri | Ganti PIN sendiri | Ganti PIN sendiri |
-| Cetak | Kartu SKU, Surat Tanda Lulus, Surat pengantar agama (milik sendiri) | Idem; **Pembina** dan **Admin** dapat menerbitkan dan mencabut surat pengantar | Idem |
+| Beranda / Dashboard | Kemajuan SKU, latihan, tabungan, pelantikan sendiri | Ringkasan anak, barung, selesai Mula/Bantu/Tata, pintasan | Rekap anggota dan SKU Siaga |
+| Notifikasi, Bantuan | Ya | Ya | Ya |
+| Poin SKU | Melihat butir dan kemajuan | Menilai butir (dengan PIN sendiri), antrian pengajuan | Melihat |
+| Anggota Siaga | | Tambah, ubah, atur perindukan dan barung, SKU, TKK, Siaga Garuda | Sama, ditambah kelola akun |
+| Pelantikan | Melihat pelantikan sendiri | Mencatat kenaikan tingkat | Sama |
+| TKK | Melihat | Mencatat (satu tingkat) | Sama |
+| Absensi, Iuran | Melihat milik sendiri | Mencatat latihan, iuran, dan tabungan | Sama |
+| Agenda | Melihat | Mengatur kegiatan (Pesta Siaga, Persari, pertemuan, pelantikan) | Sama |
+| Laporan | | Laporan tahunan untuk kwartir | Sama |
+| Materi, Kelola Materi | Baca | Kelola | Kelola |
+| Kelola Beranda | | Konten halaman muka publik | Sama |
+| Tindak Lanjut, Periksa Data, Perlindungan | | Pengingat, kualitas data, Safe From Harm | Sama |
+| Data Gudep, Anggota | | | Identitas gudep dan akun (Pembina, Admin, anggota berakun) |
+| Cetak | Kartu SKU, Surat Tanda Lulus, piagam pelantikan (milik sendiri) | Menerbitkan | Sama |
+
+**Letak menu.** Di tablet dan komputer menu ada di samping kiri, dikelompokkan menurut fungsinya dan dapat diciutkan menjadi ikon. Di ponsel berupa ikon di bawah yang dapat
+digeser. Nama pengguna selalu terlihat; diklik membuka kartu akun (ganti PIN, reset PIN sesuai kewenangan, keluar).
 
 ### Masuk, nama pengguna, dan PIN
-- **Nama pengguna** untuk masuk: Penegak memakai **NIS**; Dewan Ambalan, Pembina, dan Admin memakai nama pengguna yang
+- **Nama pengguna** untuk masuk: anak Siaga berakun memakai **NIS**; Pembina dan Admin memakai nama pengguna yang
   ditetapkan admin (dibuat otomatis dari nama bila dikosongkan, mis. `budi.santoso`). Halaman masuk tidak menampilkan daftar nama.
 - **PIN = tepat 6 angka**, tidak boleh angka sama semua atau berurutan (111111, 123456), dan tidak boleh sama dengan PIN lama.
 - **PIN awal** dibuat admin saat menambah anggota (atau otomatis saat import Excel) lalu dibagikan langsung. Pada login pertama,
@@ -81,125 +63,21 @@ dan dapat berganti ke **tampilan Dewan** untuk menguji sesuai penugasan, mencata
 
   | Yang mereset | Boleh mereset |
   |---|---|
-  | Admin Gudep | Penegak, Dewan Ambalan, Pembina |
-  | Pembina | Penegak, Dewan Ambalan |
-  | Dewan Ambalan | Penegak |
+  | Admin Gudep | Anggota Siaga berakun, Pembina |
+  | Pembina | Anggota Siaga berakun |
 
   PIN Admin tidak dapat direset peran lain di aplikasi (lihat [Lupa PIN Admin](#lupa-pin-admin)), dan tidak ada yang bisa mereset dirinya sendiri.
 - **Penguncian**: 5 kali salah berturut-turut mengunci nama pengguna itu 5 menit (dihitung di server). Reset PIN melepas kunci.
-- Penguji memasukkan PIN lagi saat menyimpan hasil uji sebagai verifikasi digital; PIN diperiksa di server.
-
-### Import anggota dari Excel
-Import tersedia untuk **Penegak dan Pembina** (hanya Admin Gudep yang dapat mengimpor; akun Admin tidak diimpor). Dewan Ambalan tidak lagi diimpor sebagai akun: jabatannya diberikan pada akun Penegak lewat menu **Kepengurusan**.
-Buka **Anggota**, pilih tab kelompoknya, lalu **Unduh template Excel**. Setiap kelompok punya template sendiri:
-
-| Kelompok | Kolom template |
-|---|---|
-| Penegak | Nama Lengkap, **Jenis Kelamin (wajib)**, **NIS (wajib, menjadi nama pengguna)**, **Rombel** (X-01 sampai XII-10, daftar pilihan), Sangga, Agama, NTA (opsional), PIN Awal (opsional) |
-| Dewan Ambalan | Nama Lengkap, **Jenis Kelamin (wajib)**, Nama Pengguna (opsional), Jabatan Dewan (opsional), NTA (opsional), PIN Awal (opsional) |
-| Pembina | Nama Lengkap, **Jenis Kelamin (wajib)**, Nama Pengguna (opsional), Agama (opsional, disarankan diisi), PIN Awal (opsional) |
-
-Setelah diisi, klik **Import Excel**. Aplikasi menampilkan pratinjau per baris (siap atau dilewati beserta alasannya). Baris yang
-lolos dikirim ke server per 25 akun; server memeriksa ulang dan bisa menolak baris tertentu. Rombel dibakukan (mis. `xi 3` menjadi `XI-03`; selain rombel baku ditolak) dan penulisan sangga disamakan
-dengan data yang ada. Berkas template Penegak lama yang berjudul kolom "Kelas" tetap terbaca. Setelah impor, daftar **nama pengguna dan PIN awal** tampil satu kali dan dapat diunduh sebagai Excel.
-Maksimal 500 baris per impor.
-
-**Jenis kelamin** berlaku untuk semua peran (Penegak, Dewan Ambalan, Pembina, Admin Gudep). Pada template dan formulir berupa pilihan **Laki-laki** atau **Perempuan** (penulisan lain di Excel seperti L, P, Pria, Wanita dibakukan; disimpan sebagai `L` atau `P`).
-**Wajib untuk anggota baru selain Penegak** (Dewan Ambalan, Pembina, Admin: formulir Tambah anggota dan setiap baris import). **Untuk Penegak baru jenis kelamin opsional** (sejak Tahap 3, H1: data awal Penegak hanya nama, NIS, dan rombel; Penegak mengisi sendiri sisanya, lihat "Data diri Penegak" di bawah).
-Anggota yang sudah ada boleh kosong: lengkapi lewat **Ubah anggota**, atau sekaligus lewat tombol **Lengkapi jenis kelamin** (muncul di menu Anggota selama masih ada yang kosong): pilih per orang di daftar, atau unduh berkas Excel berisi anggota yang belum terisi, isi kolomnya, lalu unggah.
-Akun dibuat lebih dulu, lalu jenis kelamin disimpan lewat fungsi khusus Admin `sg_anggota_jk_atur` (migrasi `2026-09-jenis-kelamin.sql`); Edge Function tidak berubah. Jenis kelamin tampil pada daftar anggota, halaman Akun, dan detail Penegak.
-
-**NTA** (Nomor Tanda Anggota, mis. `11.03.10.701.00123`) opsional untuk Penegak: dapat diisi pada kolom template, pada formulir tambah atau ubah anggota, dan pada lembar sidang. Akun dibuat lebih dulu, lalu NTA disimpan lewat fungsi khusus Admin `sg_anggota_nta_atur` (migrasi `2026-09-nta-anggota.sql`); bila fungsi itu belum ada, akun tetap dibuat dan aplikasi memberi tahu bahwa NTA belum tersimpan. Berkas template lama tanpa kolom NTA tetap dapat diimpor.
-
-### Rombel baku dan penugasan penguji per rombel (fase 1a)
-Kolom kelas Penegak kini berisi **rombel**: `X-01` sampai `X-10`, `XI-01` sampai `XI-10`, `XII-01` sampai `XII-10` (30 rombel, dua angka). Server menolak isian lain saat akun dibuat atau diubah
-(huruf kecil dan spasi dibakukan: `xi 3` di Excel menjadi `XI-03` pada pratinjau; di server hanya huruf dan spasi yang dibakukan). Data lama (`X`, `XI`, `XII`) **tidak diubah otomatis**: di
-**Anggota > Penegak** muncul pemberitahuan dan tombol **Perbarui rombel Penegak** (pilih rombel per orang, atau unduh berkas Excel berisi Penegak berkelas lama, isi kolom Rombel, lalu unggah).
-Server memeriksa semua baris sekaligus: satu baris keliru membatalkan seluruhnya dan pesannya menyebut nomor barisnya.
-
-**Penugasan** menetapkan Pembina dan Penegak berjabatan Dewan Ambalan yang bertugas menguji tiap rombel, **per tahun ajaran**. **Pembina dan Admin** mengaturnya di menu **Penugasan** (Admin juga di **Anggota > Penugasan**): matriks penguji x rombel (satu tab per kelas; tombol
-Semua/Kosongkan per penguji), tombol **Salin dari tahun ajaran lalu** (menambah yang belum ada, tidak mencabut apa pun), peringatan rombel yang berisi Penegak tetapi belum punya penguji, **penugasan khusus per Penegak** (pengecualian, lihat fase 6b), dan **riwayat perubahan**
-(hanya bertambah). Dewan hanya melihat. Rombel tanpa penugasan tetap memakai aturan bawaan (semua penguji boleh menguji, Dewan hanya butir Bantara). Penegakannya dijelaskan di bagian berikut (fase 1b).
-
-**Agama Pembina** diisi Admin (formulir ubah anggota, kolom opsional pada template import Pembina). Butir agama nanti hanya boleh diuji Pembina yang seagama dengan Penegak. Bagian bawah tab Penugasan menampilkan
-**cakupan agama**: jumlah Penegak, Pembina seagama, dan **guru agama** per agama (dikelola Admin), sebagai rujukan surat pengantar bila tidak ada Pembina yang seagama. Dewan Ambalan dan Admin tidak berAgama.
-
-### Penegakan penugasan: siapa yang boleh menguji (fase 1b)
-Aturan dihitung di server (`sigarda.penguji_sah`) dan dicerminkan di layar (`src/lib/rombelLogic.js`, `pengujiSah`); keduanya dijaga pengujian `penegakan`.
-- **Ketat saat memilih penguji.** Penegak yang mengajukan hanya dapat memilih penguji yang bertugas di rombelnya (tahun ajaran berjalan). Daftar dari server memuat **beban antrian** tiap penguji (yang teringan lebih dulu).
-  Bila rombel belum diatur, kelasnya masih berformat lama (`X`), atau tak seorang pun yang bertugas boleh menguji butir itu, berlaku aturan lama: semua penguji yang memenuhi aturan peran.
-- **Antrian rombel.** Pilihan pertama pada daftar penguji adalah "Antrian rombel": pengajuan tanpa penguji tujuan. Semua penguji yang sah melihatnya di menu **Antrian** (ditandai *Antrian rombel*)
-  dan penguji mana pun yang mengambilnya lewat **Mulai uji** menjadi pengujinya.
-- **Lunak saat mencatat hasil.** Penguji lain boleh menggantikan penguji tujuan; riwayat butir menulis `(menggantikan NAMA)`. Pembina dapat **mengalihkan** pengajuan (tombol *Alihkan* pada Antrian; alasan wajib dan
-  tercatat di riwayat) ke penguji lain atau kembali ke antrian rombel; Admin Gudep juga berwenang di server.
-- **Aturan peran (diubah di fase 6b).** Peran penguji ditentukan oleh **penugasan**, bukan oleh jabatan: butir **Laksana** boleh diuji Pembina atau penguji **yang ditugaskan** untuk Penegak itu (penugasan rombelnya atau penugasan khususnya); tanpa penugasan, Dewan hanya menguji butir **Bantara**.
-  **Butir agama** tetap hanya untuk Pembina seagama (atau guru agama lewat surat pengantar). Tidak ada yang menguji atau menilai dirinya sendiri. Aturan ini berlaku saat memilih penguji dan saat mencatat hasil.
-- **Butir agama** hanya oleh Pembina yang **agamanya sama** dengan Penegak. **Masa peralihan:** selama belum ada satu pun Pembina yang agamanya terisi, semua Pembina masih dianggap sah (aturan lama). Begitu Admin mengisi agama
-  seorang Pembina, aturan seagama berlaku untuk semua: Pembina tanpa agama tidak lagi dapat menguji butir agama. Bila tidak ada Pembina seagama, Penegak melihat pesan agar menghubungi Admin atau Pembina
-  (surat pengantar ke guru agama menyusul di fase 2a).
-- Pengecualian per Penegak ada di fase 6b, notifikasi di bagian Notifikasi. Surat pengantar ke guru agama ada di bagian berikut (fase 2a).
-
-### Pra-uji berjenjang (fase C dan D)
-Uji resmi SKU hanya oleh Pembina (AD/ART Munas 2023 Pasal 33 ayat (6) dan 35 ayat (3)); Dewan Ambalan tidak menguji resmi. Sebelum uji resmi, pengajuan Penegak disaring dulu oleh sesama Penegak: butir **Bantara**
-lewat **Pinsa** sangganya lalu **Bina Damping** rombelnya; butir **Laksana** lewat **Bina Damping yang sudah Laksana**. Pra-uji hanya rekomendasi (tidak pernah menjadikan butir lulus) dan tidak memakai PIN. Server yang menentukan
-penilai dan meneruskan pengajuan (tahap tanpa penilai dilewati otomatis); klien hanya menampilkan.
-- **Sakelar.** Bawaan **mati** (cara lama tetap berlaku). Pembina atau Admin menghidupkannya di menu **Pra-uji** (dengan penjelasan akibatnya). Sebelum menghidupkan, tunjuk Bina Damping tiap rombel dan bagi sangga di menu **Sangga**.
-  Hidup: Penegak tidak lagi memilih penguji, menu Antrian dan Sesi ujian tidak tampil bagi Dewan Ambalan, dan pengajuan lama yang ditujukan kepada penguji non-Pembina kembali ke antrian rombel. Mati: pra-uji yang menunggu diteruskan langsung ke uji resmi.
-- **Penegak** melihat jalur tiap butir (Pinsa, Bina Damping, Pembina; ✓ lulus, … menunggu) di bawah butirnya, catatan perbaikan bila belum lulus (boleh mengajukan lagi, mulai dari tahap pertama), dan dapat membatalkan pengajuan yang masih menunggu.
-- **Pinsa dan Bina Damping** memakai menu **Pra-uji** (muncul hanya bila pra-uji hidup): antrian pengajuan, tombol *Nilai* (Lulus, teruskan / Belum lulus dengan catatan wajib), dan daftar yang sudah diputuskan. Penilai hanya menilai butir yang sudah ia lulus sendiri.
-- **Pembina dan Admin** melihat semua pengajuan yang menunggu dan dapat **melewati tahap yang macet** (alasan wajib, tercatat di riwayat butir). Pengajuan tidak pernah lolos sendiri; Pembina diingatkan bila menunggu lebih dari 3 hari tanpa penilai.
-- Dijaga pengujian `pra-uji` (server), `pra-uji-klien` (tampilan dan api), dan `penegakan` (aturan penguji klien = server, juga saat sakelar hidup). Fase D tidak menambah migrasi dan tidak mengubah Edge Function.
-
-### Pelantikan dan Saka (Tahap 2, G1)
-Bahan data inti untuk syarat Garuda dan daftar isian Kwarcab (tempat dan tanggal pelantikan, surat keterangan aktif Saka); cetaknya menyusul di Tahap 3.
-- **Pelantikan** (menu **Pelantikan**, Pembina dan Admin): dicatat SESUDAH upacara terlaksana (tanggal bukan masa depan). Pilih tingkat (Bantara/Laksana), tanggal, tempat, lalu centang Penegak; yang tampil hanya Penegak **aktif** yang sudah menyelesaikan **seluruh butir SKU** tingkat itu. Satu upacara dicatat sekaligus, semua atau tidak sama sekali (pesan menyebut nama yang tidak layak). Mencatat ulang mengganti catatan (koreksi); *Hapus* untuk salah catat. Pelantikan Laksana harus sesudah pelantikan Bantara bila Bantaranya tercatat. Dapat ditautkan ke kegiatan Agenda berjenis pelantikan tingkat yang sama.
-- **Saka**: nama Saka bebas diketik (ada saran), tanggal masuk, status aktif atau selesai (dengan tanggal selesai), dan tautan surat keterangan aktif Saka (dokumen tidak disimpan di aplikasi). Satu Penegak boleh di beberapa Saka, satu catatan per nama Saka.
-- Penegak melihat miliknya di kartu **Pelantikan dan Saka** pada Beranda (tampil bila sudah ada catatan). Nonaktif dan alumni hanya dapat dilihat. Kedua tabel ikut cadangan data.
-- Dijaga pengujian `pelantikan-saka` (server), `pelantikan-klien` (cermin validasi dibandingkan langsung dengan SQL pada kisi masukan, api, dan render), dan `migrasi-pelantikan-saka`.
-
-### Tanda Kecakapan Khusus (TKK) (Tahap 2, G2)
-Menu **TKK** (semua peran; Penegak melihat miliknya, Pembina dan Admin mengelola). Bahan data inti syarat Garuda; cetaknya menyusul di Tahap 3.
-- **Katalog** 91 TKK (nama, bidang, sumber; syarat tiap SKK tidak disalin, tautan berkas peraturan ada di halaman): 84 SKK dari daftar Lampiran II SK Kwarnas 132/1979, SKK Cakap Keuangan (Jukran 01/2024), dan enam SKK tambahan sesudah 1979 (Berkemah, Pengembara, Penjelajah, Pembaca, Pencak Silat, Penghijauan; **nama dan bidangnya perlu dipastikan ke Kwarcab**). Tiga SKK khusus Siaga tidak dapat dikenakan pada Penegak; empat SKK bidang agama (Sholat, Khotib, Qori, Muadzin) khusus Islam.
-- **Capaian bertingkat**: Purwa, lalu Madya, lalu Utama untuk jenis TKK yang sama (tanggal tidak boleh mendahului tingkat di bawahnya). Dicatat sesudah lulus uji: tanggal, tim penguji 2 orang (nama saja; Pembina, pembantu Pembina, atau ahli), **bukti melatih** (syarat Penegak: telah melatih sedikitnya seorang Pramuka sampai tingkat di bawahnya), dan tautan surat keterangan atau piagam (dokumen tidak disimpan di aplikasi). Hanya Penegak aktif yang sudah menyelesaikan SKU Bantara. Mencatat ulang = koreksi; tingkat yang masih ditopang tingkat di atasnya tidak dapat dihapus lebih dulu.
-- **Ambang kesiapan Garuda** (tab *Ambang Garuda*; minimal dan boleh dilampaui; Pembina dan Admin dapat mengubahnya): bawaan mengikuti pedoman Kwarcab Purbalingga 2026, yaitu 45 TKK berbeda, 10 TKK wajib bertingkat Utama (Berkemah, Gerak Jalan, PPPK, Pengatur Rumah, Pengamat, Juru Masak, Penabung, Menjahit, Juru Kebun, Pengamanan Kampung), dan 3 TKK Madya di luar yang Utama; TKK bertingkat lebih tinggi ikut dihitung untuk tingkat di bawahnya. Kartu kemajuan menampilkan tiga bilah, daftar wajib, dan sebaran per bidang. **Tafsir 45 TKK adalah standar lokal Kwarcab/Kwarran, terpisah dari SK 038/2017 (9 macam, minimal 2 Utama dan 3 Madya).**
-- **Pengajuan oleh Penegak (G2b).** Penegak yang sudah lulus uji menekan **Ajukan TKK** di menu TKK-nya (data sama dengan pencatatan Pembina; aturan dicek server dengan pemeriksa yang SAMA, jadi pesan galatnya sama). **Penguji 1 dipilih dari Pembina yang ditugaskan untuk kelas Penegak** (penugasan khusus Penegak lebih dulu, lalu penugasan rombel kelasnya; bila belum ada penugasan, semua Pembina aktif) dan namanya disalin server; **Penguji 2 diisi Penegak** (Pembina lain, pembantu Pembina, atau ahli). Pengajuan berstatus *Menunggu*; Pembina atau Admin meninjau di tab **Pengajuan** (jumlah yang menunggu tampil di tab): *Setujui* menjadikannya capaian resmi (keadaan diperiksa ulang saat itu, mis. Purwa harus masih tercatat; **peninjau boleh mengganti nama penguji bila Pembina 1 dan 2 berhalangan hadir**, alasan wajib di catatan dan nama semula tersimpan sebagai jejak), *Tolak* wajib bercatatan dan Penegak boleh **mengajukan lagi**. Penegak dapat membatalkan pengajuan yang menunggu (maksimal 20 menunggu). Pembina Penguji 1 diberi tahu pengajuan baru dan Penegak diberi tahu pengajuannya ditinjau (notifikasi jenis TKK, isi singkat; hasil dilihat di aplikasi). Penegak nonaktif atau alumni hanya melihat. Pembina dan Admin tetap dapat mencatat langsung.
-- **TKK Krida** dicatat sederhana (nama, Saka, tanggal, tautan piagam); portofolio Kwarcab meminta minimal 2 piagam.
-- Kemajuan dihitung di klien dari capaian dan ambang (tanpa padanan SQL); server hanya menegakkan aturan pencatatan. Dijaga pengujian `tkk` (server), `tkk-klien` (katalog, kemajuan, cermin validasi yang dibandingkan langsung dengan SQL, api, render), dan `migrasi-tkk`.
-
-### Syarat Pramuka Garuda / SPG (Tahap 2, G3)
-Menu **SPG** (Pembina, Dewan, dan Admin melihat daftar Penegak yang layak; Penegak Calon Garuda melihat miliknya). Merangkum **13 butir SPG** (SK Kwarnas 038/2017, seperti pada lembar SPG portofolio Kwarcab Purbalingga 2026); isi rubrik pengujian tidak disimpan di repositori.
-- **Butir otomatis** dihitung dari data yang sudah ada: butir 2 (SKU Laksana selesai dan sedikitnya 3 bulan sesudah tanggal pelantikan Laksana yang dicatat), butir 4 (TKK memenuhi ambang di menu TKK), butir 6 (tercatat di Saka, aktif atau selesai), butir 11 (TKK Penabung tercatat dan buku tabungan siap di portofolio). Pembina dan Admin boleh **menimpa** hasilnya dengan alasan tertulis (jejaknya tersimpan).
-- **Butir berbasis dokumen** (1, 3, 5, 7, 8, 9, 10, 12, 13) dinilai dari kelengkapan dokumen pada cek list portofolio (butir PF terkait berstatus *Siap*): lengkap = 100, belum = 0. Aplikasi hanya memberi saran; **Pembina menetapkan** nilai dan tanggal pengujian. Tidak ada pita nilai 60-100 di aplikasi: penilaian isi oleh guru mapel atau Pembina berjalan di luar aplikasi dan hasilnya menjadi dokumen.
-- Penetapan hanya untuk Penegak aktif yang telah menyelesaikan seluruh SKU Bantara dan Laksana. Dewan hanya melihat. Tabelnya ikut cadangan data.
-- Hasil hitung (butir 2, 4, 6, 11) dan saran dokumen dihitung di klien (`spgLogic.hitungSpg`, tanpa padanan SQL); yang dicerminkan dan dibandingkan langsung dengan SQL hanyalah `periksaSpg`. Dijaga `uji/spg.mjs`, `uji/spg-klien.mjs`, `uji/migrasi-spg.mjs`.
-
-### Daftar hadir latihan dan keterangan Saka (Tahap 4)
-Portofolio format Kwarcab memuat satu halaman **Daftar Hadir Latihan 3 Bulan (12 kali) setelah Dilantik Penegak Laksana** (syarat Garuda butir 2). Isinya disusun dari absensi latihan yang sudah dicatat sejak tanggal pelantikan Laksana sampai tiga bulan sesudahnya (paling banyak 12 sesi, sampai hari ini); sel yang belum tercatat dan kolom paraf Pembina diisi tangan. Ikut tersimpan pada salinan beku (`latihan`; salinan lama tanpa kunci itu tetap terbuka). Pada butir SPG 2 dan 6 aplikasi hanya menambah **keterangan** (kehadiran latihan; surat keterangan Saka sudah/belum ditautkan; jumlah Krida) tanpa menambah syarat baru. Tanpa migrasi dan tanpa deploy Edge. Kode: `latihanLaksanaLogic.js`, `spgLogic.js`; dijaga `uji/latihan-laksana.mjs`.
-
-### Kelayakan Calon Garuda / gerbang calon (Tahap 2, G4)
-Menu **Kelayakan** (Pembina, Dewan, dan Admin; Dewan hanya melihat). Gerbang hanya **peringatan** (keputusan pemilik): tidak ada pendaftaran Calon Garuda yang diblokir, keputusan akhir tetap pada Pembina dan Kwarcab.
-- **Syarat per Penegak** (chip): kelas (minimal XI; data lama "XI" tetap dikenali, kelas tak dikenal = "data belum ada"), usia (tanggal lahir dalam rentang; bawaan lahir 1 Nov 2007 s.d. 1 Mei 2009 menurut pedoman Kwarcab Purbalingga 2026), dan SKU Bantara dan Laksana selesai. Di samping itu ditampilkan kemajuan SPG (n dari 13 butir).
-- **Kuota calon**: maksimal 5% dari Penegak aktif (dibulatkan ke bawah); melebihi kuota hanya diberi peringatan.
-- **Tanggal lahir** diisi Pembina atau Admin dari halaman ini (belum ada dari import). Disimpan di tabel terpisah `tanggal_lahir` supaya tidak terbaca Penegak lain (RLS profil memperlihatkan Penegak berjabatan kepada semua); hanya pemilik dan pengurus yang dapat membacanya.
-- **Aturan gerbang** (kelas minimal, rentang tanggal lahir, kuota) dapat diubah Pembina dan Admin tiap tahun (panel "Aturan gerbang calon"); tersimpan pada pengaturan `garuda.gerbang`.
-- Syarat dihitung di klien (`gerbangLogic.hitungGerbang/kuotaCalon`, tanpa padanan SQL); yang dicerminkan dan dibandingkan langsung dengan SQL hanyalah `periksaTanggalLahir` dan `periksaGerbang`. Dijaga `uji/gerbang.mjs`, `uji/gerbang-klien.mjs`, `uji/migrasi-gerbang.mjs`.
-- **Tanggal lahir dari template import (G4b).** Template import Penegak punya kolom **Tanggal Lahir (opsional)** di ujung (posisi kolom lain tidak bergeser; template lama tanpa kolom itu tetap terbaca). Diterima: 15/03/2008 (tanggal/bulan/tahun), 15 Maret 2008, 2008-03-15, sel tanggal Excel, dan nomor seri Excel; yang tidak dikenal atau di luar rentang (sebelum 1990, masa depan) menandai barisnya tidak siap. Sesudah akun dibuat, tanggal lahir disimpan lewat `sg_tanggal_lahir_impor`; bila gagal, akun tetap ada dan Admin diberi tahu (isi lewat menu Kelayakan). Pembaca file dan template Excel dipisah ke `src/lib/importAnggotaExcel.js` agar tidak membebani paket JS awal.
-- **Simulasi otomatis pra-uji (25 Sep 2026).** `npm run simulasi:pra-uji` (opsi `-- --skenario=lengkap`) menjalankan ±690 pengajuan melalui jalur pra-uji berjenjang di data sekolah penuh lokal (700 Penegak) dan melaporkan invarian, hak akses, notifikasi, beban, dan waktu; bukan bagian `npm run uji`. Hasil dan tafsir: `docs/simulasi-pra-uji-2026-10.md`. Tindak lanjutnya: panel **Cakupan pra-uji** di menu Pra-uji (Pembina dan Admin; saat pra-uji hidup) menampilkan persentase pengajuan yang melewati pra-uji dan rombel yang paling sering langsung ke Pembina (kurang Bina Damping atau Pinsa).
-- **Lengkapi tanggal lahir lewat Excel (G4d).** Tombol *Lengkapi tanggal lahir (Excel)* di tab Calon (Pembina dan Admin): unduh berkas berisi Penegak aktif yang tanggal lahirnya belum diisi (NIS, nama, rombel), isi kolom Tanggal Lahir, unggah, pratinjau, simpan (`sg_tanggal_lahir_impor`, maksimal 500 baris per permintaan, semua atau tidak sama sekali per permintaan). Penegak yang sudah punya tanggal lahir tidak diubah dari sini (koreksi satu per satu di daftar). Dijaga `uji/lahir-massal.mjs`.
-- **Tab Tim penilai (G4b).** Satu tim per tahun ajaran untuk putra dan satu untuk putri (calon putra dinilai tim putra, calon putri tim putri): nomor dan tanggal SK Kwarcab (berpasangan), tautan SK, dan 1-15 anggota (nama, unsur: Ketua Gugus Depan, Pembina, Andalan Ranting urusan Penegak, tokoh masyarakat, orang tua, lainnya; satu ketua tim). Komposisi yang belum sesuai pedoman (5 penandatangan, semua unsur, ayah untuk putra dan ibu untuk putri, SK belum dicatat) hanya diperingatkan. Daftar calon menampilkan tim yang menilai tiap calon.
-- **Tab Kalender (G4c).** 10 tahap seleksi Garuda dari Kwarcab (uji SPG, pengajuan SK tim, pengambilan SK, penilaian gugus depan, penyerahan portofolio ke Kwarran, penilaian Kwarran, pengiriman ke Kwarcab, verifikasi dan visitasi, iuran, pelantikan) dengan tanggal mulai dan akhir (opsional) per tahun ajaran, status (belum diatur, akan datang, sedang berjalan, selesai), sisa hari, dan tahap berikutnya. **Pengingat otomatis (G4d):** pengingat harian 07.00 WIB mengirim notifikasi ke semua pengurus (dan Penegak berjabatan Dewan) pada H-7, H-3, H-1, hari-H mulai, serta sehari sebelum tahap berentang berakhir.
-- Dijaga `uji/tim-kalender.mjs`, `uji/tim-kalender-klien.mjs` (kisi masukan dibandingkan langsung dengan SQL; daftar tahap dan unsur klien = batasan tabel), `uji/migrasi-tim-kalender.mjs`, `uji/import-lahir.mjs`, `uji/migrasi-tanggal-lahir-impor.mjs`.
-- Belum ada: cetak (Tahap 3).
-- Belum ada cetak lembar SPG (Tahap 3) dan gerbang calon Garuda (G4).
+- Pembina memasukkan PIN lagi saat menyimpan hasil uji sebagai verifikasi digital; PIN diperiksa di server.
 
 ### Data Gudep (identitas dan pejabat diatur Admin)
-Identitas gugus depan dan pejabatnya **tidak lagi ditulis di kode**. Admin Gudep mengisinya di menu **Data Gudep** (Pengelolaan): nama gugus depan, nama ambalan, nama sekolah, nomor gudep, kode surat (awalan nomor Surat Tanda Lulus),
+Identitas gugus depan dan pejabatnya **tidak lagi ditulis di kode**. Admin Gudep mengisinya di menu **Data Gudep** (Pengelolaan): nama gugus depan, nama perindukan, nama sekolah, nomor gudep, kode surat (awalan nomor Surat Tanda Lulus),
 alamat, kota (tempat surat), telepon dan email (opsional), kwartir ranting dan cabang, serta dua pejabat beserta **NTA** dan NIP (opsional):
-- **Pembina Gudep / Ka Gudep**: penanda tangan surat intern sekolah, kartu SKU, berita acara, dan raport ekstrakurikuler.
+- **Pembina Gudep / Ka Gudep**: penanda tangan surat intern sekolah, kartu SKU, Surat Tanda Lulus, dan piagam pelantikan.
 - **Kamabigus / Kepala Sekolah**: penanda tangan surat keluar sekolah (dipilih pada dialog surat: "Surat intern" atau "Surat keluar").
-- **Pradana** dan **Pradani** tidak diketik di Data Gudep: keduanya adalah **Penegak yang diberi jabatan** itu (lihat "Jabatan Dewan Ambalan" di bawah).
+
 ### Halaman muka publik / landing page (Fase 1)
-Alamat utama situs kini menampilkan **halaman muka gudep** bagi pengunjung yang belum masuk (profil, program, perjalanan Penegak, agenda mendatang, tanya jawab, kontak, dan kotak **Cek keaslian dokumen**), bukan langsung halaman masuk. Tombol **Masuk** membuka aplikasi (alamat `#masuk`); yang sudah punya sesi tersimpan di peramban langsung ke aplikasi, dan tombol di halaman muka menjadi **Buka SIGARDA**. Dari aplikasi, alamat `#beranda` menampilkan halaman muka lagi (tautan **Lihat beranda publik** di menu Kelola Beranda dan **Kembali ke beranda gudep** di halaman masuk).
+Alamat utama situs kini menampilkan **halaman muka gudep** bagi pengunjung yang belum masuk (profil, program, perjalanan Calon Siaga sampai Siaga Garuda, agenda mendatang, tanya jawab, kontak, dan kotak **Cek keaslian dokumen**), bukan langsung halaman masuk. Tombol **Masuk** membuka aplikasi (alamat `#masuk`); yang sudah punya sesi tersimpan di peramban langsung ke aplikasi, dan tombol di halaman muka menjadi **Buka SIGASI**. Dari aplikasi, alamat `#beranda` menampilkan halaman muka lagi (tautan **Lihat beranda publik** di menu Kelola Beranda dan **Kembali ke beranda gudep** di halaman masuk).
 - **Yang diatur pengurus (menu Kelola Beranda: Pembina, Admin Gudep, dan Dewan Ambalan):** nomor WhatsApp, telepon, email, jadwal latihan, tautan Instagram, YouTube, Facebook, TikTok dan Google Maps (wajib `https://`), sambutan Pembina dan Kepala Sekolah, serta cerita singkat gudep. Kolom kosong tidak tampil. Disimpan pada pengaturan `beranda.kontak` lewat `sg_beranda_kontak_simpan`.
 - **Yang boleh dilihat tanpa login** (`sg_beranda_publik`, hanya membaca): identitas gudep (nama, ambalan, alamat, kwartir), nama dan jabatan Pembina dan Kepala Sekolah (tanpa NTA/NIP), isian beranda, berita/prestasi/galeri/media sosial/FAQ yang sudah **terbit** (lihat "Kelola Beranda: konten" di bawah), dan paling banyak 6 agenda mendatang berisi **jenis, judul, tanggal saja** (keterangan dan peserta terkait tidak keluar). Data Penegak dan hasil SKU tidak pernah ada di sini.
 - **Cepat dan terbaca mesin pencari:** halaman dirender ke HTML saat build (`scripts/prarender.mjs`) dan disisipkan ke `index.html`, jadi isinya terbaca tanpa menunggu JavaScript; berkasnya dimuat malas (`src/landing`). `index.html` memuat judul, deskripsi, canonical, Open Graph, dan data terstruktur JSON-LD; `public/robots.txt` dan `public/sitemap.xml` menunjuk ke alamat utama (**ubah alamatnya di ketiga berkas bila domain berganti**; dijaga `uji/landing.mjs`). Halaman aplikasi, verifikasi (`?v=`), dan tautan berbagi (`?berkas=`) bertanda `noindex`. Gambar pratinjau tautan `public/og-gudep.png` (ilustrasi perkemahan) dibuat `node scripts/buat-og.mjs`; ganti dengan foto asli bila sudah ada. Langkah di luar kode (Google Search Console, Google Business Profile, tautan dari situs sekolah) dibahas terpisah.
@@ -233,16 +111,8 @@ Supaya berita yang diterbitkan mendapat halamannya tanpa deploy harian, basis da
 - **Kunci akses itu RAHASIA:** disimpan di tabel `terbit_ulang_konfigurasi` (tanpa kebijakan RLS, tanpa hak baca dari aplikasi), tidak ikut cadangan data maupun cadangan otomatis, dan hanya memberi izin menjalankan alur GitHub pada repositori ini. Mematikan: `select sigarda.terbit_ulang_matikan();` (menghapus jadwal dan kunci); cabut juga kunci di GitHub.
 - **Sebelum dipasang:** tidak ada yang rusak. Berita tetap tampil di beranda seketika; hanya halaman tersendiri per berita yang menunggu deploy berikutnya (penggabungan kode ke `main` atau Run workflow manual).
 - Kode: `supabase/sumber/29-terbit-ulang.sql`, `api().statusTerbitUlang/mintaTerbitUlang`, `src/components/PanelTerbitUlang.jsx`. Dijaga `uji/terbit-ulang.mjs`, `uji/terbit-ulang-klien.mjs`, `uji/migrasi-terbit-ulang.mjs`.
-### Jabatan Dewan Ambalan (Pradana dan Pradani)
-Jabatan Dewan Ambalan adalah **atribut akun Penegak** (kolom `profiles.jabatan_dewan`, isian bebas 2 sampai 60 karakter; saran: Pradana, Pradani, Wakil Pradana, Wakil Pradani, Sekretaris, Bendahara). Pembina dan Admin mengaturnya di menu **Kepengurusan** (atau pada formulir Penegak di Anggota, Admin). Lihat "Dewan Ambalan sebagai jabatan pada akun Penegak".
-- **Pradana dan Pradani hanya satu orang.** Memilih jabatan yang sudah dipegang orang lain memunculkan pemberitahuan; bila disimpan, pemegang lama otomatis kehilangan jabatan itu dan kembali menjadi Penegak biasa (satu permintaan, semua atau tidak sama sekali). Server menolak dua Pradana.
-- **Pradana menjadi ketua sidang** pada Berita Acara (nama dan sebutan "Pradana Dewan Ambalan" disalin saat sidang dicatat; berita acara lama tidak berubah). Belum ada Pradana: dipakai pengaturan nama ketua lama sebagai cadangan.
-- **Pradana dan Pradani menandatangani Surat Tanda Lulus**, dengan nama dan NTA dari akun mereka. Keduanya tampil bila keduanya ada pemegangnya; bila belum ada, tempat Pradana dicetak garis. Pergantian pengurus cukup dengan memindahkan jabatan di menu Anggota.
-
 ### Tanda tangan dan stempel pada dokumen cetak
 Kartu SKU, Surat Tanda Lulus, Berita Acara Sidang, Nilai Raport, dan Surat Pengantar memakai satu blok yang sama: jabatan, ruang kosong untuk **tanda tangan dan stempel basah**, lalu nama dan NTA. Lingkaran putus-putus "stempel" hanya terlihat di layar sebagai penanda tempat dan tidak ikut tercetak.
-**Berita Acara Sidang** juga memuat **QR dan kode verifikasi** (dibuat saat berita acara pertama kali dicetak; cetak ulang memakai yang sama). QR membuktikan berita acara benar tercatat di aplikasi (nomor, tanggal, pencatat, ketua sidang, Pembina, Penegak, tingkat, keputusan); dokumen sah bila bertanda tangan dan berstempel. Catatan sidang yang dihapus tidak lagi dijawab oleh QR-nya.
-
 Untuk pergantian pengurus atau pejabat pada tahun berikutnya, Admin cukup memperbarui isian ini: dokumen yang dibuat sesudahnya memakai data terbaru, sedangkan berita acara sidang dan surat pengantar yang sudah terbit tetap memuat nama saat dibuat.
 Pratinjau kop surat tampil langsung sebelum disimpan. Kop seragam di semua dokumen cetak (`KopSurat` di `src/components/DokumenSku.jsx`): lambang Tunas Kelapa Gerakan Pramuka di pojok kiri atas, identitas gudep di tengah, Logo Pandu Dunia (WOSM) di pojok kanan atas; gambarnya di `src/assets/logo/` (bersumber dari Wikimedia Commons: *Lambang Tunas Kelapa Gerakan Pramuka.png* dan *World Scout Emblem.png*, yang kedua diperkecil ke 320 px). Data tersimpan di basis data (pengaturan `gudep.data`) dan menjadi rujukan kop surat, tanda tangan, kota dan tanggal surat, halaman masuk, footer, menu, ekspor Excel, dan seluruh dokumen cetak.
 Selama belum pernah disimpan, aplikasi memakai nilai bawaan di `GUDEP_BAWAAN` pada `src/config.js`; setelah disimpan, isian yang dikosongkan tetap kosong. Halaman masuk dan verifikasi (tanpa login) hanya menerima nama gudep, ambalan, sekolah,
@@ -260,19 +130,10 @@ area tanda tangan sengaja dikosongkan; QR hanya membuktikan surat itu benar dite
 - **Verifikasi** (halaman publik, tanpa login): QR menampilkan nomor, penerbit, pembuat, penanda tangan, data Penegak, guru, dan butir; kode VRF- hanya menjawab jenis, nomor, dan tanggal (tanpa nama).
 - Surat tidak diperlukan (dan ditolak server) bila sudah ada Pembina yang seagama. Tabel `dokumen_terbit` dibangun umum agar jenis dokumen lain dapat ditambahkan kelak.
 
-### Rombel saya dan progres per rombel (fase 3)
-"Rombel saya" = rombel yang ditugaskan Admin kepada Pembina atau Dewan Ambalan pada tahun ajaran berjalan (Anggota > Penugasan). Hanya tampilan: server tidak berubah, tanpa migrasi, tanpa deploy Edge Function.
-- **Filter awal.** Pada **Peserta**, **Portofolio**, **Raport** dan pemilih peserta di **Sesi ujian**, tombol **Hanya rombel saya (XI-01, XI-02, ...)** menyala sejak halaman dibuka. Matikan untuk melihat semua; memilih kelas tertentu
-  pada filter juga mematikannya; **Bersihkan filter** menampilkan semua. Cetak dan Excel mengikuti filter (keterangan Excel menulis "rombel saya (...)"). Tanpa penugasan (Admin, penguji yang belum ditugaskan, atau penugasan belum termuat) tidak ada penyaringan.
-- **Antrian** sudah sesuai rombel tugas (ditujukan kepada Anda + antrian rombel Anda). Bila mencentang *Tampilkan semua penguji*, muncul *Hanya rombel saya* (menyala) untuk menyaring antrian penguji lain.
-- **Papan sesi**: tombol *Hanya rombel saya* muncul bila sesi memuat Penegak dari rombel Anda dan dari rombel lain; ringkasan angka di atas papan tetap seluruh sesi.
-- **Dashboard Pembina dan Dewan**: kartu **Progres per rombel** untuk tiap rombel tugas: jumlah Penegak, rata-rata progres Bantara dan Laksana, yang sudah selesai tiap tingkat, pengajuan menunggu dan sedang diuji, penguji bertugas, dan daftar Penegak
-  (ketuk nama untuk membuka detail). Tanpa penugasan, semua rombel yang punya Penegak ditampilkan; *Tampilkan semua rombel* tersedia bagi yang punya penugasan. Logika di `src/lib/rombelLogic.js` dan `src/lib/progresRombel.js`, dijaga pengujian `rombel-saya`.
-
 ### Notifikasi dan aplikasi terpasang (PWA)
 **Kotak Notifikasi** (menu *Notifikasi*, lencana angka pada menu dan judul tab) bekerja di semua peran tanpa pengaturan tambahan, setelah migrasi `2026-09-notifikasi.sql`. Notifikasi dibuat **pemicu di basis data** (bukan di tiap fungsi),
-sehingga semua jalur tercakup: **pengajuan uji** (penguji tujuan, atau semua penguji yang sah bila masuk antrian rombel), **dialihkan**, **pengujian dimulai** dan **hasil tersedia** (untuk Penegak; isi *tanpa* menyebut lulus atau ulang),
-**jadwal sesi ujian** (Penegak yang dimasukkan; menyimpan ulang sesi tidak menggandakan), dan **surat pengantar guru agama terbit**. Pengingat harian pukul 07.00 WIB (pg_cron): **H-1** pengujian dan sesi ujian, dan **pengajuan menunggu lebih dari 3 hari**.
+sehingga semua jalur tercakup: **pengajuan uji** (penguji tujuan, atau semua Pembina bila masuk antrian), **dialihkan**, **pengujian dimulai** dan **hasil tersedia** (untuk anak berakun; isi *tanpa* menyebut lulus atau ulang),
+dan **surat pengantar guru agama terbit**. Pengingat harian pukul 07.00 WIB (pg_cron): **H-1** pengujian dan sesi ujian, dan **pengajuan menunggu lebih dari 3 hari**.
 Notifikasi berumur lebih dari 90 hari dibersihkan otomatis. Data lama tidak memicu apa pun; hanya peristiwa baru.
 **Kirim notifikasi uji** (tahap L0; migrasi `2026-09-tes-notifikasi.sql`): tombol di halaman Notifikasi membuat satu notifikasi untuk diri sendiri lewat jalur yang sama dengan notifikasi sungguhan (pemicu, pg_net, Edge Function `notif-push`), lalu menampilkan hasilnya:
 terkirim, gagal, atau penyebab yang perlu diperbaiki (push belum dikonfigurasi, pg_net belum aktif, belum ada perangkat, atau Edge Function tidak menjawab dalam 20 detik). Dibatasi 5 kali per 10 menit. Bagian **Kapan notifikasi muncul?** di halaman yang sama mendaftar kejadian pemicunya menurut peran.
@@ -308,150 +169,14 @@ sekaligus dengan format `Judul | halaman`). Menu **Materi** menampilkan daftar i
 (iframe `drive.google.com/file/d/{ID}/preview`, sama seperti PDF Drive pada Google Site). Pada daftar butir SKU muncul tombol
 **Materi (n)** untuk butir yang punya materi. Nomor halaman hanya penunjuk letak; pratinjau Drive tidak dapat melompat ke halaman tertentu.
 
-### SKU resmi Kwarnas
-Butir SKU mengikuti Keputusan Kwarnas No. 198 Tahun 2011, Lampiran III (Bantara 23 butir, Laksana 22 butir).
-Butir 1 (agama) diuraikan per sub-butir sesuai agama peserta: Islam, Katolik, Protestan, Hindu, Buddha.
-Dokumen resmi tidak merinci Khonghucu, sehingga peserta Khonghucu mendapat satu butir pengganti yang
-materinya ditetapkan Pembina. Sebuah butir lulus bila seluruh sub-butirnya lulus. Persentase dihitung per butir.
+### Iuran dan tabungan
+Latihan dan iuran dapat dicatat pada hari apa pun (menu Absensi dan Iuran). **Pembina** dan asisten pencatat mencatat iuran; anak hanya melihat miliknya. Tabungan Siaga dicatat sebagai **pemeriksaan buku tabungan** oleh Pembina (uang tetap di buku anak). Kode: `src/lib/iuranLogic.js`, `tabunganLogic.js`, `latihanSiagaLogic.js`.
 
-Aturan (diterapkan di server): butir Laksana baru bisa diajukan dan diuji setelah seluruh butir Bantara lulus.
-Setiap kelulusan menghasilkan kode verifikasi digital (`VRF-XXXXXXX`) yang dibuat server dan tercetak di kartu SKU.
-
-### Absensi latihan Jumat
-- **Hanya pengurus** (Dewan Ambalan, Pembina, Admin) yang mencatat. Penegak hanya melihat riwayat kehadirannya.
-- **Catat absensi** memakai date picker. Hanya Jumat yang diterima; tanggal yang belum tiba tidak dapat dicatat ("hari ini"
-  dihitung menurut WIB). Tahun ajaran: Semester Ganjil Juli sampai Desember, Genap Januari sampai Juni; berlaku untuk tahun berapa pun.
-- Anggota yang belum dicatat berstatus "belum dicatat" dan tidak dihitung; catat Alpa secara eksplisit.
-  Kehadiran di bawah 75% ditandai merah (ubah `AMBANG_HADIR` di `src/config.js`).
-- Rekap punya pencarian, filter sangga, kelas, dan peran, serta tombol **Unduh Excel (.xlsx)**.
-
-### Iuran bumbung kepramukaan
-Iuran rutin latihan Jumat, dicatat di sesi absensi dan diikat ke penilaian SKU (butir Bantara 6 dan Laksana 6, "Setia membayar iuran ...").
-- **Yang mencatat**: hanya **Dewan Ambalan** dan **asisten bendahara**. Asisten adalah Penegak Calon Laksana (SKU Bantara selesai, Laksana belum) yang ditunjuk Dewan Ambalan atau Pembina, maksimal 5 orang; ia dapat mencatat iuran Penegak lain di menu Iuran, tetapi tidak dapat mengubah kehadiran, mencatat iurannya sendiri, atau menutup kas, dan setiap catatannya tercatat atas namanya. Pembina dan Admin hanya melihat. Penegak hanya melihat iurannya sendiri dan angka total sangga, kelas, dan gudep (tanpa nama Penegak lain).
-- **Pencatatan**: di halaman **Absensi**, di bawah tombol Hadir, Izin, Sakit, dan Alpa, ada tombol nominal Rp 500 sampai Rp 5.000 (kelipatan Rp 500) dan satu kolom isian manual (tombol yang aktif ditekan lagi berarti menghapus iuran). Yang izin atau sakit boleh **menitip** iuran: iuran tidak bergantung pada status kehadiran. Ada aksi massal (isi semua yang hadir). Satu baris per Penegak per Jumat; tidak ada baris berarti tidak beriuran. Setiap perubahan masuk log yang hanya bertambah (`iuran_log`). Sesi absensi yang sudah punya iuran atau tutup kas tidak dapat dihapus sebelum dikosongkan.
-- **Rekap** (menu Iuran, tab Rekap; ringkasnya juga di dashboard tiap peran): per Penegak, per sangga, per kelas, total gudep per pertemuan, dan total per semester dan tahun ajaran, dengan filter dan **Unduh Excel**. Persen beriuran = pertemuan beriuran dibagi pertemuan terlaksana; di bawah ambang rutin (bawaan 75%) ditandai merah.
-- **Tutup kas**: Dewan Ambalan memasukkan uang fisik per Jumat; selisih dengan jumlah catatan ditampilkan (cocok, lebih, kurang) dan ikut ke Excel.
-- **Kaitan dengan SKU**: pada instrumen butir Bantara 6 atau Laksana 6, satu kriteria dapat diberi **sumber nilai "Saran otomatis dari iuran"** (menu Instrumen; kolom "Sumber nilai (manual/iuran)" pada Excel, nilai `iuran`). Di lembar penilaian, kriteria itu terisi otomatis dengan saran dari persen pertemuan beriuran semester tanggal uji: 1-5 dengan batas bawaan 90% = 5, 75% = 4 (ambang rutin), 65% = 3, 50% = 2, di bawahnya 1. Penguji **boleh mengubah saran, dengan catatan alasan wajib** (ditegakkan di server dan tercatat di riwayat, beserta saran aslinya di rincian nilai).
-- **Iuran susulan**: bila belum mencapai ambang, Dewan Ambalan dapat menerima iuran susulan langsung dari lembar penilaian (rekomendasi: menebus kekurangan pertemuan, masing-masing Rp 1.000). Susulan menebus Jumat yang kosong, terlama dulu, dihitung **setara penuh** dengan iuran rutin, dan saran nilai langsung ikut diperbarui. Layar menandai dan mengingatkan bila lebih dari separuh iuran berasal dari susulan agar "rutin" tetap bermakna.
-- **Pengaturan** (tab Pengaturan, khusus Pembina dan Admin): iuran standar, ambang rutin, dan batas persen nilai 5, 3, dan 2. Perubahan berlaku untuk penilaian berikutnya.
-- Rumus saran ada di `src/lib/iuranLogic.js` dan `sigarda.iuran_hitung` (SQL) dan dijaga pengujian. Semester ditentukan dari tanggal uji (Juli-Desember ganjil, Januari-Juni genap).
-
-### Portofolio Penegak Garuda
-Daftar 26 lampiran dari file "03.01. Tabel Cek List Lampiran Berkas Dokumen Portofolio Garuda". Setiap dokumen
-berstatus Belum siap, Sedang disiapkan, atau Siap (Ada), dengan catatan, tautan berkas (harus diawali http/https), dan jurnal perubahan.
-Rekap tampil di dashboard Dewan Ambalan, Pembina, dan Admin, dan dapat diunduh sebagai Excel.
-
-#### Portofolio format Kwarcab (Tahap 3, H2)
-Tombol **"Portofolio format Kwarcab"** pada detail Calon Garuda (menu Portofolio; Pembina dan Admin) membuka dokumen cetak yang mengikuti "02. Portofolio Penegak Garuda 2026" Kwarcab Purbalingga:
-surat rekomendasi, sampul, daftar isi, daftar isian (data pribadi sampai tanda tangan), lembar SPG 13 butir, formulir penilaian tim, dan daftar lampiran.
-Diisi otomatis dari data aplikasi (pelantikan, 45 baris TKK, Saka, Krida, penetapan SPG, tanggal lahir, tim penilai) **dan isian data diri yang diisi Penegak sendiri** (tempat lahir, alamat, keluarga, pendidikan, prestasi, kegiatan, kecakapan, perangkat IT; nama orang tua/wali menjadi penanda tangan orang tua); yang belum diisi dicetak
-kosong untuk ditulis tangan. Lampiran **delapan surat keterangan guru/gugus depan** (PPKN, UU Gerakan Pramuka, TIK dua surat, bahasa, seni, IPTEK, olahraga) ikut tercetak (dapat dimatikan lewat kotak "Sertakan surat keterangan guru"); rubriknya diambil dari **templat di basis data**
-(panel "Templat surat keterangan guru" pada halaman yang sama; Pembina dan Admin menempelkan uraian dari lembar Kwarcab, satu baris per uraian, berlaku per tahun ajaran dan otomatis diwariskan ke tahun ajaran berikutnya). Rubrik Kwarcab **tidak ada di repositori**.
-Kode: `src/lib/portofolioKwarcabLogic.js`, `src/lib/suratGuruLogic.js`, `src/components/PortofolioKwarcab.jsx`, `SuratKeteranganGuru.jsx`, `PanelTemplatSurat.jsx`; dijaga `uji/portofolio-kwarcab.mjs`, `uji/surat-guru.mjs`.
-
-#### Pemeriksaan Data: data diri Penegak (Tahap 3, H1 lanjutan)
-Menu **Periksa Data** (Pembina, Dewan Ambalan, Admin) memuat kategori **"Penegak belum melengkapi data diri"**: Penegak aktif yang belum mengisi isian pokok, dengan keterangan isian yang kurang di tiap baris (mis. "XI-01: Agama, Alamat") dan tombol **WhatsApp** yang membuka pesan ajakan siap kirim (pengirim memilih kontak sendiri bila nomor belum diisi). Hanya nama dan kode isian yang kurang yang tampil, bukan isinya. Tanpa tombol Perbaiki karena diisi Penegak sendiri. Butuh migrasi `2026-09-periksa-data-diri.sql`; tanpa deploy Edge Function. Kode: `pemeriksaanLogic.js`, `eskalasiLogic.teksWaLengkapiDataDiri`, `isianLogic.labelPokok`; dijaga `uji/periksa-data-diri.mjs` (kecocokan `pokokKurang` klien dengan server pada 128 kombinasi) dan `uji/migrasi-periksa-data-diri.mjs`.
-
-#### Salinan beku dan tabel pendataan (Tahap 3, H3)
-Pada Portofolio format Kwarcab, panel **Salinan beku** (Pembina dan Admin) menyimpan dokumen SAAT INI apa adanya (identitas, TKK, Saka, Krida, SPG, tanggal lahir, tim penilai, data diri, rubrik surat guru yang berlaku, dan **data gudep saat itu**) sebagai arsip yang dicetak atau dikirim ke Kwarcab. Salinan dapat dibuka lagi kapan saja dan tidak berubah walau data aplikasi atau Data Gudep berubah kemudian; ada kolom catatan (mis. "Diserahkan ke Kwarcab 12 Okt 2026"). Paling banyak 20 salinan per Penegak dan 600 kB per salinan; Pembina dan Admin dapat menghapusnya. Tabel `portofolio_snapshot` (RLS baca Pembina dan Admin saja, karena memuat data pribadi; ikut cadangan). Tata letak cetak bernomor versi (`kwarcab-2026`) tersimpan di isi salinan.
-Di menu **Kelayakan**, tombol **Unduh rekap untuk Kwarran (Excel)** menghasilkan satu buku kerja berisi enam lembar untuk seluruh Calon dan Penegak yang SKU-nya selesai: **Pendataan Calon Garuda** (Nama, NTA/NIS, tanggal lantik Laksana, masa Laksana, tanggal lahir, usia, status kuota, saran aplikasi, dan kolom Verifikasi Pembina yang dikosongkan), **Kesiapan Berkas** (SKU, tanggal lantik, TKK, wajib Utama, SPG, dokumen portofolio, dan alasan bila belum lengkap), **Kemajuan TKK** (jumlah per bidang 1-5, total, Madya ke atas, Utama), **Rincian SPG** (13 butir), **Tim Penilai** (SK dan anggota), dan **Kalender** tahap seleksi. Format Excel resmi dari Kwarran/Kwarcab BELUM ada; rancangan ini dari data aplikasi menurut tahap seleksi Kwarcab dan mudah disesuaikan (kolom dan judul) bila format resmi tiba. Butuh migrasi `2026-09-snapshot-portofolio.sql`; **tanpa deploy Edge Function**.
-Kode: `src/lib/snapshotLogic.js`, `src/lib/pendataanGarudaLogic.js`, `src/lib/rekapKwarranLogic.js`, `src/components/PanelSalinanBeku.jsx`; dijaga `uji/snapshot-portofolio.mjs`, `uji/pendataan-garuda.mjs`, `uji/rekap-kwarran-melatih.mjs`, `uji/migrasi-snapshot-portofolio.mjs`.
-
-#### Rantai melatih TKK (Tahap 3, H4)
-Di halaman **TKK** ada tab **Melatih** (Pembina, Dewan Ambalan, Admin). Syarat penguji TKK Penegak: telah melatih sedikitnya seorang Pramuka sampai TKK tingkat di bawahnya (petunjuk SK 134/1976). Catatan "bukti melatih" pada tiap capaian dirangkai per Penegak: siapa yang dilatih dan untuk TKK apa saja. **Bukti yang sama untuk 3 TKK berbeda atau lebih ditandai** ("perlu ditanyakan") agar Pembina menanyakannya; tingkat Purwa, Madya, dan Utama satu TKK dihitung satu TKK. Hanya bantuan pemeriksaan: tidak ada yang diblokir. Tanpa migrasi dan tanpa deploy Edge Function. Kode: `src/lib/melatihLogic.js`, `src/components/PanelMelatih.jsx`; dijaga `uji/rekap-kwarran-melatih.mjs`.
-
-#### Data diri Penegak (isian mandiri; Tahap 3, H1)
-**Admin Gudep hanya memasukkan data awal Penegak: nama lengkap, NIS, dan rombel** (formulir Tambah anggota dan template import Excel; kolom lain bertanda "(opsional)": jenis kelamin, sangga, agama, NTA, PIN awal, tanggal lahir).
-Selebihnya **diisi Penegak sendiri**: menu **Akun saya > Data diri**, dan ajakan yang tampil sesudah masuk (menggantikan ajakan nomor WhatsApp: perilaku sama, satu kali per masuk, dapat dilewati "Isi nanti", ditanyakan lagi sampai isian pokok lengkap: WhatsApp, jenis kelamin, agama, tanggal lahir, tempat lahir, alamat, nama ayah/ibu/wali).
-Formulir memuat identitas dan kontak, keluarga, pendidikan dan prestasi, kegiatan Pramuka, kecakapan lain, dan perangkat IT, dengan keterangan bahwa isian ini untuk melengkapi dokumen portofolio Garuda. Jenis kelamin, agama, tanggal lahir, dan NTA hanya dapat diisi bila belum tercatat (koreksi lewat Pembina atau Admin).
-**Penegak tanpa agama belum dapat mengajukan SKU** (pemicu `tolak_peserta_tak_aktif` menolak penulisan progres; butir agama tidak tampak tanpa agama). **Penegak tanpa sangga** dibagi kemudian oleh Pembina atau Bina Damping di menu Sangga (peringatan rombel menghitung yang belum bersangga).
-Isian tersimpan sebagai pasangan kunci-nilai di tabel `penegak_isian` (78 kunci; aturan tiap kunci di `sigarda.isian_periksa`, dicerminkan `src/lib/isianLogic.js` dan dibandingkan langsung pada kisi masukan); dibaca pemilik, Pembina, dan Admin (bukan Dewan Ambalan). Butuh migrasi `2026-09-isian-penegak.sql` dan **deploy ulang Edge Function `sigarda`**.
-Kode: `FormDataDiri.jsx`, `AjakanIsian.jsx`, `useIsianSaya.js`; dijaga `uji/isian-penegak.mjs`, `uji/isian-klien.mjs`, `uji/migrasi-isian-penegak.mjs`.
-
-#### Berkas Calon Garuda (tahap L7)
-Dari halaman Portofolio, tombol **"Cetak / bagikan berkas"** pada detail seorang Calon Garuda (Pembina dan Admin) membuka satu
-dokumen gabungan siap cetak: sampul dan identitas, **Kartu Kemajuan SKU Bantara dan Laksana** (lengkap dengan QR dan kode
-verifikasi tiap butir, memakai komponen yang sama dengan menu Cetak), **cek list 26 dokumen portofolio** (status, tautan Drive,
-catatan), jurnal ringkas, dan blok tanda tangan Pembina. **PDF**: klik "Cetak atau simpan PDF", lalu pilih "Simpan sebagai PDF"
-pada dialog cetak browser (pola sama dengan seluruh dokumen cetak lain di aplikasi, tanpa library PDF).
-
-**Tautan berbagi baca-saja** (untuk penilai kwartir ranting/cabang yang tidak punya akun SIGARDA): tombol "Buat tautan berbagi"
-menghasilkan alamat `?berkas=<token>` yang dapat dibuka **tanpa login**, menampilkan berkas yang sama persis (dapat dicetak sendiri
-oleh penilainya). Satu tautan **aktif** per Calon Garuda; membuat tautan baru otomatis mengganti (mencabut) yang lama, dan
-**tanpa kedaluwarsa** — berlaku sampai dicabut manual lewat tombol "Cabut tautan". Token 128 bit acak, tidak dapat ditebak, tetapi
-**berbeda dari QR verifikasi keaslian** (`?v=<token>`, yang hanya menjawab ringkasan): tautan ini memberi akses **baca isi lengkap**
-berkas kepada siapa pun yang memegangnya, jadi hanya Pembina dan Admin yang dapat membuat/mencabutnya (lebih ketat daripada
-menilai portofolio sehari-hari yang juga melibatkan Dewan Ambalan), dan tabelnya **tidak** ikut dicadangkan lewat "Unduh cadangan".
-
-Kode: `src/lib/garudaLogic.js` (`urlBerkasGaruda`, `parameterBerkasGaruda`), `src/components/BerkasGaruda.jsx`
-(`BerkasGarudaDokumen`, `TampilanBerkasGaruda`), `src/components/HalamanBerkasGaruda.jsx` (halaman publik, mandiri seperti
-`HalamanVerifikasi.jsx`). Server: `sg_garuda_berkas_baca(peserta_id)`, `sg_garuda_token_buat(peserta_id)`,
-`sg_garuda_token_cabut(peserta_id)` (Pembina dan Admin), `sg_garuda_token_baca(token)` (tanpa login). Tabel
-`public.garuda_berkas_token` (RLS aktif TANPA kebijakan, sama seperti `sertifikat_tingkat`: hanya lewat fungsi). Dijaga pengujian
-`garuda`, `migrasi-garuda`.
-
-### Sidang Dewan Kehormatan Ambalan
-Menu **Sidang** (Dewan Ambalan, Pembina, Admin) untuk keputusan Lulus atau Tidak Lulus SKU sebelum pelantikan. SKU pada dasarnya lulus/tidak lulus; predikat (Cukup, Baik, Sangat Baik) bukan ketentuan Kwarnas.
-- **Antrian**: peserta yang seluruh butir tingkatnya lulus dan belum dinyatakan Layak. Peserta lain (capaian belum 100%) dapat dicari untuk keputusan Ditunda / Remedi.
-- **Lembar sidang**: capaian dan rincian butir (tanggal dan penguji), elemen manual (masa magang atau tamu ambalan, tugas tambahan adat), NTA (opsional; tersimpan ke profil), keputusan, catatan, nomor berita acara.
-  **"Layak dan Lulus" hanya bila seluruh butir tingkat itu lulus** (ditegakkan di server); satu peserta hanya sekali Layak per tingkat.
-- **Berita Acara** siap cetak (A4) mengikuti format Ambalan. Nama ketua dan sebutan jabatannya dicatat saat sidang, jadi berita acara lama tidak berubah bila pengaturan diganti.
-- **Pengaturan sidang** (dapat diubah Dewan Ambalan, Pembina, Admin):
-  - **Format nomor berita acara**, diatur dengan **pilihan** (panjang nomor urut 1-6 angka, kode surat, bulan Romawi/angka/tanpa bulan, pemisah `/` `-` `.`, tingkat opsional; tahun selalu ada) atau ditulis **manual** dengan kode
-    `{no}` `{no2}` `{no3}` `{no4}` `{no5}` `{no6}` (nomor urut dengan nol di depan sampai 2-6 angka), `{tahun}` `{bulan}` `{romawi}` `{tingkat}`. Contoh: `{no4}/DA/{romawi}/{tahun}` menghasilkan `0002/DA/VIII/2026`.
-    Wajib memuat satu kode nomor urut dan `{tahun}`. Pratinjau memakai nomor urut yang benar-benar akan dipakai berikutnya (dari penghitung di server), dan bulan/tahun mengikuti tanggal sidang.
-  - **Nomor urut berikutnya**: nomor mulai dari 1 tiap tahun dan tidak dipakai ulang setelah catatan dihapus. Untuk melanjutkan nomor yang sudah berjalan di kertas, atur nomor berikutnya (harus lebih besar dari nomor tertinggi yang sudah tercatat pada tahun itu). Nomor juga bisa diisi manual di lembar sidang.
-  - Nama Ketua Dewan Penegak (kosong = garis tanda tangan) dan sebutan jabatan (bawaan "Ketua Dewan Penegak / Pemangku Adat").
-- Catatan sidang hanya terbaca pengurus; semua penulisan lewat fungsi server `sg_sidang_simpan`, `sg_sidang_hapus`, `sg_pengaturan_simpan`.
-- Belum termasuk: kolom NTA pada import Excel dan formulir Admin (NTA saat ini diisi di lembar sidang).
-
-### Nilai Raport Ekstrakurikuler
-Menu **Raport** (hanya Pembina dan Admin; Dewan Ambalan dan Penegak tidak melihatnya) untuk nilai Pramuka di raport sekolah, per **semester** (Ganjil: Juli sampai Desember, Genap: Januari sampai Juni).
-- **Skor 0-100** = 40% kehadiran + 40% capaian SKU + 20% sikap (bobot dapat diatur).
-  - *Kehadiran*: persen hadir pada latihan Jumat semester itu (hadir dibagi hadir + izin + sakit + alpa yang dicatat; yang belum dicatat tidak dihitung).
-  - *Capaian SKU*: butir yang **lulus pada semester itu** dibagi target per semester (bawaan Bantara 12, Laksana 11), maksimal 100%. Butir agama dihitung bila seluruh sub-butirnya lulus, pada tanggal uji terakhirnya.
-  - *Sikap*: penilaian Pembina 1-5 (dikali 20), ditambah karakter yang menonjol dan jumlah SKK (SKK hanya keterangan).
-  - Bila kehadiran atau sikap belum ada, bobotnya dialihkan ke komponen lain dan skor ditandai sementara; predikat baru tampil setelah sikap dinilai.
-  - Contoh: hadir 92%, capaian 10 dari 12 butir (83%), sikap 4 (80) menghasilkan skor 86, predikat **B Baik**.
-- **Predikat** (batas dapat diatur): A Sangat Baik mulai 90, B Baik mulai 75, C Cukup mulai 60, D Kurang di bawahnya. Pembina boleh mengubah predikat akhir dengan **catatan alasan wajib**; hasil hitung asli tetap tersimpan.
-- **Deskripsi capaian** dibuat otomatis dari templat sebagai **saran** (keaktifan latihan, butir SKU tertinggi yang sudah lulus, karakter, dan konsistensi sikap), lalu disunting Pembina. Status **Draf (saran)** atau **Final**: keputusan akhir ada pada Pembina.
-  Nilai final tidak ikut berubah bila absensi, progres SKU, atau pengaturan berubah; baris ditandai "Data berubah" dan baru diperbarui bila Pembina membukanya dan menyimpan ulang.
-- **Cetak** per Penegak (A4, satu lembar per halaman) dan **Excel per kelas** (satu lembar per kelas: NIS, nama, kelas, predikat, deskripsi, status, dan rincian nilai). Yang belum final diberi tanda DRAF di cetakan dan berwarna kuning di Excel.
-- **Pengaturan**: batas predikat, bobot (harus berjumlah 100), dan target butir per semester.
-- Server menghitung ulang kehadiran, capaian, skor, dan predikat dari data absensi dan progres SKU saat menyimpan (`sg_raport_simpan`), jadi angka tidak bisa dipalsukan dari layar. Rumus di `src/lib/raportLogic.js` dan di SQL sama persis (pembulatan setengah ke atas dengan bilangan bulat) dan dijaga oleh pengujian.
-- Penulisan hanya lewat fungsi server `sg_raport_simpan`, `sg_raport_hapus`, `sg_raport_pengaturan_simpan`; tabel `raport` hanya terbaca Pembina dan Admin.
-
-### Laporan berjenjang tahunan (tahap L8)
-Menu **Laporan** (hanya Pembina dan Admin) menyusun satu **laporan tahunan gugus depan** untuk diserahkan ke Kwartir Ranting,
-dengan tembusan Kwartir Cabang -- satu berkas gabungan (Excel banyak lembar + PDF siap cetak), bukan beberapa berkas terpisah.
-SIGARDA hanya **menghasilkan** berkasnya; **tidak ada** pengiriman otomatis ke sistem kwartir mana pun.
-
-**Periode dapat dipilih** (bukan salah satu tetap): **Tahun Ajaran** (Juli-Juni, konsisten dengan seluruh data SIGARDA lain)
-atau **Tahun Kalender** (Januari-Desember, kebiasaan registrasi ulang Kwarcab). Memilih Tahun Kalender otomatis menggabungkan
-data dari dua tahun ajaran yang berbeda (mis. tahun 2026 = separuh akhir tahun ajaran 2025/2026 + separuh awal 2026/2027).
-
-Isi laporan (tombol **"Susun laporan"** menghitung semuanya sekaligus, lalu tombol **Unduh Excel** dan **Cetak PDF** memakai
-hasil yang sama):
-- **Sampul**: identitas gudep (nama, nomor, kwarran, kwarcab, Pembina, Ka. Mabigus) dan periode laporan.
-- **Rekap Keanggotaan**: jumlah Penegak **aktif** per tingkat (X/XI/XII) x jenis kelamin x peran (Calon Bantara/Laksana/Garuda).
-  Ini SNAPSHOT pada tanggal laporan dibuat (seperti sensus "data potensi" Kwarcab), **bukan** rata-rata sepanjang periode.
-- **Kepengurusan Dewan Ambalan**: daftar pengurus yang menjabat saat laporan dibuat (nama, NTA, jabatan).
-- **Rekap Kegiatan**: kegiatan Agenda yang tanggalnya jatuh pada periode laporan.
-- **Rekap Pencapaian SKU**: jumlah Penegak yang menyelesaikan seluruh SKU Bantara/Laksana atau mendaftar Calon Garuda **pada
-  periode itu** -- dihitung dari SEMUA Penegak (bukan hanya yang aktif sekarang), karena seorang Penegak bisa lulus lalu
-  menjadi alumni pada tahun ajaran yang sama dan pencapaiannya tetap harus tercatat.
-- **Rekap Kehadiran**: rata-rata kehadiran latihan Jumat pada periode itu (rumus sama dengan halaman Absensi).
-- **Rekap Keuangan Iuran**: total iuran terkumpul pada periode itu (rumus sama dengan halaman Iuran).
-
-Kode: `src/lib/laporanLogic.js` (murni: `rentangLaporan`, `rekapKeanggotaan`, `rekapPencapaianSku`, `rekapKegiatan`,
-`sesiRentang`), `src/lib/exportLaporanTahunan.js` (lembar Excel, memakai `unduhXlsx` dari `exportXlsx.js` yang sudah ada),
-`src/components/CetakLaporanTahunan.jsx` (cetak PDF lewat `window.print()`, pola sama dengan dokumen cetak lain), halaman
-`src/pages/Laporan.jsx`. **Tanpa fungsi atau tabel server baru**: seluruhnya disusun dari data yang sudah dimuat di klien
-(anggota, progres SKU, Agenda) atau lewat fungsi server yang sudah ada dan sudah menerima rentang tanggal bebas
-(`sg_iuran_agregat` lewat `muatIuranAgregat`, kehadiran lewat `muatHadirRentang`). Dijaga pengujian `laporan`.
+### Laporan tahunan
+Menu **Laporan** (Pembina dan Admin) menyusun satu laporan gabungan untuk kwartir (Excel banyak lembar dan PDF lewat cetak): rekap keanggotaan Siaga per kelas, jenis kelamin, dan tahap SKU; pencapaian Mula/Bantu/Tata pada periode; absensi, iuran, dan agenda. Periode dapat berupa **Tahun Ajaran** (Juli-Juni) atau **Tahun Kalender**. Tanpa fungsi server baru: data dihimpun di klien dari yang sudah dimuat. Kode: `src/lib/laporanLogic.js`.
 
 ### Bantuan: panduan pengguna (tahap L10)
-Menu **Bantuan** (ikon tanda tanya, kelompok Utama, **semua peran**) memuat panduan pemakaian ringkas untuk empat peran: **Penegak,
+Menu **Bantuan** (ikon tanda tanya, kelompok Utama, **semua peran**) memuat panduan pemakaian ringkas untuk empat peran: **Anggota Siaga,
 Dewan Ambalan, Pembina, dan Admin Gudep**. Panduan yang tampil pertama menyesuaikan peran dan tampilan yang sedang aktif (mis.
 Penegak berjabatan Dewan dalam tampilan Dewan melihat panduan Dewan Ambalan lebih dulu); tab di atas halaman memungkinkan membaca
 panduan peran lain (tidak ada yang dirahasiakan). Tiap peran punya daftar isi (di ponsel berupa bilah yang membuka daftar), dan bagian
@@ -465,64 +190,14 @@ untuk layar dan berkas -- tidak ada salinan terpisah yang bisa usang.
 jalankan `npm run uji -- panduan`, yang memeriksa setiap bagian punya judul dan isi, dan id bagian tidak bentrok (dipakai sebagai
 jangkar daftar isi). Kode: `src/lib/panduanLogic.js` (`panduanAwal`), halaman `src/pages/Bantuan.jsx`.
 
-### Instrumen penilaian SKU
-Tiap unit SKU (butir; butir agama per sub-butir, total 90 unit) dapat punya **instrumen**: cara uji, instruksi penguji, dan 1-15 kriteria (jenis Lisan/Praktik/Bukti kegiatan/Pengamatan, bobot 1-5, tanda **Wajib**, panduan penguji).
-- **Penilaian**: penguji memberi nilai 1-5 pada tiap kriteria di lembar penilaian. **Skor** (0-100) = 20 x jumlah(nilai x bobot) / jumlah(bobot), dibulatkan setengah ke atas. **Saran LULUS** bila skor mencapai ambang (bawaan 75) dan, bila "kriteria wajib menjadi syarat lulus" menyala (bawaan: menyala), setiap kriteria wajib bernilai minimal 3. Predikat: 90 ke atas Sangat baik, 75 ke atas Baik, selebihnya Cukup. Semua angka dapat diatur di tab Pengaturan.
-- **Penguji boleh memilih hasil berbeda dari saran**, dengan catatan alasan wajib yang tercatat di riwayat. Skor, saran, dan rincian tiap kriteria disimpan pada tabel `sku_penilaian` (hanya bertambah; salinan kriteria ikut tersimpan sehingga tetap terbaca walau instrumen diubah).
-- **Status**: instrumen baru berstatus **draf** (tidak dipakai). Hanya yang **ditetapkan** oleh Pembina atau Admin dipakai menilai dan terlihat Penegak (daftar kriteria saja; instruksi dan panduan penguji hanya terbaca pengurus, dijaga RLS). Butir tanpa instrumen ditetapkan tetap memakai penilaian lama (Lulus/Perlu diulang + predikat). Butir yang instrumennya ditetapkan tidak lagi dapat dinilai dengan cara lama (ditegakkan di server); "Mulai uji" dan "Kembalikan" tetap ada.
-- **Server menghitung ulang** skor dan saran (`sigarda.instrumen_hitung`); pencatatan lewat Edge Function setelah PIN penguji diverifikasi (`sg_sku_catat_rubrik_internal`), lalu memakai jalur yang sama dengan penilaian lama (status, kode verifikasi VRF-, riwayat). Rumus di `src/lib/instrumenLogic.js` dan SQL sama persis dan dijaga pengujian.
-- **Rincian nilai untuk Penegak dan pengurus**: pada butir yang pernah dinilai dengan instrumen, tombol **Rincian nilai** menampilkan tiap penilaian (terbaru di atas): tanggal, skor, hasil, nilai 1-5 pada tiap kriteria, dan catatan penguji. Dibaca dari `sku_penilaian` saat dibuka (Penegak hanya membaca miliknya, dijaga RLS). Instruksi dan panduan penguji tidak pernah ikut.
-- **Kelola** (menu Instrumen, Pembina dan Admin): daftar 90 unit, penyuntingan kriteria (urutan, bobot, wajib, panduan), penetapan massal, dan pengaturan. Penyuntingan instrumen yang sedang dipakai berlaku untuk penilaian berikutnya.
-- **ISI INSTRUMEN TIDAK ADA DI REPOSITORI INI.** Repositori bersifat publik, sedangkan panduan penguji tidak boleh terbaca Penegak. Isi disimpan di berkas Excel (di luar repositori) dan dimuat ke database lewat SQL yang dibuat skrip:
-  ```
-  node scripts/instrumen-ke-sql.mjs <keluaran.sql> <berkas.xlsx | folder> ... [--mode=baru|perbarui-draf|timpa-semua]
-  ```
-  Format Excel sama dengan berkas tinjauan. Mode `baru` (bawaan) hanya menambah butir yang belum punya instrumen; `perbarui-draf` mengganti isi instrumen yang masih draf; `timpa-semua` mengganti semuanya (suntingan Pembina ikut tertimpa). Jangan memasukkan SQL hasilnya ke repositori. Mode lokal hanya memuat 3 instrumen CONTOH fiktif.
-  **Unduh Excel** di menu Instrumen mengekspor semua instrumen yang sudah ada dalam format yang sama, sehingga alurnya bisa berputar: unduh, sunting di Excel, ubah ke SQL dengan `--mode=perbarui-draf`, jalankan di SQL Editor. Berkas hasil unduhan memuat **panduan penguji (rahasia)**: jangan dibagikan kepada Penegak dan jangan diunggah ke repositori.
-
-### Sesi ujian bersama
-Menu **Sesi ujian** (Dewan Ambalan, Pembina, Admin) menjadwalkan ujian untuk banyak Penegak sekaligus: nama, tanggal, tempat, **butir** yang diuji, dan **daftar peserta** (tombol "Ambil dari pengajuan" mengisi peserta dan butir dari pengajuan yang menunggu).
-- **Papan sesi**: satu baris per peserta dengan satu chip per butir (butir agama per sub-butir, mis. B1a). Warna chip: Menunggu, Sedang diuji, Lulus, Perlu diulang, Sudah lulus sebelumnya (tidak dihitung sebagai tugas sesi), Bantara belum selesai (butir Laksana terkunci). Ringkasan dan progres dihitung di layar dan diperbarui otomatis tiap 15 detik selama sesi belum selesai.
-- **Status papan diturunkan dari progres SKU**, bukan disimpan terpisah: hasil pada atau sesudah tanggal sesi dihitung untuk sesi itu. Karena itu penilaian tetap satu jalur (lembar instrumen, PIN penguji, kode verifikasi) dan tidak ada data ganda.
-- **Menilai dari papan**: sesi berstatus **Berlangsung** (tombol "Mulai sesi") dan pengguna Dewan Ambalan atau Pembina; klik chip membuka lembar penilaian dengan tanggal uji terisi tanggal sesi. Admin Gudep memantau saja (server hanya menerima penilaian dari penguji).
-- Penegak hanya melihat sesi yang mencantumkannya (kartu "Jadwal ujian bersama" di Beranda). Menghapus sesi tidak menghapus hasil penilaian.
-
 ### Verifikasi keaslian dokumen (QR)
 Kartu SKU mencetak **satu QR per butir yang lulus** dan Surat Tanda Lulus mencetak **satu QR per tingkat**; kode pendek `VRF-` tetap tercetak di Kartu SKU. QR berisi alamat `https://<alamat aplikasi>/?v=<token>`; pemindai membuka halaman verifikasi **tanpa login**.
 - **Token QR**: 32 heksadesimal acak (128 bit) yang dibuat server, tidak bisa ditebak. Token butir dibuat baru setiap butir dinyatakan lulus dan dihapus bila butir tidak lagi lulus (diulang, dikembalikan), sehingga kartu lama otomatis tidak sah. Token surat sah selama seluruh butir tingkat itu masih lulus.
 - **Yang tampil bagi pemegang token**: nama lengkap, butir (atau tingkat), tanggal uji, dan penguji. Tidak ada NIS, kelas, sangga, agama, atau data akun lain. Jawaban untuk token yang tidak sah selalu sama (`{ditemukan:false}`), tidak membedakan "tidak ada" dari "salah format".
 - **Kode `VRF-`** (28 bit, dapat ditebak) hanya dapat ditanyakan di halaman yang sama dan hanya menjawab **sah atau tidak** beserta tingkat, butir, dan tanggal, **tanpa nama**.
 - Fungsi publik `sg_verifikasi_token` dan `sg_verifikasi_kode` hanya membaca dan diberi hak `anon`; tabel `sertifikat_tingkat` tidak terbaca siapa pun secara langsung. Halaman verifikasi tidak diindeks mesin pencari (`noindex`).
-- **Cetak**: Kartu SKU berisi banyak QR (satu per butir lulus), sehingga Kartu Bantara yang lengkap memakai **dua halaman A4** (kepala tabel diulang di halaman kedua; baris tidak terpotong). QR pada Kartu memakai koreksi kesalahan L dengan modul sekitar 0,3 mm, terbaca pemindai ponsel pada kertas bersih. Cetak dengan kualitas normal atau tinggi, jangan diperkecil (opsi "Sesuaikan ke halaman"), dan uji pindai satu kartu sebelum dibagikan.
+- **Cetak**: Kartu SKU berisi banyak QR (satu per butir lulus), sehingga Kartu SKU yang lengkap dapat memakai **lebih dari satu halaman A4** (kepala tabel diulang di halaman kedua; baris tidak terpotong). QR pada Kartu memakai koreksi kesalahan L dengan modul sekitar 0,3 mm, terbaca pemindai ponsel pada kertas bersih. Cetak dengan kualitas normal atau tinggi, jangan diperkecil (opsi "Sesuaikan ke halaman"), dan uji pindai satu kartu sebelum dibagikan.
 - **Batasnya**: Supabase tidak membatasi laju panggilan fungsi publik ini secara bawaan. Token acak 128 bit tidak dapat ditebak, tetapi seseorang dapat mengulang pertanyaan kode `VRF-` (hanya sah/tidak, tanpa nama). Alamat pada QR mengikuti alamat aplikasi yang sedang dibuka saat mencetak: cetak dari alamat terbit (bukan `localhost`).
-
-### Status anggota dan naik kelas (fase 6a)
-Setiap Penegak punya **status**: **Aktif** (mengikuti Pramuka dan pengujian), **Nonaktif** (masih siswa tetapi tidak melanjutkan Pramuka; hanya kelas X yang wajib Pramuka), atau **Alumni** (sudah lulus). Nonaktif dan alumni hanya dapat **dilihat dan dicetak** (Kartu SKU, surat, QR tetap sah).
-Mereka tidak ikut daftar kerja (rekap, absensi, iuran, antrian, sesi ujian, pilihan penguji, dashboard); pada daftar yang memakai filter tersedia pilihan **Status** (bawaan *Aktif*; juga *Nonaktif*, *Alumni*, *Semua status*): Anggota, Peserta, Reset PIN, Raport, rekap Absensi. Pemilih peserta pada **Cetak** punya kotak *Termasuk nonaktif dan alumni*. Penegak nonaktif atau alumni yang masuk melihat pemberitahuan di semua halaman dan tidak melihat tombol ajukan, batal, Calon Garuda, dan isian portofolio.
-Server menegakkannya lewat pemicu pada tabel kegiatan (progres, riwayat, absensi, iuran, portofolio, penilaian, raport, sesi ujian; juga status Calon Garuda): penulisan yang menyangkut Penegak nonaktif atau alumni ditolak dengan pesan yang jelas, siapa pun pelakunya.
-- **Naik Kelas** (menu Admin, *Pengelolaan*): satu halaman untuk seluruh Penegak yang belum alumni, dilakukan setahun sekali di awal tahun ajaran. Komposisi rombel kelas XI berbeda dari kelas X (peminatan), jadi rombel baru diisi per Penegak; dari XI ke XII komposisi tetap. Tiap baris punya **Rombel baru** dan **Aksi**: *Lanjut* (aktif di rombel baru; rombel wajib), *Tidak lanjut* (nonaktif; rombel baru boleh kosong = rombel terakhir tetap), *Lulus* (alumni, tercatat lulus tahun ajaran sebelum tahun ajaran yang baru dimulai). Baris tanpa aksi dilewati.
-  **Isian bawaan**: kelas X = Tidak lanjut (Admin atau Pembina menandai yang melanjutkan, mengisi rombel XI dari daftar kelas sekolah), kelas XI aktif = Lanjut ke XII dengan nomor rombel yang sama, kelas XII = Lulus.
-  Isi dapat diubah di layar (per baris, atau *Atur Aksi untuk yang tampil* setelah menyaring kelas) atau lewat **Excel**: *Unduh berkas Excel* (NIS, Nama, Rombel Sekarang, Status Sekarang, Rombel Baru, Aksi; daftar pilihan tersedia) lalu *Unggah berkas terisi*. Tombol **Periksa** meminta server memeriksa semua baris tanpa mengubah apa pun (galat per baris, peringatan tingkat tidak naik/turun/melompat, bukan kelas XII saat lulus, Calon Garuda, dan jumlah pengajuan uji yang akan dibatalkan); **Terapkan kenaikan** baru menyala bila tidak ada galat. Diterapkan **semua atau tidak sama sekali**.
-  Penegak yang menjadi nonaktif atau alumni kehilangan pengajuan uji yang masih berjalan (dibatalkan, dengan catatan di riwayat) dan dikeluarkan dari sesi ujian yang belum selesai.
-  **Riwayat** memuat setiap kenaikan (tahun ajaran, pelaku, ringkasan) dengan tombol **Batalkan kenaikan ini** pada yang paling akhir: mengembalikan kelas, status, dan tahun kelulusan, selama Penegak yang bersangkutan belum diubah lagi. Pengajuan uji yang sudah dibatalkan tidak dikembalikan.
-  Sesudah menerapkan, atur penugasan penguji tahun ajaran baru (Anggota > Penugasan; *Salin dari tahun lalu* membantu).
-- **Satu per satu**: di **Anggota** (tombol *Status*) atau pada detail Penegak (tombol *Status: ...*), **Pembina dan Admin** dapat menonaktifkan atau mengaktifkan kembali (rombel wajib dipilih); menjadikan **alumni** hanya Admin. Semuanya tercatat di riwayat.
-- Alumni tercatat dengan tahun ajaran kelulusannya (`profiles.lulus_ta`). Kartu SKU dan verifikasi QR alumni tetap sah.
-- Kode: `src/lib/naikKelasLogic.js` (murni; isian bawaan, penyusunan permintaan, penggabungan berkas), `naikKelasExcel.js`, halaman `src/pages/NaikKelas.jsx`, `UbahStatusModal.jsx`, filter Status di `FilterBar.jsx`. Server: `sg_naik_kelas(tahun_ajaran, data, terapkan)`, `sg_naik_kelas_batalkan`, `sg_anggota_status_atur`, pemicu `sigarda.tolak_peserta_tak_aktif` (migrasi `2026-09-naik-kelas.sql`; Edge Function tidak berubah). Dijaga `uji/naik-kelas.mjs`, `uji/naik-kelas-klien.mjs`, `uji/migrasi-naik-kelas.mjs`.
-
-### Dewan Ambalan sebagai jabatan pada akun Penegak (fase 6b)
-Dewan Ambalan **bukan akun terpisah**: ia adalah **jabatan** (`profiles.jabatan_dewan`) pada akun Penegak yang aktif. Dewan terpilih saat Musyawarah Ambalan, sudah Bantara, Laksana, atau belum, dan tetap siswa Penegak (punya NIS, rombel, dan progres SKU sendiri). Masa baktinya setahun: sesudah itu jabatan dicabut dan akun kembali menjadi Penegak biasa.
-- **Tombol tampilan Penegak/Dewan.** Penegak berjabatan melihat bilah di atas halaman (**Penegak | Dewan**; pilihan diingat per akun di peramban). Tampilan *Penegak*: Beranda, Poin SKU, absensi, dan iuran seperti Penegak lain. Tampilan *Dewan*: menu penguji (Dashboard, Antrian, Peserta, Sesi, Iuran pengurus, dst.).
-  Hanya tampilan: hak sebenarnya ditegakkan server dari data akun (`sigarda.pengurus`, `sigarda.dewan`, `sigarda.bisa_menguji`). Login tetap satu (NIS); PIN yang sama dipakai untuk memverifikasi penilaian.
-- **Menu Pengurus** (Pembina dan Admin): daftar pengurus saat ini (Pradana dan Pradani di atas), **Tambah pengurus** (pilih Penegak dan isi jabatan; jabatan diisi bebas, daftar hanya saran), dan **Ganti kepengurusan lewat berkas Excel**: *Unduh berkas Excel* (sudah berisi kepengurusan saat ini; kolom NIS, Nama, Rombel, Jabatan Dewan Ambalan),
-  ubah sesuai hasil Musyawarah Ambalan, *Unggah berkas terisi*; server memeriksa (pratinjau: Diberi, Diganti, Tetap, Dicabut, Galat; peringatan bila Penegak belum menyelesaikan Bantara, tidak menghalangi), lalu **Terapkan** (semua atau tidak sama sekali). Bawaannya **mengganti seluruh kepengurusan**: pemegang jabatan yang tidak ada di berkas dicabut
-  (centang dapat dihilangkan bila berkas hanya menambah atau mengubah beberapa orang; Pradana atau Pradani yang berpindah tangan tetap mencabut pemegang lamanya). Semua tercatat di **Riwayat kepengurusan** (`kepengurusan_log`).
-- **Dicabut otomatis** saat Penegak dinonaktifkan atau menjadi alumni (Naik Kelas, atau tombol Status): jabatan, penugasannya sebagai penguji, dan pengajuan yang menunggunya (kembali ke antrian rombel) ikut dirapikan; pengujian yang sedang berjalan dibiarkan (Pembina dapat mengalihkan). Pembatalan kenaikan kelas tidak mengembalikan jabatan.
-- **Aturan penguji berdasar penugasan** (menggantikan "Dewan hanya butir Bantara, Laksana khusus Pembina"): lihat "Penegakan penugasan". **Penugasan khusus per Penegak** (menu Penugasan, di bawah matriks; Pembina dan Admin): pengecualian untuk satu Penegak (pindah rombel di tengah tahun, Pembina cuti panjang, konflik kepentingan, atau Penegak yang sendiri berjabatan Dewan).
-  Bila sebuah Penegak punya penugasan khusus pada tahun ajaran berjalan, hanya penguji itu yang sah untuknya (menggantikan penugasan rombelnya); alasan wajib dan tercatat di riwayat penugasan. Bila tak ada yang khusus yang boleh menguji butir itu, berlaku penugasan rombel, lalu aturan bawaan. Tidak ada yang menguji atau menilai dirinya sendiri (server menolak).
-- **Akun Dewan lama** (akun penguji berjabatan Dewan Ambalan yang dibuat sebelum fase ini) tetap berfungsi sampai Admin **mengarsipkannya** di menu Pengurus (status nonaktif: tidak lagi penguji atau pengurus, riwayat penilaian dan iuran atas namanya tetap; dapat diaktifkan kembali). Akun arsip yang masuk melihat pesan agar memakai akun Penegaknya. Akun Dewan baru tidak lagi dibuat lewat aplikasi (tab Dewan hanya tampil bila masih ada akun lama; template import Dewan tidak ditawarkan).
-- **Yang dapat dilakukan Penegak berjabatan (tampilan Dewan):** semua yang boleh dilakukan Dewan sebelumnya (mencatat hasil butir yang sah, absensi, iuran, sesi ujian, sidang, mereset PIN Penegak, portofolio); tidak boleh mengatur penugasan, anggota, atau kepengurusan (Pembina dan Admin). Nama Penegak berjabatan terbaca semua pengguna (agar tampil sebagai penguji); data pribadi Penegak lain tetap tertutup.
-- Kode: `src/lib/rombelLogic.js` (`penegakDewan`, `bisaMenguji`, `ditugaskanUntuk`, `pengujiPeranOk`, `pengujiSah`), `dewanLogic.js`, `kepengurusanExcel.js`, `src/pages/Kepengurusan.jsx`, `PenugasanPenegak.jsx`, `BilahTampilan.jsx`; mode di `AppContext` (`akun` = akun apa adanya, `user` = menurut tampilan). Server: `sg_kepengurusan_terapkan(data, ganti, terapkan)`, `sg_anggota_jabatan_dewan_atur`, `sg_penugasan_peserta_atur`, `sg_dewan_lama_arsipkan`, `sigarda.jabatan_dewan_lepas`. Dijaga pengujian `dewan-penegak`, `jabatan-dewan`, `penegakan`, `migrasi-dewan-penegak`.
 
 ### Pemeriksaan Data (tahap L3)
 Menu **Periksa Data** (Pembina, **Dewan Ambalan**, dan Admin Gudep; sebelumnya bernama Pemeriksaan Data): satu halaman berisi ringkasan masalah kualitas data yang umum ditemui, dengan tombol **Perbaiki** ke menu yang tepat bila peran yang sedang masuk bisa memperbaikinya sendiri:
@@ -549,56 +224,25 @@ Kode: `src/lib/cadanganLogic.js` (nama berkas unduhan, `perluCadangan`), panel `
 ### Eskalasi tidak bergerak (tahap L5)
 Nomor **WhatsApp** (`profiles.whatsapp`, opsional, hanya format yang diperiksa) diisi sendiri oleh pemilik akun (semua peran) lewat menu **Akun saya**, atau lewat ajakan sekali per masuk (dapat dilewati dengan "Isi nanti"; ditanyakan lagi pada masuk berikutnya bila masih kosong). Kode: `src/components/FormWhatsapp.jsx`, ajakan di `src/App.jsx` (`Shell`, state `waTutup`). Server: `sg_profil_whatsapp_atur(text)`.
 
-Tangga pengingat (ramah → tegas → mendesak) untuk Penegak yang **tidak bergerak**, dihitung ULANG setiap hari dari data sumbernya (bukan status tersimpan, jadi otomatis "reset" begitu ada tindak lanjut):
+Tangga pengingat (ramah → tegas → mendesak) untuk anak yang **tidak bergerak**, dihitung ULANG setiap hari dari data sumbernya (bukan status tersimpan, jadi otomatis "reset" begitu ada tindak lanjut):
 - **SKU**: tidak ada `sku_progress`/`sku_riwayat` baru selama **7 hari**.
 - **Absensi**: **2 kali** latihan Jumat *terakhir* berturut-turut berstatus Alpa (izin/sakit tidak dihitung).
 - **Iuran**: **2 kali** latihan Jumat *terakhir* berturut-turut tanpa baris iuran (terpisah dari status absensi).
 
 Tingkat dihitung dari hari sejak kejadian pertama kali terpenuhi: **1 ramah** (hari 0-3), **2 tegas** (4-7), **3 mendesak** (8+, juga memberi tahu **semua pengurus** — Pembina, Dewan Ambalan, Admin — dan masuk daftar **Tindak Lanjut**). Maksimal 1 notifikasi per hari per kejadian; dijalankan dari `sigarda.notif_pengingat()` (pengingat harian 07.00 WIB) sehingga otomatis di luar **jam senyap 22.00-04.00 WIB** tanpa logika tambahan.
 
-Menu **Tindak Lanjut** (Pembina, Dewan Ambalan, Admin): daftar Penegak tingkat mendesak dengan tombol **Buka WhatsApp** (wa.me, teks siap-kirim; langsung ke nomor bila sudah diisi, atau tanpa nomor — pengguna memilih kontak sendiri — bila belum). **Tidak ada** pemeriksaan nomor benar-benar terdaftar/aktif di WhatsApp (perlu layanan WhatsApp Business API berbayar, di luar cakupan).
+Menu **Tindak Lanjut** (Pembina dan Admin): daftar anak tingkat mendesak dengan tombol **Buka WhatsApp** (wa.me, teks siap-kirim; langsung ke nomor bila sudah diisi, atau tanpa nomor — pengguna memilih kontak sendiri — bila belum). **Tidak ada** pemeriksaan nomor benar-benar terdaftar/aktif di WhatsApp (perlu layanan WhatsApp Business API berbayar, di luar cakupan).
 
 Kode: `src/lib/eskalasiLogic.js` (`waLink`, `teksWaSiap`, `whatsappSah`, label), `src/pages/TindakLanjut.jsx`. Server: `sigarda.eskalasi_mulai_sku/absensi/iuran`, `eskalasi_tingkat`, `eskalasi_proses()`, `sg_eskalasi_daftar()` (Pembina/Dewan/Admin). Dijaga pengujian `eskalasi`, `migrasi-eskalasi`.
 
 ### Agenda tahunan (tahap L6)
-Menu **Agenda** (semua peran melihat; hanya Pembina dan Admin menambah/mengubah/menghapus): kegiatan tahunan Ambalan per tahun ajaran, 14 jenis baku (Musyawarah Ambalan, Naik Kelas, Sidang Dewan Kehormatan, Pembayatan dan Pelantikan Bantara, Pelantikan Laksana, Pelantikan Garuda, Pengembaraan, Perkemahan, Gelora Saka Expo, Gladi Tangguh 1 dan 2, Penempuhan SKU Laksana, PTGD, Pembekalan Dewan Ambalan Angkatan Berikutnya — masing-masing dengan judul bawaan yang dapat diubah) atau **'lainnya'** (judul bebas). Setiap kegiatan boleh menandai **Penegak terkait** (opsional, mis. calon yang akan disidang/dilantik) yang ikut diberi tahu selain semua pengurus.
+Menu **Agenda** (semua peran melihat; hanya Pembina dan Admin menambah/mengubah/menghapus): kegiatan tahunan gudep per tahun ajaran; jenis yang dapat dipilih: Pesta Siaga, Persari, Pertemuan Siaga di Kwartir, Pelantikan Siaga, atau **'lainnya'**. (Jenis lama modul Penegak:  (Musyawarah Ambalan, Naik Kelas, Sidang Dewan Kehormatan, Pembayatan dan Pelantikan Bantara, Pelantikan Laksana, Pelantikan Garuda, Pengembaraan, Perkemahan, Gelora Saka Expo, Gladi Tangguh 1 dan 2, Penempuhan SKU Laksana, PTGD, Pembekalan Dewan Ambalan Angkatan Berikutnya tetap dikenali pada data lama tetapi tidak lagi dapat dipilih.) Setiap kegiatan boleh menandai **anak yang ikut** (opsional).
 
 **Batas keras Musyawarah Ambalan:** harus dijadwalkan **sebelum 1 Juli** tahun kedua tahun ajaran (sebelum Naik Kelas dan tahun ajaran baru, supaya kepengurusan sudah berganti). Ditegakkan di server; **hanya Pembina** (bukan Admin) dapat melewati batas ini lewat centang "Lewati batas", atau (jalur resmi) lewat persetujuan usulan Musyawarah Ambalan di bawah. Jenis lain tidak mengenal batas ini.
 
 Pengingat otomatis **H-30, H-7, H-1** ke semua pengurus (Pembina, Dewan Ambalan, Admin) dan Penegak pada peserta terkait (bila ada), dijalankan dari `sigarda.notif_pengingat()` (pengingat harian 07.00 WIB, otomatis di luar jam senyap). Isi notifikasi memakai judul dan keterangan kegiatan apa adanya.
 
 Kode: `src/lib/agendaLogic.js` (`JENIS_AGENDA`, `batasMusyawarah`, `periksaAgenda`, `hariMenuju`), `src/pages/Agenda.jsx`. Server: `sg_agenda_simpan(...)`, `sg_agenda_hapus(id)` (Pembina dan Admin), `sigarda.agenda_proses()`, `sigarda.agenda_batas_musyawarah(tahunAjaran)`. Tabel `public.agenda` (baca: semua yang sudah masuk; tulis: hanya lewat fungsi). Dijaga pengujian `agenda`, `migrasi-agenda`.
-
-#### Usulan kegiatan (tahap L6b)
-Alur resmi di dalam aplikasi untuk "usulan Dewan Ambalan", ditampilkan di menu **Agenda** sebagai panel **Usulan kegiatan**, satu baris per jenis: **hanya Pradana atau Pradani** (Penegak aktif berjabatan itu, atau akun Dewan lama yang masih menjabat) dapat mengajukan usulan untuk salah satu dari **11 jenis kegiatan** — tanggal pelaksanaan, **tautan dokumen proposal** (Google Drive), dan catatan opsional. Usulan masuk ke **semua akun Pembina** (notifikasi + tampil di menu Agenda). **Hanya Pembina** (bukan Admin) dapat meninjau: **setuju** (catatan opsional) atau **tolak** (catatan alasan **wajib**). Maksimal satu usulan "menunggu" per (tahun ajaran, jenis) — harus ditinjau dulu sebelum diajukan lagi untuk jenis yang sama; selagi menunggu, Pradana/Pradani dapat menekan **"Ingatkan Pembina"** untuk mengirim ulang notifikasi ke semua Pembina (dibatasi sekali per 24 jam).
-
-Persetujuan **otomatis membuat/memperbarui entri di menu Agenda** (jenis dan judul bawaan sama dengan usulannya) dengan tanggal usulan itu; "lewati batas 1 Juli" hanya berlaku dan otomatis aktif untuk jenis **Musyawarah Ambalan** bila tanggal usulan memang di atas/pada batas — jenis lain tidak mengenal batas ini (`lewati_batas` selalu `false`).
-
-11 jenis dan jadwal pengingat otomatis (ke semua pengurus dan Dewan Ambalan, berhenti begitu tahun ajaran berjalan punya entri Agenda jenis itu, berlanjut sampai ada yang disetujui bila belum):
-
-| Jenis | Pengingat mulai | Lalu tiap |
-| --- | --- | --- |
-| Musyawarah Ambalan | H-60 sebelum batas 1 Juli | 14 hari |
-| Pembayatan dan Pelantikan Bantara | H-30 sebelum Desember atau Februari (yang lebih awal) | 14 hari |
-| Pelantikan Laksana | H-30 sebelum April atau Juni (yang lebih awal) | 14 hari |
-| Pengembaraan | H-30 sebelum Desember atau Februari (yang lebih awal) | 14 hari |
-| Perkemahan | H-30 sebelum Desember atau Februari (yang lebih awal) | 14 hari |
-| Gelora Saka Expo | H-30 sebelum September | 14 hari |
-| Gladi Tangguh 1 | H-30 sebelum Desember atau Februari (yang lebih awal) | 14 hari |
-| Gladi Tangguh 2 | H-30 sebelum April atau Juni (yang lebih awal) | 14 hari |
-| Penempuhan SKU Laksana | H-30 sebelum Desember atau Februari (yang lebih awal) | 14 hari |
-| PTGD (Penerimaan Tamu Gugus Depan) | H-60 sebelum Juli | 14 hari |
-| Pembekalan Dewan Ambalan Angkatan Berikutnya | H-30 sebelum Agustus | 14 hari |
-
-Musyawarah Ambalan punya pengingatnya sendiri (`sigarda.musyawarah_pengingat()`, tidak berubah sejak rancangan awal); 10 jenis lain memakai satu fungsi bersama (`sigarda.kegiatan_pengingat()`) dengan tabel konfigurasi bulan sasaran per jenis.
-
-Kode: `src/lib/kegiatanLogic.js` (`JENIS_USULAN`, `labelJenisUsulan`, `periksaUsulan`, `periksaTinjauan`, `bolehIngatkan`, `usulanMenunggu`, `usulanTerakhir`), komponen `UsulanKegiatan` di `src/pages/Agenda.jsx`. Server: `sg_kegiatan_usul(jenis, ...)`, `sg_kegiatan_tinjau(id, keputusan, catatan)`, `sg_kegiatan_ping(id)`, `sigarda.kegiatan_judul_bawaan(jenis)`, `sigarda.kegiatan_bulan_tanggal(tahunAjaran, bulan)`, `sigarda.musyawarah_pengingat()`, `sigarda.kegiatan_pengingat()`, `sigarda.pembina_saja()`, `sigarda.pradana_atau_pradani()`. Tabel `public.kegiatan_usulan` (baca: pengurus saja; tulis: hanya lewat fungsi). Dijaga pengujian `kegiatan`, `migrasi-kegiatan`.
-
-### Filter dinamis
-Semua filter (status, sangga, kelas, peran, agama, jenis kelamin, tahun ajaran) dibangun dari data yang ada. Filter **Status** (Aktif bawaan, Nonaktif, Alumni, Semua status) ada pada Anggota, Peserta, Reset PIN, Raport, dan rekap Absensi; daftar lain hanya memuat Penegak aktif.
-**Filter jenis kelamin** (Laki-laki, Perempuan, dan **Belum diisi** selama masih ada anggota yang kosong) tersedia pada semua daftar Penegak yang memakai filter: Anggota, Dashboard Admin, Peserta, Absensi (rekap dan catat), Portofolio, Raport, Sidang, Reset PIN, dan Rekap Iuran. Keterangan filter pada berkas Excel ikut menyebutnya.
-Dashboard Pembina, Dewan, dan Admin menampilkan jumlah Penegak laki-laki, perempuan, dan yang belum diisi di bawah komposisi anggota.
-**Kolom Jenis Kelamin** (Laki-laki, Perempuan, atau kosong bila belum diisi; tepat sesudah Nama) ada pada berkas Excel: rekap absensi (lembar Rekap dan Per Jumat), nilai raport (semua lembar kelas), rekap portofolio (Rekap Kesiapan), rekap iuran (Per Penegak), dan CSV rekap SKU di Dashboard Admin.
 
 ## Menjalankan
 
@@ -607,8 +251,8 @@ Prasyarat: Node.js 18 atau lebih baru.
 ```bash
 npm install
 npm run dev:lokal    # mode lokal: TANPA Supabase, data di browser ini saja, akun contoh tampil di halaman masuk
-                     # uji tanpa PIN: http://localhost:5199/?masuk=pembina  (juga admin, dewan, 10231, 10008 Penegak berjabatan, 10007 Calon Garuda)
-                     # data sekolah penuh (700 Penegak + 150 alumni, untuk uji kinerja): ?data=penuh&masuk=pembina  (pertama kali ~1 menit; ?ulang=1 membuat ulang)
+                     # uji tanpa PIN: http://localhost:5199/?masuk=pembina  (juga admin)
+                     # data sekolah penuh (data contoh besar, untuk uji kinerja): ?data=penuh&masuk=pembina  (pertama kali ~1 menit; ?ulang=1 membuat ulang)
 npm run dev          # memakai Supabase (butuh .env.local, lihat bagian berikutnya)
 npm run build        # hasil produksi di folder dist/
 npm run skema        # membuat ulang supabase/skema.sql dari supabase/sumber/*.sql + data butir SKU
@@ -669,10 +313,10 @@ Lalu `npm run dev`, masuk dengan `admin` dan PIN Anda; aplikasi langsung meminta
 
 ### 6. Uji cepat setelah pemasangan
 1. Masuk sebagai `admin` -> diminta PIN baru -> masuk.
-2. **Anggota > Tambah anggota**: buat satu Pembina dan satu Penegak (catat nama pengguna dan PIN yang tampil).
-3. Masuk sebagai Penegak (NIS + PIN awal) -> diminta PIN baru. Ajukan satu butir SKU.
+2. **Anggota > Tambah anggota**: buat satu Pembina (catat nama pengguna dan PIN yang tampil).
+3. Menu **Anggota Siaga** > Tambah anak (dengan akun). Masuk sebagai anak itu (NIS + PIN awal) -> diminta PIN baru. Ajukan satu butir SKU.
 4. Masuk sebagai Pembina -> Antrian -> Nilai -> lulus (PIN diminta).
-5. Kembali sebagai Penegak: butir tampil lulus dengan kode `VRF-...`.
+5. Kembali sebagai anak: butir tampil lulus dengan kode `VRF-...`.
 
 ### Bila email `.invalid` ditolak
 Jika langkah 3 menampilkan galat email tidak valid: pilih domain lain yang tidak akan Anda miliki emailnya (mis. `sigarda.example`),
@@ -868,7 +512,6 @@ Tiga alat, hanya membaca, untuk mengetahui seberapa cepat SIGARDA terasa di HP s
 2. **[`supabase/demo/ukur_muatan.sql`](supabase/demo/ukur_muatan.sql)** — dijalankan di SQL Editor Supabase (hanya membaca, aman diulang): ukuran sungguhan tiap tabel, ukuran database (dibanding batas 500 MB), byte JSON per baris untuk tabel besar (progres, riwayat, kehadiran, profil), dan rencana kueri (`EXPLAIN ANALYZE`) untuk memuat progres/riwayat satu Penegak dan seluruh Penegak. Menjawab: apakah indeks terpakai (bukan "Seq Scan" untuk kueri satu orang), dan berapa dekat database ke batas 500 MB.
 3. **[`scripts/profil/ukur-devtools.js`](scripts/profil/ukur-devtools.js)** — tempel di konsol DevTools (F12 > Console) pada halaman SIGARDA sungguhan (produksi, atau HP lewat `chrome://inspect`): merekam permintaan NYATA ke Supabase (jumlah, lama, byte lewat kabel SUDAH terkompresi vs byte asli), sehingga laju kompresi gzip Supabase yang SEBENARNYA terlihat (bukan model). Panggil `ukurMulai('nama')` sebelum aksi (mis. masuk, kembali ke tab), diamkan sebentar, ringkasan tercetak otomatis; `ukurRingkasan()` dan `ukurCsv()` melihat semua percobaan. Baca komentar di berkas untuk langkah lengkap.
 
-4. **`npm run simulasi:beban`** — simulasi beban fitur Tahap 3 dan 4 (data diri mandiri 700 Penegak, Periksa Data, calon Garuda dengan 45 TKK, Portofolio format Kwarcab, salinan beku, tabel pendataan, cadangan data) di data sekolah penuh lokal (PGlite; ±30 detik). Hasil dan temuan: [docs/simulasi-beban-tahap3-4-2026-09.md](docs/simulasi-beban-tahap3-4-2026-09.md).
 
 **Anggaran yang disetujui:** Penegak beranda siap ≤ 5 detik (Fast 3G) / ≤ 10 detik (Slow 3G); Pembina/Dewan/Admin ≤ 8 / ≤ 15 detik; transfer awal Penegak (aplikasi + data) ≤ 500 kB gzip; JS awal ≤ 150 kB gzip. `npm run profil` menandai ✓/✗ terhadap anggaran ini.
 

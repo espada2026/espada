@@ -131,8 +131,8 @@ console.log('\n--- Tampilan (render tanpa peramban) ---');
   const users = [{ id: 'pb', role: 'penguji', jabatan: 'Pembina', nama: 'Pak Pembina', status: 'aktif' }, { id: 'a', role: 'peserta', nama: 'Ani', kelas: 'X-01', status: 'aktif', agama: 'Islam' }];
   const api = () => ({ muatPelantikanSaka: async () => ({ ok: true, data: { pelantikan: [], saka: [] } }), muatAgenda: async () => ({ ok: true, data: [] }) });
   const html = renderToStaticMarkup(h(KonteksApp.Provider, { value: { api, users, daftarPeserta: [users[1]], progress: {}, notify: () => {}, user: users[0] } }, h(Pelantikan)));
-  ok(html.includes('Pelantikan dan Saka') && html.includes('Catat pelantikan') && html.includes('data-sumber-peraturan') && html.includes('role="tablist"'), 'halaman Pelantikan dirender dengan judul, formulir, rujukan peraturan, dan tab');
-  ok(html.includes('Belum ada Penegak yang layak'), 'tanpa Penegak yang lulus SKU: pesan belum ada yang layak');
+  ok(html.includes('<h1 class="mb-1 text-2xl font-bold">Pelantikan</h1>') && html.includes('Catat pelantikan') && html.includes('data-sumber-peraturan') && !html.includes('role="tablist"'), 'halaman Pelantikan dirender dengan judul, formulir, dan rujukan peraturan (tanpa tab Saka)');
+  ok(html.includes('Belum ada anggota Siaga yang layak'), 'tanpa anak yang lulus SKU: pesan belum ada yang layak');
   const kartu = renderToStaticMarkup(h(KonteksApp.Provider, { value: { api, user: users[1], users } }, h(KartuPelantikanSaya)));
   ok(kartu === '', 'kartu Beranda tidak tampil selama belum ada catatan');
 }

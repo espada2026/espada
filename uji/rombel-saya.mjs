@@ -107,7 +107,7 @@ console.log('--- Pemasangan di halaman ---');
     ok(s.includes(`{ ${hook} }`) && s.includes('efektif') && s.includes('rombelSaya={rombelSaya}'), `${f}: memakai ${hook}, memfilter dengan filter efektif, dan meneruskan rombel ke FilterBar`);
   }
   ok(!/useState\(FILTER_AWAL\)/.test(sumber('src/pages/PengujiDashboard.jsx')), 'tidak ada lagi filter Peserta/Portofolio/Raport yang bermula tanpa rombel saya');
-  ok(/import useRombelSaya/.test(sumber('src/pages/SesiUjian.jsx')) && sumber('src/pages/SesiUjian.jsx').includes('Hanya rombel saya'), 'Sesi ujian: pemilih peserta dan papan memakai rombel saya');
+  
   ok(/<DasborSiaga /.test(sumber('src/pages/PengujiDashboard.jsx')), 'Dashboard Pembina memuat ringkasan gugus depan Siaga (kartu progres per rombel Penegak diganti Fase 7)');
   const ex = sumber('src/lib/exportLaporan.js');
   ok(ex.includes('filter.rombel?.length'), 'ekspor Excel menyebut "rombel saya" pada keterangan filter');

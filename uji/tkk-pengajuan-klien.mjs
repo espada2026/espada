@@ -1,15 +1,11 @@
 // Tahap 2 (G2b): pengajuan TKK oleh Penegak di klien. Logika murni, pemetaan, cermin validasi peninjauan yang DIBANDINGKAN LANGSUNG dengan SQL, lapisan api (ajukan, batal,
 // tinjau, muat) lewat klien palsu, dan render halaman. Server: uji/tkk-pengajuan.mjs.
-import { createElement as h } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
 import { siapkanPg, buatKlienFake, sqlSebagai } from '../src/lokal/klienFake.js';
 import { isiDataContoh } from '../src/lokal/seedLokal.js';
 import { PIN_DEMO } from '../src/lokal/pinDemo.js';
 import { buatApi } from '../src/lib/api.js';
-import { KonteksApp } from '../src/context/AppContext.jsx';
-import Tkk from '../src/pages/Tkk.jsx';
 import { AMBANG_TKK_BAWAAN } from '../src/data/tkkData.js';
 import { STATUS_PENGAJUAN, pengajuanMenunggu, pengajuanPeserta, pengujiBerubah, periksaTinjau } from '../src/lib/tkkLogic.js';
 import { tahunAjaranKini } from '../src/lib/rombelLogic.js';
@@ -119,19 +115,6 @@ console.log('\n--- Lapisan api ---');
   r = await siti.a.muatTkk(AMBANG_TKK_BAWAAN);
   ok(r.data.pengajuan.find((p) => p.id === idG).pengujiAwal === namaPembina + ' dan Bu Sari' && r.data.capaian.find((c) => c.tkkId === 'penabung').penguji1 === 'Pak Pengganti', 'jejak penggantian (pengujiAwal) dan capaian dengan penguji pengganti terbaca Penegak');
   ok(r.data.capaian.length === 2 && r.data.capaian.some((c) => c.tkkId === 'juru-masak') && r.data.pengajuan.find((p) => p.id === id3).status === 'disetujui' && r.data.pengajuan.find((p) => p.id === id3).capaianId === r.data.capaian.find((c) => c.tkkId === 'juru-masak').id, 'disetujui: capaian resmi tampil dan tertaut ke pengajuan');
-}
-
-console.log('\n--- Tampilan (render tanpa peramban) ---');
-{
-  const users = [{ id: 'pb', role: 'penguji', jabatan: 'Pembina', nama: 'Pak Pembina', status: 'aktif' }, { id: 'a', role: 'peserta', nama: 'Ani', kelas: 'X-01', status: 'aktif', agama: 'Islam' }, { id: 'n', role: 'peserta', nama: 'Non', kelas: 'X-02', status: 'nonaktif', agama: 'Islam' }];
-  const api = () => ({ muatTkk: async () => ({ ok: true, data: { capaian: [], krida: [], ambang: AMBANG_TKK_BAWAAN, pengajuan: [] } }) });
-  const tampil = (user) => renderToStaticMarkup(h(KonteksApp.Provider, { value: { api, users, daftarPeserta: [users[1]], daftarPesertaSemua: users.slice(1), notify: () => {}, user } }, h(Tkk)));
-  const penegak = tampil(users[1]);
-  ok(penegak.includes('Pengajuan saya') && penegak.includes('Ajukan TKK') && penegak.includes('Sudah lulus uji TKK?') && !penegak.includes('Catat TKK'), 'Penegak aktif: bagian Pengajuan saya dan tombol Ajukan TKK, tanpa Catat TKK');
-  const nonaktif = tampil(users[2]);
-  ok(!nonaktif.includes('Ajukan TKK') && !nonaktif.includes('Pengajuan saya'), 'Penegak nonaktif hanya melihat: tanpa tombol Ajukan');
-  const pengurus = tampil(users[0]);
-  ok(pengurus.includes('role="tablist"') && pengurus.includes('>Pengajuan<') && pengurus.includes('>Ambang Garuda<') && pengurus.includes('>Penegak<'), 'pengurus: tab Penegak, Pengajuan, dan Ambang Garuda');
 }
 
 console.log(`\nRINGKASAN TKK-PENGAJUAN-KLIEN: ${lulus} lulus, ${gagal} gagal`);

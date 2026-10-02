@@ -1,21 +1,16 @@
 ﻿import { useMemo, useState } from 'react';
 import AkunBaru from '../components/AkunBaru';
 import { useApp } from '../context/AppContext';
-import { KELOMPOK_PENGGUNA, SARAN_SANGGA, cocokKelompok } from '../config';
+import { KELOMPOK_PENGGUNA, cocokKelompok } from '../config';
 import { AGAMA } from '../data/skuData';
-import { JABATAN_DEWAN, PESAN_JABATAN, akunDewanLama, jabatanDewanSah, rencanaJabatanDewan } from '../lib/dewanLogic';
-import { layakGaruda } from '../lib/skuLogic';
-import { urutTeks } from '../lib/format';
+import { akunDewanLama } from '../lib/dewanLogic';
 import { normalisasiNama } from '../lib/cariNama';
 import { PIN_PANJANG, buatPinAcak } from '../lib/pinLogic';
 import { KELOMPOK_IMPOR } from '../lib/importAnggota';
 import { unduhTemplateAnggota } from '../lib/importAnggotaExcel';
-import { KELAS_ROMBEL, daftarRombelKelas, pesertaRombelLama, rombelSah } from '../lib/rombelLogic';
 import { JENIS_KELAMIN, anggotaTanpaJk, labelJenisKelamin } from '../lib/jenisKelaminLogic';
 import FilterBar, { FILTER_AWAL, terapkanFilter } from '../components/FilterBar';
 import ImportAnggotaModal from '../components/ImportAnggotaModal';
-import PenugasanRombel from '../components/PenugasanRombel';
-import PerbaruiRombelModal from '../components/PerbaruiRombelModal';
 import LengkapiJenisKelaminModal from '../components/LengkapiJenisKelaminModal';
 import UbahStatusModal from '../components/UbahStatusModal';
 import { LOKAL } from '../lib/supabaseClient';
@@ -23,19 +18,19 @@ import { Avatar, BadgePeran, BadgeStatus, Field, Icon, Kosong, Modal } from '../
 import SumberPeraturan from '../components/SumberPeraturan';
 
 const BARU = { role: 'peserta', nama: '', jenisKelamin: '', nis: '', username: '', kelas: '', sangga: '', agama: '', jabatan: '', jabatanDewan: '', pin: '', nta: '' };
-const TAB_PENUGASAN = 'penugasan';
 
 /** Teks jenis kelamin pada daftar; yang belum diisi diberi warna agar mudah terlihat. */
 const ketJk = (kode) => (kode ? labelJenisKelamin(kode) : <span className="font-semibold text-amber-700">jenis kelamin belum diisi</span>);
 
 function FormAnggota({ awal, onTutup, onAkunBaru }) {
-  const { simpanAnggota, users, progress } = useApp();
+  const { simpanAnggota, users } = useApp();
   const [f, setF] = useState(awal);
   const [galat, setGalat] = useState('');
   const [sibuk, setSibuk] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   const baru = !f.id;
+  const agamaBerubah = !baru && f.role === 'peserta' && !!f.agama && users.find((u) => u.id === f.id)?.agama !== f.agama;
   const kelompokAktif = KELOMPOK_PENGGUNA.find((k) => cocokKelompok(k, f)) ?? KELOMPOK_PENGGUNA[0];
   const pilihKelompok = (e) => {
     const k = KELOMPOK_PENGGUNA.find((x) => x.id === e.target.value);
@@ -43,25 +38,8 @@ function FormAnggota({ awal, onTutup, onAkunBaru }) {
     setF({ ...f, role: k.role, jabatan: k.jabatan ?? '', jabatanDewan: '', agama: k.role === 'peserta' || k.jabatan === 'Pembina' ? f.agama ?? '' : '' });
   };
 
-  // Saran isian: gabungan data yang sudah ada dan saran bawaan
-  const saran = useMemo(() => {
-    const peserta = users.filter((u) => u.role === 'peserta');
-    return {
-      sangga: [...new Set([...peserta.map((u) => u.sangga), ...SARAN_SANGGA].filter(Boolean))].sort(urutTeks),
-    };
-  }, [users]);
-
-  const layak = !baru && f.role === 'peserta' && layakGaruda(progress, f);
-  const agamaBerubah = !baru && f.role === 'peserta' && !!f.agama && users.find((u) => u.id === f.id)?.agama !== f.agama;
-  // Pradana/Pradani hanya satu orang: pemegang lama kehilangan jabatannya (kembali menjadi Penegak biasa) bila jabatan ini dipilih
-  const menggantikan = f.role === 'peserta' && f.jabatanDewan
-    ? rencanaJabatanDewan(users, { id: f.id ?? '', username: (f.nis ?? f.username ?? '').trim().toLowerCase() }, f.jabatanDewan).menggantikan
-    : null;
-  const jabatanSalah = f.role === 'peserta' && !jabatanDewanSah(f.jabatanDewan);
-
   const kirim = async () => {
     if (sibuk) return;
-    if (jabatanSalah) { setGalat(PESAN_JABATAN); return; }
     setSibuk(true);
     setGalat('');
     // Penegak masuk memakai NIS, jadi NIS = nama pengguna
@@ -99,8 +77,7 @@ function FormAnggota({ awal, onTutup, onAkunBaru }) {
       </Field>
       {baru && f.role === 'peserta' && (
         <p className="mb-4 rounded-md bg-pramuka-50 px-3 py-2 text-xs leading-relaxed text-pramuka-700">
-          Data awal Penegak cukup <strong>nama lengkap, NIS, dan rombel</strong>. Semua isian lain bersifat opsional: tempat dan tanggal lahir, alamat, keluarga, agama,
-          pendidikan, dan seterusnya diisi Penegak sendiri di menu Akun saya (ajakan tampil sesudah masuk) untuk melengkapi dokumen portofolio Garuda.
+          Data awal anggota Siaga berakun cukup <strong>nama lengkap, NIS, dan kelas</strong>. Perindukan dan barung diatur di menu Anggota Siaga.
         </p>
       )}
       <Field label="Nama lengkap" htmlFor="f-nama">
@@ -109,7 +86,7 @@ function FormAnggota({ awal, onTutup, onAkunBaru }) {
       <Field
         label={baru && f.role === 'peserta' ? 'Jenis kelamin (opsional)' : 'Jenis kelamin'}
         htmlFor="f-jk"
-        bantuan={baru ? (f.role === 'peserta' ? 'Boleh dikosongkan: Penegak mengisinya sendiri di menu Akun saya.' : 'Wajib.') : f.jenisKelamin ? undefined : 'Belum diisi. Anggota lama boleh dilengkapi kemudian, atau sekaligus lewat tombol "Lengkapi jenis kelamin".'}
+        bantuan={baru ? (f.role === 'peserta' ? 'Boleh dikosongkan.' : 'Wajib.') : f.jenisKelamin ? undefined : 'Belum diisi. Anggota lama boleh dilengkapi kemudian, atau sekaligus lewat tombol "Lengkapi jenis kelamin".'}
       >
         <select id="f-jk" className="input" value={f.jenisKelamin ?? ''} onChange={set('jenisKelamin')}>
           <option value="">{baru && f.role !== 'peserta' ? 'Pilih...' : 'Belum diisi'}</option>
@@ -122,79 +99,29 @@ function FormAnggota({ awal, onTutup, onAkunBaru }) {
           <Field label="NIS" htmlFor="f-nis" bantuan="Wajib dan tidak boleh sama dengan anggota lain. NIS menjadi nama pengguna untuk masuk ke aplikasi.">
             <input id="f-nis" className="input" inputMode="numeric" autoComplete="off" maxLength={32} value={f.nis ?? ''} onChange={set('nis')} />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Rombel" htmlFor="f-kelas" bantuan="Rombel baku: X-01 sampai X-10, XI-01 sampai XI-10, XII-01 sampai XII-10.">
-              <select id="f-kelas" className="input" value={f.kelas ?? ''} onChange={set('kelas')}>
-                <option value="">Pilih rombel...</option>
-                {!rombelSah(f.kelas) && f.kelas && <option value={f.kelas}>{f.kelas} (format lama)</option>}
-                {KELAS_ROMBEL.map((k) => (
-                  <optgroup key={k} label={`Kelas ${k}`}>
-                    {daftarRombelKelas(k).map((r) => <option key={r} value={r}>{r}</option>)}
-                  </optgroup>
-                ))}
-              </select>
-            </Field>
-            <Field label="Sangga (opsional)" htmlFor="f-sangga" bantuan="Boleh dikosongkan: dibagi Pembina atau Bina Damping di menu Sangga. Bila diisi, pilih dari saran atau ketik baru.">
-              <input id="f-sangga" className="input" list="saran-sangga" placeholder="Contoh: Sangga Elang" value={f.sangga ?? ''} onChange={set('sangga')} />
-              <datalist id="saran-sangga">{saran.sangga.map((s) => <option key={s} value={s} />)}</datalist>
-            </Field>
-          </div>
+          <Field label="Kelas" htmlFor="f-kelas" bantuan="Angka 1 sampai 6, boleh diikuti satu huruf paralel (contoh: 4 atau 5A).">
+            <input id="f-kelas" className="input" autoComplete="off" maxLength={3} value={f.kelas ?? ''} onChange={set('kelas')} />
+          </Field>
           <Field label="NTA (opsional)" htmlFor="f-nta" bantuan="Nomor Tanda Anggota Pramuka, mis. 11.03.10.701.00123. Bisa diisi kemudian; juga terisi otomatis dari lembar sidang.">
             <input id="f-nta" className="input" autoComplete="off" maxLength={40} value={f.nta ?? ''} onChange={set('nta')} />
           </Field>
-          {(f.status ?? 'aktif') === 'aktif' && (
-            <>
-              <Field
-                label="Jabatan Dewan Ambalan (opsional)"
-                htmlFor="f-jabatan-dewan"
-                bantuan="Dewan Ambalan adalah jabatan pada akun Penegak ini (bukan akun terpisah): pemegang jabatan dapat berganti tampilan Penegak/Dewan dan menguji sesuai penugasan. Pradana menjadi ketua sidang; Pradana dan Pradani menandatangani Surat Tanda Lulus. Pradana dan Pradani masing-masing hanya satu orang. Jabatan dicabut otomatis saat Penegak nonaktif atau alumni. Untuk mengganti seluruh kepengurusan sekaligus, pakai menu Pengurus."
-              >
-                <input id="f-jabatan-dewan" className="input" list="saran-jabatan-dewan" maxLength={60} autoComplete="off" placeholder="Kosongkan bila bukan pengurus Dewan" value={f.jabatanDewan ?? ''} onChange={set('jabatanDewan')} />
-                <datalist id="saran-jabatan-dewan">{JABATAN_DEWAN.map((j) => <option key={j} value={j} />)}</datalist>
-              </Field>
-              {menggantikan && (
-                <p role="status" className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-950">
-                  {menggantikan.nama} saat ini menjabat {f.jabatanDewan}. Bila disimpan, jabatan itu berpindah ke {f.nama?.trim() || 'anggota ini'} dan {menggantikan.nama} kembali menjadi Penegak biasa.
-                </p>
-              )}
-            </>
-          )}
           <Field
             label="Agama (opsional)"
             htmlFor="f-agama"
-            bantuan="Boleh dikosongkan: Penegak mengisinya sendiri di Akun saya, dan sebelum itu belum dapat mengajukan SKU. Butir 1 SKU (sub-butir ketakwaan) menyesuaikan agama. Panduan SKU Penegak hanya merinci lima agama; untuk Khonghucu, materi butir 1 ditetapkan Pembina."
+            bantuan="Wajib diisi sebelum anak dapat dinilai: butir 1 SKU (sub-butir ketakwaan) menyesuaikan agama. SK 119/2011 merinci lima agama; untuk Khonghucu, butir pengganti ditetapkan Pembina."
           >
             <select id="f-agama" className="input" value={f.agama ?? ''} onChange={set('agama')}>
-              <option value="">Belum diisi (Penegak mengisi sendiri)</option>
+              <option value="">Belum diisi</option>
               {AGAMA.map((a) => <option key={a}>{a}</option>)}
             </select>
           </Field>
-          <SumberPeraturan className="-mt-2 mb-4" ringkas rujukan={[{ id: 'sku-penegak-2011', bagian: 'butir 1 SKU (ketakwaan)' }, 'agama-182-1979']} />
+          <SumberPeraturan className="-mt-2 mb-4" ringkas rujukan={[{ id: 'sku-siaga-2011', bagian: 'butir 1 SKU (ketakwaan)' }, 'agama-182-1979']} />
           {agamaBerubah && (
             <p className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-950">
               Mengubah agama mengganti sub-butir pada butir 1. Progres sub-butir agama sebelumnya tidak ikut dihitung.
             </p>
           )}
 
-          {!baru && (
-            <label className={`mb-4 flex gap-3 rounded-lg border px-3 py-2.5 ${layak ? 'cursor-pointer border-pramuka-200' : 'border-pramuka-100 opacity-60'}`}>
-              <input
-                type="checkbox"
-                className="mt-1 h-4 w-4 accent-pramuka-800"
-                checked={!!f.calonGaruda}
-                disabled={!layak}
-                onChange={(e) => setF({ ...f, calonGaruda: e.target.checked })}
-              />
-              <span>
-                <span className="block text-sm font-semibold text-pramuka-900">Terdaftar sebagai Penegak Calon Garuda</span>
-                <span className="block text-xs text-pramuka-600">
-                  {layak
-                    ? 'Peserta memenuhi syarat (SKU Bantara dan Laksana lulus). Hilangkan centang untuk mencabut pencalonan.'
-                    : 'Hanya untuk peserta yang seluruh SKU Bantara dan Laksana-nya lulus.'}
-                </span>
-              </span>
-            </label>
-          )}
         </>
       )}
 
@@ -202,7 +129,7 @@ function FormAnggota({ awal, onTutup, onAkunBaru }) {
         <Field
           label="Agama (opsional)"
           htmlFor="f-agama-pembina"
-          bantuan="Butir agama pada SKU hanya boleh diuji Pembina yang seagama dengan Penegak. Sebaiknya diisi."
+          bantuan="Butir agama pada SKU hanya boleh diuji Pembina yang seagama dengan anak. Sebaiknya diisi."
         >
           <select id="f-agama-pembina" className="input" value={f.agama ?? ''} onChange={set('agama')}>
             <option value="">Belum diisi</option>
@@ -258,39 +185,34 @@ export default function AdminAnggota() {
   const [kelompok, setKelompok] = useState('peserta');
   const [form, setForm] = useState(null);
   const [impor, setImpor] = useState(false);
-  const [rombelModal, setRombelModal] = useState(false);
   const [jkModal, setJkModal] = useState(false);
   const [cari, setCari] = useState('');
   const [akunBaru, setAkunBaru] = useState(null);
   const [statusFor, setStatusFor] = useState(null); // Penegak yang statusnya sedang diubah
 
-  const penugasan = kelompok === TAB_PENUGASAN;
   const aktif = KELOMPOK_PENGGUNA.find((k) => k.id === kelompok);
   const adaDewanLama = useMemo(() => akunDewanLama(users).length > 0, [users]);
   const dewanLama = kelompok === 'dewan';
-  const rombelLama = useMemo(() => pesertaRombelLama(users).length, [users]);
   const tanpaJk = useMemo(() => anggotaTanpaJk(users).length, [users]);
   const daftar = useMemo(() => {
     const kata = normalisasiNama(cari);
     const dasar =
-      penugasan
-        ? []
-        : kelompok === 'peserta'
+      kelompok === 'peserta'
         ? terapkanFilter(daftarPesertaSemua.filter((u) => !u.tanpaAkun), filter)
         : users.filter((u) => cocokKelompok(aktif, u) && (!kata || normalisasiNama(u.nama).includes(kata)));
     return dasar.slice().sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
   }, [kelompok, aktif, daftarPesertaSemua, users, filter, cari]);
 
   const hapus = (u) => {
-    if (window.confirm(`Hapus ${u.nama}? Seluruh data progres, absensi, dan portofolionya ikut terhapus.`)) hapusAnggota(u.id);
+    if (window.confirm(`Hapus ${u.nama}? Seluruh data progres, absensi, dan tabungannya ikut terhapus.`)) hapusAnggota(u.id);
   };
 
   return (
     <div className="animasi-naik">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-2xl font-bold">Data anggota</h1>
-        {!penugasan && !dewanLama && <div className="flex flex-wrap gap-2">
-          {KELOMPOK_IMPOR.includes(kelompok) && kelompok !== 'dewan' && (
+        {!dewanLama && <div className="flex flex-wrap gap-2">
+          {KELOMPOK_IMPOR.includes(kelompok) && kelompok !== 'dewan' && kelompok !== 'peserta' && (
             <>
               <button className="btn btn-outline btn-sm" onClick={() => unduhTemplateAnggota(kelompok)}>
                 <Icon nama="unduh" className="h-4 w-4" /> Unduh template Excel
@@ -321,17 +243,9 @@ export default function AdminAnggota() {
             {k.id === 'dewan' ? 'Dewan (akun lama)' : k.label}
           </button>
         ))}
-        <button
-          role="tab"
-          aria-selected={penugasan}
-          onClick={() => { setKelompok(TAB_PENUGASAN); setCari(''); }}
-          className={`rounded-md px-3 py-2 text-sm font-semibold ${penugasan ? 'bg-pramuka-800 text-pramuka-50' : 'text-pramuka-700 hover:bg-pramuka-200'}`}
-        >
-          Penugasan
-        </button>
       </div>
 
-      {!penugasan && tanpaJk > 0 && (
+      {tanpaJk > 0 && (
         <div role="status" className="mb-3 rounded-md bg-amber-50 px-3 py-2.5 text-sm text-amber-950">
           <p><span className="font-semibold">{tanpaJk} anggota</span> belum diisi jenis kelaminnya (semua peran).</p>
           <button className="btn btn-gold btn-sm mt-2" onClick={() => setJkModal(true)}>Lengkapi jenis kelamin</button>
@@ -344,20 +258,11 @@ export default function AdminAnggota() {
         </div>
       )}
 
-      {kelompok === 'peserta' && rombelLama > 0 && (
-        <div role="status" className="mb-3 rounded-md bg-amber-50 px-3 py-2.5 text-sm text-amber-950">
-          <p><span className="font-semibold">{rombelLama} Penegak</span> masih memakai kelas lama (belum berupa rombel X-01 sampai XII-10).</p>
-          <button className="btn btn-gold btn-sm mt-2" onClick={() => setRombelModal(true)}>Perbarui rombel Penegak</button>
-        </div>
-      )}
-
       {kelompok === 'peserta' && (
         <div className="mb-3"><FilterBar data={daftarPesertaSemua} filter={filter} setFilter={setFilter} tampil={['status', 'sangga', 'kelas', 'peran', 'agama', 'jk']} /></div>
       )}
 
-      {penugasan && <PenugasanRombel bolehUbah onPerbaruiRombel={() => setRombelModal(true)} />}
-
-      {!penugasan && kelompok !== 'peserta' && (
+      {kelompok !== 'peserta' && (
         <div className="relative mb-3 max-w-sm">
           <Icon nama="cari" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-pramuka-400" />
           <input
@@ -371,7 +276,7 @@ export default function AdminAnggota() {
         </div>
       )}
 
-      {penugasan ? null : daftar.length === 0 ? (
+      {daftar.length === 0 ? (
         <Kosong judul="Belum ada data" teks="Tambahkan anggota baru dengan tombol di atas atau ubah filter." />
       ) : (
         <ul className="panel divide-y divide-pramuka-100">
@@ -424,7 +329,6 @@ export default function AdminAnggota() {
       {statusFor && <UbahStatusModal peserta={statusFor} onTutup={() => setStatusFor(null)} />}
       {form && <FormAnggota awal={form} onTutup={() => setForm(null)} onAkunBaru={setAkunBaru} />}
       {akunBaru && <AkunBaru akun={akunBaru} onTutup={() => setAkunBaru(null)} />}
-      {rombelModal && <PerbaruiRombelModal onTutup={() => setRombelModal(false)} />}
       {jkModal && <LengkapiJenisKelaminModal onTutup={() => setJkModal(false)} />}
       {impor && <ImportAnggotaModal key={kelompok} kelompok={kelompok} onTutup={() => setImpor(false)} />}
     </div>

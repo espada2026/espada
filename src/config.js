@@ -40,7 +40,7 @@ export const AMBANG_HADIR = 75;
 // Kelompok pengguna. Pembina dan Dewan Ambalan sama-sama berperan "penguji" (dapat menilai SKU,
 // mencatat absensi, meninjau portofolio) dan dibedakan lewat jabatan.
 export const KELOMPOK_PENGGUNA = [
-  { id: 'peserta', label: 'Penegak', role: 'peserta' },
+  { id: 'peserta', label: 'Anggota Siaga (berakun)', role: 'peserta' },
   { id: 'dewan', label: 'Dewan Ambalan', role: 'penguji', jabatan: 'Dewan Ambalan' },
   { id: 'pembina', label: 'Pembina', role: 'penguji', jabatan: 'Pembina' },
   { id: 'admin', label: 'Admin Gudep', role: 'admin' },

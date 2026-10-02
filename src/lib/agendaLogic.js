@@ -31,6 +31,8 @@ export const JENIS_AGENDA = [
 /** Jenis kegiatan Siaga (Fase 8): kolom peserta terkait = anak yang IKUT; dasar saran butir Siaga Garuda (pertemuan Siaga dan Persari). */
 export const JENIS_SIAGA = ['pesta_siaga', 'persari', 'pertemuan_siaga', 'pelantikan_siaga'];
 export const jenisSiaga = (jenis) => JENIS_SIAGA.includes(jenis);
+/** Jenis yang dapat DIPILIH pada formulir: kegiatan Siaga dan 'lainnya'. Jenis lama modul Penegak tetap dikenali (label, kendala basis data) dan hanya muncul bila kegiatan lama dibuka untuk diubah. */
+export const JENIS_AGENDA_PILIHAN = (jenisSaatIni) => JENIS_AGENDA.filter((j) => jenisSiaga(j.id) || j.id === 'lainnya' || j.id === jenisSaatIni);
 /** Kegiatan Agenda berjenis `jenis` yang sudah berlangsung (tanggal <= hariIni) dan diikuti anak `pesertaId`; terbaru lebih dulu. */
 export const kegiatanDiikuti = (agenda = [], pesertaId, jenis, hariIni = hariIniWib()) =>
   agenda.filter((a) => a.jenis === jenis && a.tanggal <= hariIni && (a.pesertaTerkait ?? []).includes(pesertaId)).sort((a, b) => b.tanggal.localeCompare(a.tanggal));
