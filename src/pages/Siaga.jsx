@@ -101,9 +101,27 @@ function ModalAnggota({ awal, onTutup, onAkunBaru }) {
 function ModalTempel({ onTutup }) {
   const { users, tambahSiaga } = useApp();
   const [teks, setTeks] = useState('');
+  const [berkas, setBerkas] = useState(null); // { nama, baris } hasil membaca Excel; menggantikan tempelan teks selama ada
   const [galat, setGalat] = useState('');
   const [sibuk, setSibuk] = useState(false);
-  const hasil = useMemo(() => periksaBanyakSiaga(bacaTempelanSiaga(teks), users), [teks, users]);
+  const hasil = useMemo(() => periksaBanyakSiaga(berkas ? berkas.baris : bacaTempelanSiaga(teks), users), [teks, berkas, users]);
+  const pilihBerkas = async (e) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    setGalat('');
+    try {
+      const { bacaExcelSiaga } = await import('../lib/siagaExcel');
+      setBerkas({ nama: f.name, baris: await bacaExcelSiaga(await f.arrayBuffer()) });
+    } catch (err) {
+      setBerkas(null);
+      setGalat(err.message ?? 'Berkas tidak dapat dibaca.');
+    }
+  };
+  const unduhTemplate = async () => {
+    const { unduhTemplateSiaga } = await import('../lib/siagaExcel');
+    await unduhTemplateSiaga();
+  };
   const simpan = async () => {
     if (hasil.baris.length === 0) { setGalat('Tempelkan datanya lebih dulu.'); return; }
     if (hasil.galat > 0) { setGalat('Perbaiki baris yang bertanda galat lebih dulu.'); return; }
@@ -115,13 +133,21 @@ function ModalTempel({ onTutup }) {
   };
   return (
     <Modal
-      buka tutup={() => !sibuk && onTutup()} judul="Tempel daftar anak Siaga" lebar="max-w-2xl"
+      buka tutup={() => !sibuk && onTutup()} judul="Impor daftar anak Siaga" lebar="max-w-2xl"
       aksi={(<><button className="btn btn-outline" disabled={sibuk} onClick={onTutup}>Batal</button><button className="btn btn-primary" disabled={sibuk || hasil.baris.length === 0} onClick={simpan}>{sibuk ? 'Menyimpan...' : `Tambahkan ${hasil.baris.length || ''}`}</button></>)}
     >
       <p className="mb-2 text-sm text-pramuka-600">
-        Satu anak per baris. Urutan kolom: <strong>Nama, Kelas, JK (L/P), Agama, NIS, Perindukan, Barung</strong>; hanya Nama dan Kelas yang wajib. Salin dari Excel langsung ke kotak ini.
+        Unduh template Excel, isi, lalu impor berkasnya; atau tempelkan langsung dari Excel. Satu anak per baris. Urutan kolom: <strong>Nama, Kelas, JK (L/P), Agama, NIS, Perindukan, Barung</strong>; hanya Nama dan Kelas yang wajib. 
       </p>
-      <textarea className="input min-h-32 font-mono text-xs" aria-label="Daftar anak" value={teks} onChange={(e) => { setTeks(e.target.value); setGalat(''); }} placeholder={'Andi Saputra\t4A\tL\tIslam\t\tPerindukan Melati\tBarung Kancil'} />
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <button type="button" className="btn btn-outline btn-sm" onClick={unduhTemplate}>Unduh template Excel</button>
+        <label className="btn btn-outline btn-sm cursor-pointer">
+          Impor berkas Excel
+          <input type="file" accept=".xlsx" className="sr-only" onChange={pilihBerkas} />
+        </label>
+        {berkas && <span className="text-xs text-pramuka-700">{berkas.nama} ({berkas.baris.length} baris) <button type="button" className="underline" onClick={() => setBerkas(null)}>lepas</button></span>}
+      </div>
+      <textarea className="input min-h-32 font-mono text-xs" aria-label="Daftar anak" disabled={!!berkas} value={teks} onChange={(e) => { setTeks(e.target.value); setGalat(''); }} placeholder={'Andi Saputra\t4A\tL\tIslam\t\tPerindukan Melati\tBarung Kancil'} />
       {hasil.baris.length > 0 && (
         <ul className="mt-2 max-h-56 space-y-1 overflow-y-auto text-sm">
           {hasil.baris.map((b) => (
@@ -245,7 +271,7 @@ function DaftarSiaga() {
       </p>
       <div className="mb-4 flex flex-wrap gap-2">
         <button className="btn btn-primary btn-sm" onClick={() => setModal({ jenis: 'tambah' })}>Tambah anak</button>
-        <button className="btn btn-outline btn-sm" onClick={() => setModal({ jenis: 'tempel' })}>Tempel daftar banyak anak</button>
+        <button className="btn btn-outline btn-sm" onClick={() => setModal({ jenis: 'tempel' })}>Impor Excel / tempel banyak anak</button>
         <span className="ml-auto flex gap-1" role="tablist" aria-label="Tampilan">
           {[['daftar', 'Daftar'], ['kelompok', 'Perindukan dan barung']].map(([id, label]) => (
             <button key={id} role="tab" aria-selected={tab === id} className={`btn btn-sm ${tab === id ? 'btn-primary' : 'btn-outline'}`} onClick={() => setTab(id)}>{label}</button>

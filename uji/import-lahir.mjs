@@ -48,7 +48,7 @@ console.log('\n--- Template dan pembaca Excel ---');
   const ws = wb.getWorksheet('Anggota');
   ok(String(ws.getCell(1, 9).value).startsWith('Tanggal Lahir') && ws.getCell(2, 9).numFmt === '@' && ws.getCell(500, 9).numFmt === '@', 'judul kolom ke-9 "Tanggal Lahir (opsional)", berformat teks');
   let petunjuk = ''; wb.getWorksheet('Petunjuk').eachRow((r2) => r2.eachCell((c) => { petunjuk += c.value + ' '; }));
-  ok(/Tanggal Lahir/.test(petunjuk) && /15\/03\/2008/.test(petunjuk) && /Kelayakan/.test(petunjuk), 'petunjuk menjelaskan kolom Tanggal Lahir');
+  ok(/Tanggal Lahir/.test(petunjuk) && /Siaga/.test(petunjuk), 'petunjuk menyebut kolom Tanggal Lahir tidak dipakai untuk Siaga');
   const isi = (r2, v) => { ['Ani', 'P', `7000${r2}`, 'XI-01', 'Elang', 'Islam', null, null].forEach((x, i) => { ws.getCell(r2, i + 1).value = x; }); ws.getCell(r2, 9).value = v; };
   isi(2, '15/03/2008');
   isi(3, new Date(Date.UTC(2008, 10, 2)));

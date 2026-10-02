@@ -212,7 +212,7 @@ export default function AdminAnggota() {
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-2xl font-bold">Data anggota</h1>
         {!dewanLama && <div className="flex flex-wrap gap-2">
-          {KELOMPOK_IMPOR.includes(kelompok) && kelompok !== 'dewan' && kelompok !== 'peserta' && (
+          {KELOMPOK_IMPOR.includes(kelompok) && kelompok !== 'dewan' && (
             <>
               <button className="btn btn-outline btn-sm" onClick={() => unduhTemplateAnggota(kelompok)}>
                 <Icon nama="unduh" className="h-4 w-4" /> Unduh template Excel
