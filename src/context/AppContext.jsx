@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { ambilKlien, GALAT_KONFIGURASI, LOKAL } from '../lib/supabaseClient';
 import { buatApi } from '../lib/api';
 import { pesertaDenganPeran } from '../lib/skuLogic';
+import { SEMUA_TINGKAT } from '../data/skuData';
 import {
   daftarSemester, gabungHadirSemester, KODE_STATUS, kunciSemester, rentangKunci, semesterDari, tanggalValid,
 } from '../lib/absensiLogic';
@@ -116,10 +117,11 @@ export function AppProvider({ children }) {
     [akun, mode]
   );
   /** Semua Penegak (termasuk nonaktif dan alumni) dengan peran turunannya: untuk mencari satu orang, halaman Anggota, dan filter status. Penegak biasa hanya melihat dirinya. */
+  const jumlahTingkatTerdaftar = Object.keys(SEMUA_TINGKAT).length; // katalog Siaga terdaftar saat halaman Siaga dimuat: peran turunan anak dihitung ulang sesudahnya
   const daftarPesertaSemua = useMemo(() => {
     const semua = pesertaDenganPeran(db.progress, db.users);
     return user?.role === 'peserta' ? semua.filter((p) => p.id === user.id) : semua;
-  }, [db.progress, db.users, user?.role, user?.id]);
+  }, [db.progress, db.users, user?.role, user?.id, jumlahTingkatTerdaftar]);
   /** Penegak yang AKTIF: daftar kerja (rekap, absensi, iuran, antrian, dashboard). Nonaktif dan alumni hanya dapat dilihat. */
   const daftarPeserta = useMemo(() => daftarPesertaSemua.filter((u) => (u.status ?? 'aktif') === 'aktif'), [daftarPesertaSemua]);
   const peranUser = useMemo(

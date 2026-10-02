@@ -141,9 +141,11 @@ export const layakGaruda = (progress, peserta) =>
 
 export function peranPeserta(progress, peserta) {
   if (peserta.tanpaAkun || kelasSd(peserta.kelas)) {
-    if (tingkatSelesai(progress, peserta, 'Tata')) return 'siaga-garuda';
-    if (tingkatSelesai(progress, peserta, 'Bantu')) return 'siaga-tata';
-    return tingkatSelesai(progress, peserta, 'Mula') ? 'siaga-bantu' : 'siaga-mula';
+    // Katalog Siaga baru terdaftar saat halaman Siaga dimuat (JS awal tetap kecil): sebelum itu tahap tidak dapat dihitung, jangan melempar galat.
+    const selesai = (t) => !!SEMUA_TINGKAT[t] && tingkatSelesai(progress, peserta, t);
+    if (selesai('Tata')) return 'siaga-garuda';
+    if (selesai('Bantu')) return 'siaga-tata';
+    return selesai('Mula') ? 'siaga-bantu' : 'siaga-mula';
   }
   if (peserta.calonGaruda && layakGaruda(progress, peserta)) return 'calon-garuda';
   return tingkatSelesai(progress, peserta, 'Bantara') ? 'calon-laksana' : 'calon-bantara';
