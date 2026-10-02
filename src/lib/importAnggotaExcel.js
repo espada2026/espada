@@ -4,7 +4,6 @@
  */
 import { AGAMA } from '../data/skuData';
 import { JABATAN_DEWAN } from './dewanLogic';
-import { PESAN_ROMBEL, SEMUA_ROMBEL } from './rombelLogic';
 import { JENIS_KELAMIN, PESAN_JK } from './jenisKelaminLogic';
 import { MAKS_BARIS, NAMA_LEMBAR, hurufSaja, kelompokDari, kolomTemplate } from './importAnggota';
 
@@ -78,7 +77,7 @@ export async function bacaExcelAnggota(buffer, kelompok = 'peserta') {
     );
   }
   if (!penegak && (kolom.kelas || kolom.sangga || (kelompok !== 'pembina' && kolom.agama))) {
-    throw new Error(`File ini tampaknya template Penegak (ada kolom Rombel, Sangga, atau Agama). Unduh template ${labelKelompok} yang khusus.`);
+    throw new Error(`File ini tampaknya template anggota Siaga berakun (ada kolom Rombel, Sangga, atau Agama). Unduh template ${labelKelompok} yang khusus.`);
   }
 
   const baris = [];
@@ -102,24 +101,21 @@ export async function bacaExcelAnggota(buffer, kelompok = 'peserta') {
 
 /* ---------- Template ---------- */
 
-const PETUNJUK_PENEGAK = (label) => [
+const PETUNJUK_PENEGAK = (label) => [ // nama lama; isinya petunjuk anggota Siaga yang BERAKUN masuk (anak tanpa akun diimpor dari menu Anggota > Anak Siaga)
   [`Petunjuk pengisian template import ${label} SIGASI`, ''],
   ['', ''],
-  ['1. Isi data pada lembar "Anggota"', 'Satu baris satu penegak, mulai baris 2 (di bawah judul kolom). Jangan mengubah atau menghapus judul kolom.'],
-  ['2. Kolom wajib', 'HANYA tiga: Nama Lengkap, NIS, dan Rombel. NIS tidak boleh sama dengan anggota lain: NIS menjadi nama pengguna untuk masuk ke aplikasi. Kolom lain bertanda (opsional) boleh dikosongkan; data diri selebihnya (tempat dan tanggal lahir, alamat, keluarga, pendidikan, dan seterusnya) diisi Penegak sendiri di menu Akun saya untuk melengkapi dokumen portofolio Garuda.'],
-  ['3. Jenis Kelamin (opsional)', 'Pilih Laki-laki atau Perempuan dari daftar (L atau P juga dikenali). Bila dikosongkan, Penegak mengisinya sendiri.'],
-  ['4. Agama (opsional)', `Pilih dari daftar: ${AGAMA.join(', ')}. Agama menentukan sub-butir pada butir 1 SKU. Bila dikosongkan, Penegak mengisinya sendiri dan SEBELUM ITU belum dapat mengajukan SKU.`],
-  ['5. Rombel dan Sangga (opsional)', `Rombel wajib salah satu dari ${SEMUA_ROMBEL.length} rombel baku: X-01 sampai X-10, XI-01 sampai XI-10, XII-01 sampai XII-10 (dua angka; pilih dari daftar). Sangga boleh dikosongkan (dibagi kemudian oleh Pembina atau Bina Damping di menu Sangga); bila diisi, bebas diketik (mis. Sangga Elang) dan penulisannya disamakan dengan data yang sudah ada.`],
-  ['6. NTA (opsional)', 'Nomor Tanda Anggota Pramuka, mis. 11.03.10.701.00123. Boleh dikosongkan dan diisi kemudian (di lembar sidang atau ubah anggota). Maksimal 40 karakter.'],
-  ['7. PIN Awal (opsional)', 'Isi tepat 6 angka (tidak boleh sama semua atau berurutan). Jika dikosongkan, aplikasi membuat PIN acak. Setiap anggota WAJIB mengganti PIN saat login pertama.'],
-  ['8. Tanggal Lahir (opsional)', 'Dipakai untuk memeriksa syarat usia Calon Garuda. Tulis tanggal/bulan/tahun, mis. 15/03/2008 (atau 15 Maret 2008, atau 2008-03-15). Boleh dikosongkan dan diisi kemudian di menu Kelayakan. Hanya pemilik dan pengurus yang dapat membacanya.'],
-  ['9. Batas', `Maksimal ${MAKS_BARIS} baris per impor. Baris dengan NIS yang sudah terdaftar dilewati.`],
-  ['10. Setelah impor', 'Daftar NIS dan PIN awal tampil satu kali dan dapat diunduh. Bagikan ke masing-masing anggota secara langsung.'],
+  ['1. Isi data pada lembar "Anggota"', 'Satu baris satu anak, mulai baris 2 (di bawah judul kolom). Jangan mengubah atau menghapus judul kolom. Anak yang diimpor di sini memiliki akun masuk (NIS dan PIN); untuk anak TANPA akun pakai menu Anggota > Anak Siaga > Impor Excel.'],
+  ['2. Kolom wajib', 'HANYA tiga: Nama Lengkap, NIS, dan Rombel (isi dengan kelas). NIS tidak boleh sama dengan anggota lain: NIS menjadi nama pengguna untuk masuk ke aplikasi. Kolom lain bertanda (opsional) boleh dikosongkan.'],
+  ['3. Jenis Kelamin (opsional)', 'Pilih Laki-laki atau Perempuan dari daftar (L atau P juga dikenali).'],
+  ['4. Agama (opsional)', `Pilih dari daftar: ${AGAMA.join(', ')}. Agama menentukan sub-butir pada butir 1 SKU. Selama belum diisi, SKU anak belum dapat dinilai.`],
+  ['5. Rombel (kelas)', 'Angka 1 sampai 6, boleh diikuti satu huruf paralel, contoh: 4 atau 5A. Kolom Sangga, NTA, dan Tanggal Lahir tidak dipakai untuk Siaga; biarkan kosong. Perindukan dan barung diatur sesudahnya di menu Anggota > Perindukan dan barung.'],
+  ['6. PIN Awal (opsional)', 'Isi tepat 6 angka (tidak boleh sama semua atau berurutan). Jika dikosongkan, aplikasi membuat PIN acak. Setiap anggota WAJIB mengganti PIN saat login pertama.'],
+  ['7. Batas', `Maksimal ${MAKS_BARIS} baris per impor. Baris dengan NIS yang sudah terdaftar dilewati.`],
+  ['8. Setelah impor', 'Daftar NIS dan PIN awal tampil satu kali dan dapat diunduh. Bagikan ke masing-masing anak atau orang tua secara langsung.'],
   ['', ''],
   ['Contoh isian', ''],
-  ['Nama Lengkap | NIS | Rombel (cukup tiga ini)', 'Andi Pratama | 10301 | X-03'],
-  ['', 'Made Sari | 10302 | XI-07'],
-  ['Bila ingin sekaligus mengisi kolom opsional', 'Andi Pratama | Laki-laki | 10301 | X-03 | Sangga Elang | Islam | 11.03.10.701.00123 | 15/03/2009'],
+  ['Nama Lengkap | NIS | Rombel (cukup tiga ini)', 'Andi Saputra | 10301 | 4A'],
+  ['', 'Made Sari | 10302 | 5'],
 ];
 
 const PETUNJUK_PENGURUS = (label, kelompok) => {
@@ -155,7 +151,7 @@ const PETUNJUK_PENGURUS = (label, kelompok) => {
 export async function buatTemplateAnggota(kelompok = 'peserta') {
   const { default: ExcelJS } = await import('exceljs');
   const penegak = kelompok === 'peserta';
-  const label = kelompokDari(kelompok)?.label ?? 'Penegak';
+  const label = kelompokDari(kelompok)?.label ?? 'Anggota Siaga (berakun)';
   const kolom = kolomTemplate(kelompok);
   const nomorKolom = (key) => kolom.findIndex((k) => k.key === key) + 1;
 
@@ -195,10 +191,7 @@ export async function buatTemplateAnggota(kelompok = 'peserta') {
     if (penegak) {
       ws.getCell(r, nomorKolom('nis')).numFmt = '@';
       ws.getCell(r, nomorKolom('lahir')).numFmt = '@'; // teks: 15/03/2008 tidak diubah Excel menurut pengaturan bahasa; sel bertanggal asli tetap terbaca
-      ws.getCell(r, nomorKolom('kelas')).dataValidation = {
-        type: 'list', allowBlank: true, formulae: [`"${SEMUA_ROMBEL.join(',')}"`],
-        showErrorMessage: true, errorTitle: 'Rombel', error: PESAN_ROMBEL,
-      };
+      ws.getCell(r, nomorKolom('kelas')).numFmt = '@'; // teks: "4" dan "5A" tidak diubah Excel
       ws.getCell(r, nomorKolom('agama')).dataValidation = {
         type: 'list', allowBlank: true, formulae: [`"${AGAMA.join(',')}"`],
         showErrorMessage: true, errorTitle: 'Agama', error: `Pilih salah satu: ${AGAMA.join(', ')}`,
@@ -231,9 +224,9 @@ export function unduhBlob(buffer, namaFile) {
 }
 
 const NAMA_FILE_TEMPLATE = {
-  peserta: 'template-import-penegak-sigarda.xlsx',
-  dewan: 'template-import-dewan-ambalan-sigarda.xlsx',
-  pembina: 'template-import-pembina-sigarda.xlsx',
+  peserta: 'template-import-anggota-siaga-berakun-sigasi.xlsx',
+  dewan: 'template-import-dewan-sigasi.xlsx',
+  pembina: 'template-import-pembina-sigasi.xlsx',
 };
 
 export async function unduhTemplateAnggota(kelompok = 'peserta') {

@@ -194,7 +194,7 @@ console.log('\n--- Render halaman ---');
   const users = (await q('select * from public.profiles')).map(petaProfil);
   const ctx = (user) => ({ user, users, progress: {}, notify: () => {}, tambahSiaga: async () => ({ ok: true }), ubahSiaga: async () => ({ ok: true }), hapusSiaga: async () => ({ ok: true }), aturBarung: async () => ({ ok: true }), aturStatusAnggota: async () => ({ ok: true }) });
   const html = renderToStaticMarkup(h(KonteksApp.Provider, { value: ctx({ id: 'p', role: 'penguji', jabatan: 'Pembina', status: 'aktif' }) }, h(Siaga))).replace(/<!-- -->/g, '');
-  ok(html.includes('Anggota Siaga') && html.includes('Tambah anak') && html.includes('Tempel daftar banyak anak') && html.includes('Andi S.') && html.includes('Kelas 5A'), 'halaman dirender: judul, tombol tambah/tempel, daftar dengan kelas SD');
+  ok(html.includes('Anggota Siaga') && html.includes('Tambah anak') && html.includes('Impor Excel / tempel banyak anak') && html.includes('Andi S.') && html.includes('Kelas 5A'), 'halaman dirender: judul, tombol tambah/tempel, daftar dengan kelas SD');
   ok(html.includes('Perindukan dan barung'), 'tab Perindukan dan barung tersedia');
 }
 
