@@ -122,7 +122,7 @@ const PETUNJUK_PENGURUS = (label, kelompok) => {
   const pembina = kelompok === 'pembina';
   const dewan = kelompok === 'dewan';
   const ekstra = [['Jenis Kelamin', 'Pilih Laki-laki atau Perempuan dari daftar (L atau P juga dikenali). Wajib.']];
-  if (pembina) ekstra.push(['Agama (opsional)', `Pilih dari daftar: ${AGAMA.join(', ')}. Butir agama pada SKU hanya boleh diuji Pembina yang seagama dengan Penegak, jadi sebaiknya diisi. Boleh dikosongkan dan diisi kemudian lewat Ubah anggota.`]);
+  if (pembina) ekstra.push(['Agama (opsional)', `Pilih dari daftar: ${AGAMA.join(', ')}. Butir agama pada SKU hanya boleh diuji Pembina yang seagama dengan anak, jadi sebaiknya diisi. Boleh dikosongkan dan diisi kemudian lewat Ubah anggota.`]);
   if (dewan) {
     ekstra.push(['Jabatan Dewan (opsional)', `Pilih dari daftar: ${JABATAN_DEWAN.join(', ')}. Pradana dan Pradani masing-masing hanya satu orang: Pradana menjadi ketua sidang dan bersama Pradani menandatangani Surat Tanda Lulus. Boleh dikosongkan dan diisi kemudian lewat Ubah anggota.`]);
     ekstra.push(['NTA (opsional)', 'Nomor Tanda Anggota Pramuka, mis. 11.03.10.701.00123. Maksimal 40 karakter. Sebaiknya diisi untuk Pradana dan Pradani karena tercetak pada tanda tangan.']);

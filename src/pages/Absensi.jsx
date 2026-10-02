@@ -47,8 +47,8 @@ export function AbsensiPeserta() {
           <SumberPeraturan
             className="mt-1"
             rujukan={[
-              { id: 'admin-satuan-041-1995', bagian: 'daftar hadir latihan (buku administrasi ambalan)' },
-              { id: 'sku-penegak-2011', bagian: 'SKU Bantara dan Laksana butir 5 (kehadiran pertemuan ambalan)' },
+              { id: 'admin-satuan-041-1995', bagian: 'daftar hadir latihan (buku administrasi gugus depan)' },
+              { id: 'sku-siaga-2011', bagian: 'SKU Siaga Mula, Bantu, dan Tata (kehadiran latihan)' },
             ]}
           />
         </div>
@@ -267,7 +267,7 @@ function InputAbsensi() {
           )}
 
           {tersaring.length === 0 ? (
-            <Kosong judul="Tidak ada anggota" teks="Ubah kata kunci, sangga, kelas, atau peran pada filter." />
+            <Kosong judul="Tidak ada anggota" teks="Ubah kata kunci, barung, kelas, atau peran pada filter." />
           ) : (
             <ul className="panel divide-y divide-pramuka-100">
               {tersaring.map((u) => {
@@ -391,7 +391,7 @@ function RekapAbsensi() {
       </div>
 
       {rekap.length === 0 ? (
-        <Kosong judul="Tidak ada data" teks="Ubah kata kunci, sangga, kelas, atau peran pada filter." />
+        <Kosong judul="Tidak ada data" teks="Ubah kata kunci, barung, kelas, atau peran pada filter." />
       ) : sesiList.length === 0 ? (
         <Kosong judul="Belum ada pertemuan pada periode ini" teks="Rekap terisi setelah pengurus mencatat absensi latihan." />
       ) : tampil === 'ringkas' ? (
@@ -401,7 +401,7 @@ function RekapAbsensi() {
               <tr>
                 <th className="px-3 py-2 font-semibold">No</th>
                 <th className="px-3 py-2 font-semibold">Nama</th>
-                <th className="px-3 py-2 font-semibold">Kelas, sangga</th>
+                <th className="px-3 py-2 font-semibold">Kelas, barung</th>
                 <th className="px-3 py-2 font-semibold">Peran</th>
                 <th className="px-3 py-2 text-center font-semibold">H</th>
                 <th className="px-3 py-2 text-center font-semibold">I</th>
@@ -415,7 +415,7 @@ function RekapAbsensi() {
                 <tr key={r.user.id} className={r.persen !== null && r.persen < AMBANG_HADIR ? 'bg-red-50/60' : ''}>
                   <td className="px-3 py-2.5 text-pramuka-500">{i + 1}</td>
                   <td className="px-3 py-2.5 font-semibold">{r.user.nama}</td>
-                  <td className="px-3 py-2.5 text-pramuka-600">{r.user.kelas}, {r.user.sangga}</td>
+                  <td className="px-3 py-2.5 text-pramuka-600">{r.user.kelas}, {r.user.barung || r.user.sangga}</td>
                   <td className="px-3 py-2.5"><BadgePeran peran={r.user.peran} singkat /></td>
                   <td className="px-3 py-2.5 text-center">{r.H}</td>
                   <td className="px-3 py-2.5 text-center">{r.I}</td>
@@ -453,7 +453,7 @@ function RekapAbsensi() {
                 <tr key={r.user.id}>
                   <td className="sticky left-0 z-10 whitespace-nowrap bg-white px-3 py-2 font-semibold">
                     {r.user.nama}
-                    <span className="block text-xs font-normal text-pramuka-500">Kelas {r.user.kelas}, {r.user.sangga}</span>
+                    <span className="block text-xs font-normal text-pramuka-500">Kelas {r.user.kelas}, {r.user.barung || r.user.sangga}</span>
                   </td>
                   {sesiList.map((s) => {
                     const st = r.perSesi[s.tanggal];

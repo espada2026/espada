@@ -16,7 +16,7 @@ for (const k of ['siaga-mula', 'siaga-bantu', 'siaga-tata', 'siaga-garuda']) ok(
 
 console.log('\n--- Layar bersama tanpa istilah Penegak/Dewan Ambalan ---');
 const BERSIH = ['pages/Absensi.jsx', 'pages/Iuran.jsx', 'pages/TindakLanjut.jsx', 'pages/ResetPin.jsx', 'pages/Materi.jsx', 'components/KasIuran.jsx', 'components/LembarIuran.jsx',
-  'components/RekapIuran.jsx', 'components/KartuIuran.jsx', 'components/FormWhatsapp.jsx', 'components/Login.jsx', 'components/PanelFaq.jsx'];
+  'components/RekapIuran.jsx', 'components/KartuIuran.jsx', 'components/FormWhatsapp.jsx', 'components/Login.jsx', 'components/PanelFaq.jsx', 'components/KartuPelantikanSaya.jsx', 'pages/KelolaMateri.jsx'];
 for (const f of BERSIH) {
   const baris = readFileSync(`${P}/src/${f}`, 'utf8').split('\n').filter((b) => !/^\s*(\/\/|\*|\/\*)/.test(b) && !/id: 'sku-penegak-2011'|id: 'admin-satuan-041-1995'|^\s*'Dewan Ambalan':/.test(b));
   const sisa = baris.filter((b) => /Penegak|Dewan Ambalan|Bantara|Laksana|latihan Jumat/.test(b));

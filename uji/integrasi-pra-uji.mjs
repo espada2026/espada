@@ -145,7 +145,7 @@ console.log('\n--- Tampilan Periksa Data ---');
   // useEffect tidak berjalan pada render statis: periksa saja kerangka tanpa galat dan bahwa kategori pra-uji hanya ada di kategoriTampil
   const html = renderToStaticMarkup(h(KonteksApp.Provider, { value: konteks(data) }, h(PemeriksaanData, { onNav: () => {} })));
   ok(html.includes('Periksa Data'), 'halaman Periksa Data dirender tanpa galat');
-  ok(kategoriTampil({ praUjiAktif: false }).length === 9 && kategoriTampil({ praUjiAktif: true }).length === 12, 'daftar kategori: 9 saat pra-uji mati, 12 saat hidup');
+  ok(kategoriTampil({ praUjiAktif: false }).length === 8 && kategoriTampil({ praUjiAktif: true }).length === 11, 'daftar kategori: 8 saat pra-uji mati, 11 saat hidup (rombelTanpaPenguji khusus Penegak disembunyikan)');
 }
 
 console.log(`\nRINGKASAN INTEGRASI PRA-UJI: ${lulus} lulus, ${gagal} gagal`);

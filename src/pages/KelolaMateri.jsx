@@ -126,7 +126,7 @@ function EditorBagian({ nilai, onUbah }) {
           <textarea
             id="tempel-bagian"
             className="input min-h-[7rem] font-mono text-sm"
-            placeholder={'Pengertian Pramuka | 3\nSejarah Gerakan Pramuka | 5-9\nTri Satya dan Dasa Darma'}
+            placeholder={'Pengertian Pramuka | 3\nSejarah Gerakan Pramuka | 5-9\nDwisatya dan Dwidarma'}
             value={tempel}
             onChange={(e) => setTempel(e.target.value)}
           />
