@@ -27,7 +27,7 @@ export default function MenuAkun({ varian, tab, setTab }) {
   const posisi = varian === 'kartu' ? 'atas' : varian === 'ikon' ? 'samping' : 'bawah';
   const pengurus = user.role !== 'peserta';
   const labelPeran = user.role === 'peserta'
-    ? `${PERAN[peranUser]?.label ?? 'Penegak'}${(user.status ?? 'aktif') !== 'aktif' ? ` (${user.status === 'alumni' ? 'alumni' : 'nonaktif'})` : ''}`
+    ? `${PERAN[peranUser]?.label ?? 'Anggota Siaga'}${(user.status ?? 'aktif') !== 'aktif' ? ` (${user.status === 'alumni' ? 'alumni' : 'nonaktif'})` : ''}`
     : user.role === 'penguji' ? (user.jabatanDewan ? `${user.jabatan}, ${user.jabatanDewan}` : user.jabatan) : 'Admin Gudep';
 
   const tutup = () => { clearTimeout(penunda.current); setBuka(false); setSematkan(false); };
@@ -58,7 +58,9 @@ export default function MenuAkun({ varian, tab, setTab }) {
   const rincian = [
     user.role === 'peserta' && ['NIS', user.nis || '-'],
     user.role === 'peserta' && ['Kelas', user.kelas],
-    user.role === 'peserta' && ['Sangga', user.sangga],
+    user.role === 'peserta' && user.perindukan && ['Perindukan', user.perindukan],
+    user.role === 'peserta' && user.barung && ['Barung', user.barung],
+    user.role === 'peserta' && user.sangga && ['Sangga', user.sangga],
     user.role === 'peserta' && ['Agama', user.agama],
     pengurus && ['Nama pengguna', user.username],
   ].filter(Boolean);

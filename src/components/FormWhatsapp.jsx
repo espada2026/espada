@@ -34,7 +34,7 @@ export default function FormWhatsapp({ onSelesai, onLewati }) {
       <Field
         label="Nomor WhatsApp"
         htmlFor="whatsapp"
-        bantuan="Supaya Pembina atau Dewan Ambalan dapat menghubungi Anda bila diperlukan, mis. SKU lama tidak bergerak. Contoh: 08123456789."
+        bantuan="Supaya Pembina dapat menghubungi Anda bila diperlukan, mis. SKU lama tidak bergerak. Contoh: 08123456789."
       >
         <input id="whatsapp" className="input" type="tel" inputMode="tel" placeholder="08123456789" maxLength={20} value={nomor} onChange={(e) => setNomor(e.target.value)} />
       </Field>

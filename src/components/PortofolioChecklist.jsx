@@ -178,7 +178,7 @@ export default function PortofolioChecklist({ pesertaId, mode, filter: filterLua
 
                   {terbuka && mode === 'tinjau' && bisaMenilai && (
                     <div className="animasi-naik mt-3 space-y-2 rounded-lg bg-amber-50 p-3">
-                      <label className="label" htmlFor={`cp-${it.id}`}>Catatan Pembina atau Dewan Ambalan</label>
+                      <label className="label" htmlFor={`cp-${it.id}`}>Catatan Pembina</label>
                       <textarea
                         id={`cp-${it.id}`}
                         rows={2}

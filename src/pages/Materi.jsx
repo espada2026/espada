@@ -125,7 +125,7 @@ export default function Materi({ butirAwal = null, onKelola }) {
       <div className="mb-4">
         <h1 className="text-2xl font-bold">Materi SKU</h1>
         <p className="text-sm text-pramuka-600">
-          Bahan belajar untuk butir SKU Bantara dan Laksana, dilampirkan Pembina dan Admin Gudep dari Google Drive.
+          Bahan belajar untuk butir SKU Mula, Bantu, dan Tata, dilampirkan Pembina dan Admin Gudep dari Google Drive.
         </p>
       </div>
 

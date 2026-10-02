@@ -72,7 +72,7 @@ export default function PanelKontakBeranda() {
             <Isian kolom="whatsapp" galat={tampil('whatsapp')} placeholder="08xxxxxxxxxx" bantuan="Dipakai tombol WhatsApp di beranda." {...bagi} />
             <Isian kolom="telepon" galat={tampil('telepon')} {...bagi} />
             <Isian kolom="email" galat={tampil('email')} jenis="email" {...bagi} />
-            <Isian kolom="jadwal" galat={tampil('jadwal')} placeholder="Setiap Jumat sore di sekolah" {...bagi} />
+            <Isian kolom="jadwal" galat={tampil('jadwal')} placeholder="Setiap Sabtu pagi di sekolah" {...bagi} />
           </div>
         </section>
 

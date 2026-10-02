@@ -35,7 +35,7 @@ const teksFilter = (filter) => {
 
 export function susunAbsensiXlsx({ tahunAjaran, periode, rekap, sesiList, filter }) {
   const judul = [
-    'Rekap Absensi Latihan Rutin Jumat',
+    'Rekap Absensi Latihan Rutin',
     `${ambilGudep().nama}. Tahun Ajaran ${tahunAjaran}, ${PERIODE[periode]}`,
     `Filter: ${teksFilter(filter)}. Pertemuan terlaksana: ${sesiList.length}. Dicetak ${fmtTanggal(hariIni())}`,
   ];
@@ -75,7 +75,7 @@ export function susunAbsensiXlsx({ tahunAjaran, periode, rekap, sesiList, filter
   };
 
   const perJumat = {
-    nama: 'Per Jumat',
+    nama: 'Per Latihan',
     judul,
     kolom: [
       { header: 'No', key: 'no', lebar: 6, rata: 'center' },
@@ -214,7 +214,7 @@ export function susunRaportXlsx({ tahunAjaran, semester, baris, filter, pengatur
     kolom: [{ header: 'Hal', key: 'a', lebar: 28 }, { header: 'Isi', key: 'b', lebar: 100 }],
     baris: [
       { a: 'Skor (0-100)', b: `Kehadiran ${bobot.kehadiran}% + capaian SKU ${bobot.capaian}% + sikap ${bobot.sikap}%. Bila kehadiran atau sikap belum ada, bobotnya dialihkan ke komponen lain.` },
-      { a: 'Kehadiran', b: 'Persentase hadir pada latihan Jumat semester ini (hadir dibagi hadir, izin, sakit, dan alpa yang dicatat).' },
+      { a: 'Kehadiran', b: 'Persentase hadir pada latihan semester ini (hadir dibagi hadir, izin, sakit, dan alpa yang dicatat).' },
       { a: 'Capaian SKU', b: `Butir SKU yang lulus pada semester ini dibagi target (Bantara ${target.Bantara}, Laksana ${target.Laksana} butir per semester), maksimal 100%.` },
       { a: 'Sikap', b: 'Penilaian Pembina skala 1-5, dikalikan 20.' },
       { a: 'Predikat', b: `A Sangat Baik: ${pita.sangatBaik} ke atas. B Baik: ${pita.baik}-${pita.sangatBaik - 1}. C Cukup: ${pita.cukup}-${pita.baik - 1}. D Kurang: di bawah ${pita.cukup}.` },
@@ -303,11 +303,11 @@ export function susunIuranXlsx({ tahunAjaran, periode, rekap, sesi, ring, kas = 
   const judul = [
     'Rekap Iuran Bumbung Kepramukaan',
     `${ambilGudep().nama}. Tahun Ajaran ${tahunAjaran}, ${PERIODE[periode]}`,
-    `Filter Penegak: ${teksFilter(filter)}. Pertemuan terlaksana: ${sesi.length}. Total gudep: Rp ${ring.total.toLocaleString('id-ID')}. Dicetak ${fmtTanggal(hariIni())}`,
+    `Filter anggota: ${teksFilter(filter)}. Pertemuan terlaksana: ${sesi.length}. Total gudep: Rp ${ring.total.toLocaleString('id-ID')}. Dicetak ${fmtTanggal(hariIni())}`,
   ];
   const uang = { format: '#,##0', rata: 'right' };
   const peserta = {
-    nama: 'Per Penegak',
+    nama: 'Per Anggota',
     judul,
     kolom: [
       { header: 'No', key: 'no', lebar: 6, rata: 'center' },
@@ -337,7 +337,7 @@ export function susunIuranXlsx({ tahunAjaran, periode, rekap, sesi, ring, kas = 
     kolom: [
       { header: 'No', key: 'no', lebar: 6, rata: 'center' },
       { header: 'Tanggal', key: 'tanggal', lebar: 22 },
-      { header: 'Jumlah Penegak Beriuran', key: 'orang', lebar: 14, rata: 'center' },
+      { header: 'Jumlah Anggota Beriuran', key: 'orang', lebar: 14, rata: 'center' },
       { header: 'Total Iuran (Rp)', key: 'jumlah', lebar: 16, ...uang },
       { header: 'Di antaranya Susulan (Rp)', key: 'susulan', lebar: 16, ...uang },
       { header: 'Uang Fisik (Rp)', key: 'fisik', lebar: 16, ...uang },
@@ -371,10 +371,10 @@ export function susunIuranXlsx({ tahunAjaran, periode, rekap, sesi, ring, kas = 
     judul: ['Keterangan'],
     kolom: [{ header: 'Butir', key: 'k', lebar: 30 }, { header: 'Arti', key: 'a', lebar: 80 }],
     baris: [
-      { k: 'Pertemuan Beriuran', a: 'Jumlah Jumat terlaksana pada periode ini yang berisi iuran (rutin ditambah susulan).' },
-      { k: 'Rutin dan Susulan', a: 'Rutin = dibayar pada Jumat itu. Susulan = ditebus belakangan untuk Jumat itu (mis. sekaligus saat ujian SKU).' },
+      { k: 'Pertemuan Beriuran', a: 'Jumlah latihan terlaksana pada periode ini yang berisi iuran (rutin ditambah susulan).' },
+      { k: 'Rutin dan Susulan', a: 'Rutin = dibayar pada latihan itu. Susulan = ditebus belakangan untuk latihan itu (mis. sekaligus saat ujian SKU).' },
       { k: 'Persen Beriuran', a: `Pertemuan beriuran dibagi pertemuan terlaksana. Ambang rutin ${ambang}%; di bawahnya ditandai merah.` },
-      { k: 'Uang Fisik dan Selisih', a: 'Uang fisik dari tutup kas dikurangi total catatan iuran pada Jumat itu. Selisih bukan nol ditandai merah.' },
+      { k: 'Uang Fisik dan Selisih', a: 'Uang fisik dari tutup kas dikurangi total catatan iuran pada latihan itu. Selisih bukan nol ditandai merah.' },
     ],
   };
   return [peserta, pertemuan, kelompok('Per Sangga', 'Sangga', ring.sangga), kelompok('Per Kelas', 'Kelas', ring.kelas), keterangan];

@@ -89,8 +89,8 @@ function HasilDokumen({ d }) {
         <Baris label="Dicatat oleh">{d.dibuat_oleh ?? '-'}{d.jabatan_pembuat ? `, ${d.jabatan_pembuat}` : ''}</Baris>
         <Baris label="Ketua sidang">{d.penanda_tangan ? `${d.penanda_tangan}, ${d.jabatan_penanda_tangan}` : d.jabatan_penanda_tangan}</Baris>
         {d.pembina && <Baris label="Pembina">{d.pembina}</Baris>}
-        <Baris label="Penegak">{d.nama}{d.nis ? `, NIS ${d.nis}` : ''}{d.kelas ? `, kelas ${d.kelas}` : ''}</Baris>
-        <Baris label="Tingkat">SKU Penegak {d.tingkat}</Baris>
+        <Baris label="Anggota">{d.nama}{d.nis ? `, NIS ${d.nis}` : ''}{d.kelas ? `, kelas ${d.kelas}` : ''}</Baris>
+        <Baris label="Tingkat">{labelSkuTingkat(d.tingkat)}</Baris>
         <Baris label="Keputusan">{d.keputusan === 'layak' ? 'Layak dan lulus untuk dilantik' : 'Ditunda / remedi'}</Baris>
         {d.kode && <Baris label="Kode verifikasi"><span className="font-mono">{d.kode}</span></Baris>}
         <p className="py-2.5 text-xs leading-relaxed text-pramuka-600">
@@ -107,7 +107,7 @@ function HasilDokumen({ d }) {
       <Baris label="Diterbitkan oleh">{d.penerbit}</Baris>
       <Baris label="Dibuat oleh">{d.dibuat_oleh}{d.jabatan_pembuat ? `, ${d.jabatan_pembuat}` : ''}</Baris>
       <Baris label="Penanda tangan">{d.penanda_tangan}, {d.jabatan_penanda_tangan}</Baris>
-      <Baris label="Penegak">{d.nama}{d.nis ? `, NIS ${d.nis}` : ''}{d.kelas ? `, kelas ${d.kelas}` : ''}{d.agama ? `, agama ${d.agama}` : ''}</Baris>
+      <Baris label="Anggota">{d.nama}{d.nis ? `, NIS ${d.nis}` : ''}{d.kelas ? `, kelas ${d.kelas}` : ''}{d.agama ? `, agama ${d.agama}` : ''}</Baris>
       {d.guru && <Baris label="Ditujukan kepada">Guru agama {d.guru}</Baris>}
       {butir.length > 0 && <Baris label="Butir">{butir.map((id) => `${labelUnit(id)} (${id.startsWith('LAK') ? 'Laksana' : 'Bantara'})`).join(', ')}</Baris>}
       {d.kode && <Baris label="Kode verifikasi"><span className="font-mono">{d.kode}</span></Baris>}
@@ -135,9 +135,9 @@ function HasilToken({ d }) {
   }
   const teks = teksUnit(d.sku_id);
   return (
-    <Sah judul={`Butir SKU Penegak ${d.tingkat} dinyatakan lulus`}>
+    <Sah judul={`Butir ${labelSkuTingkat(d.tingkat)} dinyatakan lulus`}>
       <Baris label="Nama">{d.nama}</Baris>
-      <Baris label="Butir">{labelUnit(d.sku_id)}, SKU Penegak {d.tingkat}</Baris>
+      <Baris label="Butir">{labelUnit(d.sku_id)}, {labelSkuTingkat(d.tingkat)}</Baris>
       {teks && <Baris label="Isi butir">{teks}</Baris>}
       <Baris label="Tanggal uji">{fmtTanggal(d.tanggal)}</Baris>
       <Baris label="Penguji">{d.penguji ? `${d.penguji}${d.jabatan_penguji ? `, ${d.jabatan_penguji}` : ''}` : '-'}</Baris>
@@ -162,7 +162,7 @@ function HasilKode({ d }) {
   }
   return (
     <Sah judul="Kode verifikasi terdaftar">
-      <Baris label="Tingkat">SKU Penegak {d.tingkat}</Baris>
+      <Baris label="Tingkat">{labelSkuTingkat(d.tingkat)}</Baris>
       <Baris label="Butir">Butir {d.butir_no}</Baris>
       <Baris label="Tanggal uji">{fmtTanggal(d.tanggal)}</Baris>
       <p className="py-2.5 text-xs leading-relaxed text-pramuka-600">

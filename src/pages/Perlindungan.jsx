@@ -70,7 +70,7 @@ function PanelPenerima({ data }) {
       <h2 className="text-lg font-bold">Penerima laporan gugus depan</h2>
       <p className="mb-3 mt-1 text-sm text-pramuka-600">
         Setiap gugus depan wajib memiliki prosedur penerimaan laporan kejadian yang membahayakan (Pasal 10 ayat 3). Laporan disampaikan kepada Komite Perlindungan dan ditangani Dewan
-        Kehormatan; <strong>aplikasi ini tidak menyimpan laporan</strong> karena bersifat rahasia (Pasal 8 ayat 4 huruf g). Isian di bawah hanya memberi tahu Penegak kepada siapa harus melapor
+        Kehormatan; <strong>aplikasi ini tidak menyimpan laporan</strong> karena bersifat rahasia (Pasal 8 ayat 4 huruf g). Isian di bawah hanya memberi tahu anggota kepada siapa harus melapor
         (tampil di menu Akun saya untuk semua pengguna).
       </p>
       <div className="grid gap-x-3 sm:grid-cols-2">
@@ -145,7 +145,7 @@ export default function Perlindungan() {
           })}
         </ul>
       )}
-      {gudepSfhTerisi(data.gudep) ? null : <p className="mt-3 text-xs text-amber-900">Penerima laporan gugus depan belum diisi: Penegak belum tahu kepada siapa harus melapor.</p>}
+      {gudepSfhTerisi(data.gudep) ? null : <p className="mt-3 text-xs text-amber-900">Penerima laporan gugus depan belum diisi: anggota belum tahu kepada siapa harus melapor.</p>}
       {modal && <ModalCatat anggota={modal.anggota} jenis={modal.jenis} awal={modal.awal} onTutup={() => setModal(null)} onSelesai={() => { setModal(null); data.muat(); }} />}
     </div>
   );

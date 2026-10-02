@@ -176,7 +176,7 @@ function DaftarPeserta({ onBuka }) {
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold">{u.nama}</p>
                     <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-pramuka-500">
-                      Kelas {u.kelas}, {u.sangga}, {u.agama} <BadgePeran peran={u.peran} singkat />
+                      Kelas {u.kelas}, {u.barung || u.sangga}, {u.agama} <BadgePeran peran={u.peran} singkat />
                     </p>
                     <div className="mt-2 grid grid-cols-2 gap-3">
                       <div>

@@ -26,7 +26,7 @@ export default function RingkasanPerangkat() {
     <section className="panel mb-5 p-4" aria-label="Perangkat notifikasi anggota">
       <h2 className="font-semibold text-pramuka-900">Perangkat notifikasi anggota</h2>
       <p className="mt-1 text-sm text-pramuka-700">
-        <span className="font-display text-xl font-bold text-pramuka-800">{d.aktif}</span> dari {d.total} Penegak, Dewan Ambalan, dan Pembina sudah punya perangkat yang menerima notifikasi ({persen}%).
+        <span className="font-display text-xl font-bold text-pramuka-800">{d.aktif}</span> dari {d.total} anggota dan Pembina sudah punya perangkat yang menerima notifikasi ({persen}%).
       </p>
       {!d.terkonfigurasi && (
         <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900 ring-1 ring-amber-300">

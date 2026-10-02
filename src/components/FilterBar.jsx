@@ -5,7 +5,7 @@ import { ringkasDaftarRombel } from '../lib/rombelLogic';
 import { JENIS_KELAMIN, JK_BELUM_DIISI, labelJenisKelamin } from '../lib/jenisKelaminLogic';
 import { Icon } from './ui';
 
-export const FILTER_AWAL = { q: '', sangga: '', kelas: '', peran: '', agama: '', jk: '', saya: false, status: 'aktif' };
+export const FILTER_AWAL = { q: '', sangga: '', barung: '', kelas: '', peran: '', agama: '', jk: '', saya: false, status: 'aktif' };
 export const STATUS_SEMUA = 'semua';
 
 /**
@@ -19,6 +19,7 @@ export const terapkanFilter = (daftar, f) =>
       (f.status === STATUS_SEMUA || (u.status ?? 'aktif') === (f.status || 'aktif')) &&
       (!f.rombel?.length || f.rombel.includes(u.kelas)) &&
       (!f.sangga || u.sangga === f.sangga) &&
+      (!f.barung || u.barung === f.barung) &&
       (!f.kelas || u.kelas === f.kelas) &&
       (!f.peran || u.peran === f.peran) &&
       (!f.agama || u.agama === f.agama) &&
@@ -41,6 +42,7 @@ export default function FilterBar({ data, filter, setFilter, tampil = TAMPIL_STA
   const opsi = useMemo(
     () => ({
       sangga: unik(data, 'sangga', urutTeks),
+      barung: unik(data, 'barung', urutTeks),
       kelas: unik(data, 'kelas', urutAlami),
       peran: URUTAN_PERAN.filter((p) => data.some((u) => u.peran === p)),
       agama: unik(data, 'agama', urutTeks),
@@ -99,7 +101,13 @@ export default function FilterBar({ data, filter, setFilter, tampil = TAMPIL_STA
           <option value={STATUS_SEMUA}>Semua status</option>
         </select>
       )}
-      {tampil.includes('sangga') && (
+      {tampil.includes('sangga') && opsi.barung.length > 0 && (
+        <select className="input w-full sm:w-44" value={filter.barung ?? ''} onChange={ubah('barung')} aria-label="Filter barung">
+          <option value="">Semua barung</option>
+          {opsi.barung.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+      )}
+      {tampil.includes('sangga') && opsi.sangga.length > 0 && (
         <select className="input w-full sm:w-44" value={filter.sangga} onChange={ubah('sangga')} aria-label="Filter sangga">
           <option value="">Semua sangga</option>
           {opsi.sangga.map((s) => <option key={s} value={s}>{s}</option>)}

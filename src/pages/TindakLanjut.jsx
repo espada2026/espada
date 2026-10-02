@@ -19,7 +19,7 @@ function Baris({ entri, onNav }) {
         href={waLink(entri.whatsapp, teksWaSiap(entri))}
         target="_blank" rel="noreferrer"
         className="btn btn-outline btn-sm shrink-0"
-        title={entri.whatsapp ? `Kirim WhatsApp ke ${entri.nama}` : 'Nomor belum diisi Penegak ini: pilih kontak sendiri di WhatsApp'}
+        title={entri.whatsapp ? `Kirim WhatsApp ke ${entri.nama}` : 'Nomor belum diisi anggota ini: pilih kontak sendiri di WhatsApp'}
       >
         Buka WhatsApp
       </a>
@@ -66,7 +66,7 @@ export default function TindakLanjut({ onNav }) {
       )}
       {daftar && daftar.length === 0 && (
         <div className="panel flex items-center gap-2 p-4 text-sm text-pramuka-600">
-          <Icon nama="cek" className="h-4 w-4 text-emerald-600" /> Semua Penegak masih bergerak dengan wajar.
+          <Icon nama="cek" className="h-4 w-4 text-emerald-600" /> Semua anggota masih bergerak dengan wajar.
         </div>
       )}
     </div>

@@ -88,7 +88,7 @@ export default function KasIuran() {
     <div>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <p className="max-w-xl text-sm text-pramuka-600">
-          Cocokkan uang fisik di bumbung dengan catatan iuran setiap latihan. {pengelolaIuran ? 'Pengelola (Pembina atau Dewan Ambalan) mengisi total uang yang dihitung.' : 'Hanya Pembina atau Dewan Ambalan yang dapat menutup kas; Anda melihat hasilnya.'}
+          Cocokkan uang fisik di bumbung dengan catatan iuran setiap latihan. {pengelolaIuran ? 'Pengelola (Pembina) mengisi total uang yang dihitung.' : 'Hanya Pembina yang dapat menutup kas; Anda melihat hasilnya.'}
         </p>
         <PilihPeriode nilai={per} ubah={setPer} />
       </div>

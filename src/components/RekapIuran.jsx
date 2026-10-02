@@ -76,7 +76,7 @@ export default function RekapIuran() {
     <div>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <p className="max-w-xl text-sm text-pramuka-600">
-          Rekap iuran bumbung kepramukaan {PERIODE[per.periode]} {per.ta}. Angka per sangga, kelas, dan gudep terlihat oleh semua; rincian per Penegak hanya untuk pengurus dan yang bersangkutan.
+          Rekap iuran bumbung kepramukaan {PERIODE[per.periode]} {per.ta}. Angka per sangga, kelas, dan gudep terlihat oleh semua; rincian per anggota hanya untuk pengurus dan yang bersangkutan.
         </p>
         <PilihPeriode nilai={per} ubah={setPer} />
       </div>
@@ -109,11 +109,11 @@ export default function RekapIuran() {
                   <div className="mt-2"><ProgressBar persen={Math.min(100, saya.persen)} tinggi="h-3" label="Iuran rutin saya" /></div>
                   <p className={`mt-2 text-sm ${saya.persen < ambang ? 'font-semibold text-red-700' : 'text-pramuka-600'}`}>
                     {saya.persen < ambang
-                      ? `Iuran rutinmu di bawah ${ambang}% pertemuan. Berusahalah beriuran setiap Jumat agar tetap rutin; ini menjadi dasar penilaian SKU tentang iuran.`
+                      ? `Iuran rutinmu di bawah ${ambang}% pertemuan. Berusahalah beriuran setiap latihan agar tetap rutin; ini menjadi dasar penilaian SKU tentang iuran.`
                       : `Iuran rutinmu memenuhi batas ${ambang}% pertemuan. Pertahankan.`}
                   </p>
                   {saya.rutin < saya.kali && (
-                    <p className="mt-1 text-xs text-pramuka-500">Iuran susulan dihitung setara, tetapi beriuran setiap Jumat tetap lebih baik dan itulah arti "rutin".</p>
+                    <p className="mt-1 text-xs text-pramuka-500">Iuran susulan dihitung setara, tetapi beriuran setiap latihan tetap lebih baik dan itulah arti "rutin".</p>
                   )}
                 </>
               )}
@@ -141,7 +141,7 @@ export default function RekapIuran() {
                   <thead className="bg-pramuka-50 text-pramuka-700">
                     <tr>
                       <th className="px-4 py-2 font-semibold">Jumat</th>
-                      <th className="px-3 py-2 text-right font-semibold">Penegak beriuran</th>
+                      <th className="px-3 py-2 text-right font-semibold">Anggota beriuran</th>
                       <th className="px-3 py-2 text-right font-semibold">Total</th>
                       {pengurus && <th className="px-3 py-2 text-right font-semibold">Kas fisik</th>}
                     </tr>
@@ -182,14 +182,14 @@ export default function RekapIuran() {
           {pengurus && (
             <section>
               <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
-                <h3 className="text-lg font-bold">Per Penegak ({tersaring.length})</h3>
+                <h3 className="text-lg font-bold">Per anggota ({tersaring.length})</h3>
                 <button className="btn btn-gold btn-sm" onClick={unduh} disabled={tersaring.length === 0}>
                   <Icon nama="unduh" className="h-4 w-4" /> Unduh Excel
                 </button>
               </div>
               <div className="mb-3"><FilterBar data={daftarPeserta} filter={filter} setFilter={setFilter} tampil={['sangga', 'kelas', 'jk']} /></div>
               {tersaring.length === 0 ? (
-                <Kosong judul="Tidak ada Penegak" teks="Ubah kata kunci, sangga, atau kelas pada filter." />
+                <Kosong judul="Tidak ada anggota" teks="Ubah kata kunci, sangga, atau kelas pada filter." />
               ) : (
                 <div className="panel overflow-x-auto">
                   <table className="w-full min-w-[560px] text-left text-sm">

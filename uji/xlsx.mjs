@@ -35,10 +35,10 @@ const dataX = ws.getRow(6).values;
 cek('persen di Excel = hasil hitung', dataX[idxPersen] === rekap[0].persen, `${dataX[idxPersen]} vs ${rekap[0].persen}`);
 const rendahBaris = [...Array(daftar.length)].map((_, i) => ws.getRow(6 + i)).find((r) => r.values[idxPersen] < 75);
 cek('sel persen rendah diwarnai merah muda', rendahBaris.getCell(idxPersen).fill?.fgColor?.argb === 'FFFEE2E2');
-const pj = wb.getWorksheet('Per Jumat');
-console.log('Per Jumat kolom:', pj.getRow(5).values.slice(1, 9).join(' | '), '...');
-cek('Per Jumat: kolom tanggal = jumlah sesi', pj.getRow(5).values.length - 1 === 5 + sesi.length + 2);
-cek('Rekap dan Per Jumat memuat kolom Jenis Kelamin sesudah Nama', ws.getRow(5).getCell(3).value === 'Jenis Kelamin' && pj.getRow(5).getCell(3).value === 'Jenis Kelamin', String(ws.getRow(5).getCell(3).value));
+const pj = wb.getWorksheet('Per Latihan');
+console.log('Per Latihan kolom:', pj.getRow(5).values.slice(1, 9).join(' | '), '...');
+cek('Per Latihan: kolom tanggal = jumlah sesi', pj.getRow(5).values.length - 1 === 5 + sesi.length + 2);
+cek('Rekap dan Per Latihan memuat kolom Jenis Kelamin sesudah Nama', ws.getRow(5).getCell(3).value === 'Jenis Kelamin' && pj.getRow(5).getCell(3).value === 'Jenis Kelamin', String(ws.getRow(5).getCell(3).value));
 
 // ---- Portofolio
 const rp = rekapPortofolio(db.portofolio, daftar);
