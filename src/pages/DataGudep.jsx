@@ -197,7 +197,7 @@ export default function DataGudep() {
       <div>
         <h1 className="text-2xl font-bold">Data Gudep</h1>
         <p className="text-sm text-pramuka-600">
-          Identitas gugus depan, ambalan, dan pejabatnya. Isian ini menjadi rujukan kop surat, tanda tangan, nomor surat, halaman masuk, dan seluruh
+          Identitas gugus depan, perindukan, dan pejabatnya. Isian ini menjadi rujukan kop surat, tanda tangan, nomor surat, halaman masuk, dan seluruh
           dokumen cetak; tidak perlu lagi mengubah kode aplikasi. Perbarui isian ini setiap ada pergantian pengurus atau pejabat (mis. tahun ajaran baru):
           dokumen yang dibuat sesudahnya memakai data terbaru, sedangkan berita acara sidang dan surat pengantar yang sudah terbit tetap memuat nama saat dibuat.
         </p>

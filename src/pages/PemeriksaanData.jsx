@@ -71,9 +71,9 @@ const RENDER = (users, user) => ({
   kelasLama: (x) => <Baris key={x.id} kiri={x.nama} kanan={`NIS ${x.nis || '-'}, kelas "${x.kelas || '-'}"`} />,
   tanpaNta: (x) => <Baris key={x.id} kiri={x.nama} kanan={`NIS ${x.nis || '-'}, ${x.kelas || '-'}`} />,
   tanpaJk: (x) => <Baris key={x.id} kiri={x.nama} kanan={[x.peran, x.kelas].filter(Boolean).join(', ')} />,
-  rombelTanpaPenguji: (x) => <Baris key={x.rombel} kiri={x.rombel} kanan={`${x.jumlah} Penegak aktif`} />,
-  rombelTanpaBinaDamping: (x) => <Baris key={x.rombel} kiri={x.rombel} kanan={`${x.binaDamping} dari 2 Bina Damping, ${x.jumlah} Penegak aktif`} />,
-  sanggaTanpaPinsa: (x) => <Baris key={`${x.rombel}|${x.sangga}`} kiri={x.sangga} kanan={`${x.rombel}, ${x.jumlah} Penegak`} />,
+  rombelTanpaPenguji: (x) => <Baris key={x.rombel} kiri={x.rombel} kanan={`${x.jumlah} anggota aktif`} />,
+  rombelTanpaBinaDamping: (x) => <Baris key={x.rombel} kiri={x.rombel} kanan={`${x.binaDamping} dari 2 Bina Damping, ${x.jumlah} anggota aktif`} />,
+  sanggaTanpaPinsa: (x) => <Baris key={`${x.rombel}|${x.sangga}`} kiri={x.sangga} kanan={`${x.rombel}, ${x.jumlah} anggota`} />,
   praUjiMacet: (x) => <Baris key={x.id} kiri={x.nama} kanan={`${x.butir}, tahap ${namaTahap(x.tahap)}, ${x.hari === 0 ? 'sejak hari ini' : `${x.hari} hari`}${x.tanpaPenilai ? ', tanpa penilai' : ''}`} />,
   pembinaTanpaAgama: (x) => <Baris key={x.id} kiri={x.nama} />,
   sfhBelum: (x) => (

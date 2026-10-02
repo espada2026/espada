@@ -16,7 +16,7 @@ export const TINGKAT_PRESTASI = ['gudep', 'ranting', 'cabang', 'provinsi', 'nasi
 export const LABEL_TINGKAT_PRESTASI = { gudep: 'Gudep', ranting: 'Ranting', cabang: 'Cabang', provinsi: 'Provinsi', nasional: 'Nasional' };
 
 export const KELOMPOK_GALERI = ['latihan', 'perkemahan', 'pelantikan', 'lainnya'];
-export const LABEL_KELOMPOK_GALERI = { latihan: 'Latihan Jumat', perkemahan: 'Perkemahan', pelantikan: 'Pelantikan', lainnya: 'Lainnya' };
+export const LABEL_KELOMPOK_GALERI = { latihan: 'Latihan', perkemahan: 'Perkemahan', pelantikan: 'Pelantikan', lainnya: 'Lainnya' };
 
 export const PLATFORM_SOSIAL = ['instagram', 'youtube', 'facebook', 'tiktok'];
 export const LABEL_PLATFORM = { instagram: 'Instagram', youtube: 'YouTube', facebook: 'Facebook', tiktok: 'TikTok' };

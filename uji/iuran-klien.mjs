@@ -118,13 +118,13 @@ const ringExcel = ringkasAgregat((await K.dewan.a.muatIuranAgregat(T, T)).data);
 await K.dewan.a.simpanKas(T, 9999, 'uji excel');
 const kasExcel = (await K.dewan.a.muatKas(T, T)).data;
 const lembar = susunIuranXlsx({ tahunAjaran: '2026/2027', periode: 'ganjil', rekap: rekExcel, sesi: sesiExcel, ring: ringExcel, kas: kasExcel, filter: { q: '', sangga: '', kelas: '', peran: '' } });
-ok(lembar.map((s) => s.nama).join() === 'Per Penegak,Per Pertemuan,Per Sangga,Per Kelas,Keterangan', 'lima lembar Excel: ' + lembar.map((s) => s.nama).join(', '));
-ok(lembar[0].baris.length === profil.length && lembar[0].baris.reduce((s, b) => s + b.total, 0) === dbTotal, `lembar Per Penegak: ${profil.length} baris, jumlah = Rp ${dbTotal}`);
+ok(lembar.map((s) => s.nama).join() === 'Per Anggota,Per Pertemuan,Per Sangga,Per Kelas,Keterangan', 'lima lembar Excel: ' + lembar.map((s) => s.nama).join(', '));
+ok(lembar[0].baris.length === profil.length && lembar[0].baris.reduce((s, b) => s + b.total, 0) === dbTotal, `lembar Per Anggota: ${profil.length} baris, jumlah = Rp ${dbTotal}`);
 ok(lembar[1].baris[0].jumlah === dbTotal && lembar[1].baris[0].fisik === 9999 && lembar[1].baris[0].selisih === 9999 - dbTotal, 'lembar Per Pertemuan: total, uang fisik, dan selisih');
 ok(lembar[2].baris.reduce((s, b) => s + b.jumlah, 0) === dbTotal && lembar[3].baris.reduce((s, b) => s + b.jumlah, 0) === dbTotal, 'lembar sangga dan kelas menjumlah ke total gudep');
 ok(lembar[0].warna({ persen: 50 }, 'persen') && !lembar[0].warna({ persen: 90 }, 'persen') && !lembar[0].warna({ persen: '' }, 'persen'), 'baris di bawah 75% ditandai merah; kosong tidak ditandai');
 const buf = await buatBufferXlsx(lembar); const wb = new ExcelJS.Workbook(); await wb.xlsx.load(buf);
-ok(wb.worksheets.length === 5 && wb.worksheets[0].name === 'Per Penegak' && wb.worksheets[0].rowCount > profil.length, 'berkas Excel terbentuk dan terbaca ulang (5 lembar)');
+ok(wb.worksheets.length === 5 && wb.worksheets[0].name === 'Per Anggota' && wb.worksheets[0].rowCount > profil.length, 'berkas Excel terbentuk dan terbaca ulang (5 lembar)');
 ok(/^rekap-iuran-bumbung-2026-2027-ganjil\.xlsx$/.test(namaFileIuran('2026/2027', 'ganjil')), 'nama berkas');
 
 console.log('\n--- Basis data belum dimigrasi ---');

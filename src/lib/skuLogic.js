@@ -26,7 +26,7 @@
  */
 import { SEMUA_TINGKAT, INDEKS_POIN, unitButir } from '../data/skuData';
 import { kodeVerifikasi } from './format';
-import { pengujiPeranOk, pengujiSah } from './rombelLogic';
+import { kelasSd, pengujiPeranOk, pengujiSah } from './rombelLogic';
 
 export const STATUS = {
   belum: { label: 'Belum diuji', kelas: 'bg-stone-100 text-stone-700 ring-stone-300' },
@@ -40,6 +40,11 @@ export const PERAN = {
   'calon-bantara': { label: 'Penegak Calon Bantara', singkat: 'Calon Bantara', kelas: 'bg-sky-100 text-sky-900 ring-sky-300' },
   'calon-laksana': { label: 'Penegak Calon Laksana', singkat: 'Calon Laksana', kelas: 'bg-amber-100 text-amber-900 ring-amber-300' },
   'calon-garuda': { label: 'Penegak Calon Garuda', singkat: 'Calon Garuda', kelas: 'bg-emerald-100 text-emerald-900 ring-emerald-300' },
+  // Anggota Siaga (kelas SD atau tanpa akun): tahap menurut SKU Mula, Bantu, dan Tata yang sudah selesai
+  'siaga-mula': { label: 'Anggota Siaga, menempuh SKU Mula', singkat: 'Menempuh Mula', kelas: 'bg-sky-100 text-sky-900 ring-sky-300' },
+  'siaga-bantu': { label: 'Anggota Siaga, menempuh SKU Bantu', singkat: 'Menempuh Bantu', kelas: 'bg-amber-100 text-amber-900 ring-amber-300' },
+  'siaga-tata': { label: 'Anggota Siaga, menempuh SKU Tata', singkat: 'Menempuh Tata', kelas: 'bg-orange-100 text-orange-900 ring-orange-300' },
+  'siaga-garuda': { label: 'Anggota Siaga, siap Siaga Garuda', singkat: 'Siap Siaga Garuda', kelas: 'bg-emerald-100 text-emerald-900 ring-emerald-300' },
 };
 export const URUTAN_PERAN = Object.keys(PERAN);
 
@@ -135,6 +140,11 @@ export const layakGaruda = (progress, peserta) =>
   tingkatSelesai(progress, peserta, 'Bantara') && tingkatSelesai(progress, peserta, 'Laksana');
 
 export function peranPeserta(progress, peserta) {
+  if (peserta.tanpaAkun || kelasSd(peserta.kelas)) {
+    if (tingkatSelesai(progress, peserta, 'Tata')) return 'siaga-garuda';
+    if (tingkatSelesai(progress, peserta, 'Bantu')) return 'siaga-tata';
+    return tingkatSelesai(progress, peserta, 'Mula') ? 'siaga-bantu' : 'siaga-mula';
+  }
   if (peserta.calonGaruda && layakGaruda(progress, peserta)) return 'calon-garuda';
   return tingkatSelesai(progress, peserta, 'Bantara') ? 'calon-laksana' : 'calon-bantara';
 }

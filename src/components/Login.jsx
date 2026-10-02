@@ -12,9 +12,9 @@ import LogoMark from './LogoMark';
 import { Icon } from './ui';
 
 const LANGKAH = [
-  { judul: 'Uji SKU Bantara dan Laksana', ket: 'Ajukan, nilai, dan verifikasi tiap butir resmi Kwarnas.' },
-  { judul: 'Susun portofolio Garuda', ket: 'Jurnal kesiapan dokumen untuk Penegak Calon Garuda.' },
-  { judul: 'Catat latihan Jumat', ket: 'Absensi dan rekap per semester atau tahun ajaran.' },
+  { judul: 'Uji SKU Mula, Bantu, dan Tata', ket: 'Ajukan, nilai, dan verifikasi tiap butir resmi Kwarnas.' },
+  { judul: 'Raih Siaga Garuda', ket: 'Pantau enam butir penghargaan tertinggi Pramuka Siaga.' },
+  { judul: 'Catat latihan', ket: 'Absensi dan rekap per semester atau tahun ajaran.' },
 ];
 
 export default function Login() {
@@ -83,7 +83,7 @@ export default function Login() {
                 maxLength={32}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Penegak: NIS. Lainnya: nama pengguna"
+                placeholder="Anggota Siaga: NIS. Lainnya: nama pengguna"
               />
             </div>
 
@@ -110,7 +110,7 @@ export default function Login() {
               <Icon nama="perisai" className="mt-0.5 h-4 w-4 shrink-0 text-pramuka-500" />
               <span>
                 Masuk pertama kali dengan PIN awal dari admin, lalu buat PIN baru milik Anda sendiri.
-                Lupa PIN? Minta reset kepada Dewan Ambalan, Pembina, atau Admin Gudep.
+                Lupa PIN? Minta reset kepada Pembina atau Admin Gudep.
                 Salah PIN 5 kali mengunci akun selama 5 menit.
               </span>
             </p>
@@ -124,9 +124,8 @@ export default function Login() {
                 <p className="font-semibold">Mode lokal (tanpa Supabase)</p>
                 <p>Data disimpan di browser ini saja. Akun contoh (wajib ganti PIN saat masuk):</p>
                 <ul className="mt-1 space-y-0.5 font-mono">
-                  <li>Penegak: 10231, PIN {PIN_DEMO.penegak}</li>
+                  <li>Anggota: 10231, PIN {PIN_DEMO.penegak}</li>
                   <li>Pembina: pembina, PIN {PIN_DEMO.pembina}</li>
-                  <li>Dewan Ambalan: dewan, PIN {PIN_DEMO.dewan}</li>
                   <li>Admin Gudep: admin, PIN {PIN_DEMO.admin}</li>
                 </ul>
                 <p className="mt-2 font-semibold">Masuk cepat tanpa PIN (khusus uji lokal)</p>
@@ -136,7 +135,7 @@ export default function Login() {
                   ))}
                 </ul>
                 <p className="mt-1.5">
-                  Data sekolah penuh (ratusan Penegak, untuk uji kinerja):{' '}
+                  Data sekolah penuh (ratusan anggota, untuk uji kinerja):{' '}
                   <a className="font-semibold text-pramuka-800 underline" href="?data=penuh">buka dengan data penuh</a> (pertama kali butuh beberapa detik),{' '}
                   <a className="font-semibold text-pramuka-800 underline" href="?">kembali ke data contoh</a>.
                 </p>

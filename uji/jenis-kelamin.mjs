@@ -249,7 +249,7 @@ console.log('\n--- Kolom Jenis Kelamin pada berkas Excel ---');
   const rekap = rekapAbsensi(db.absensi, daftar, sesi);
   const filter = { q: '', sangga: '', kelas: '', peran: '', jk: '' };
   const lembarAbsensi = susunAbsensiXlsx({ tahunAjaran: ta, periode: 'ganjil', rekap, sesiList: sesi, filter });
-  for (const nama of ['Rekap', 'Per Jumat']) {
+  for (const nama of ['Rekap', 'Per Latihan']) {
     const l = lembarAbsensi.find((x) => x.nama === nama);
     ok(l.kolom[2].header === 'Jenis Kelamin' && l.kolom[2].key === 'jk' && l.kolom[1].key === 'nama', `absensi, lembar ${nama}: kolom Jenis Kelamin tepat sesudah Nama`);
     const nilai = new Set(l.baris.map((b) => b.jk));
@@ -259,7 +259,7 @@ console.log('\n--- Kolom Jenis Kelamin pada berkas Excel ---');
   const pf = lembarPf.find((x) => x.nama === 'Rekap Kesiapan');
   ok(pf.kolom[2].header === 'Jenis Kelamin' && pf.kolom[1].key === 'nama' && pf.baris.every((b) => ['Laki-laki', 'Perempuan', ''].includes(b.jk)), 'portofolio (Rekap Kesiapan): kolom Jenis Kelamin sesudah Nama');
   const src = sumber('src/lib/exportLaporan.js');
-  ok((src.match(/^\s*KOLOM_JK,$/gm) ?? []).length === 5, 'kolom dipasang pada lima lembar: absensi (Rekap dan Per Jumat), raport, portofolio, dan iuran (Per Penegak)');
+  ok((src.match(/^\s*KOLOM_JK,$/gm) ?? []).length === 5, 'kolom dipasang pada lima lembar: absensi (Rekap dan Per Latihan), raport, portofolio, dan iuran (Per Penegak)');
   ok(/'Nama', 'Jenis Kelamin', 'NIS'/.test(sumber('src/pages/AdminDashboard.jsx')), 'CSV rekap SKU pada Dashboard Admin memuat kolom Jenis Kelamin');
   const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await (await import('../src/lib/exportXlsx.js')).buatBufferXlsx(lembarAbsensi));
   const ws = wb.getWorksheet('Rekap'); let baris = 0; ws.eachRow((r, i) => { if (i === 5) baris = r; });

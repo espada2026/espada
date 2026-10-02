@@ -51,7 +51,7 @@ export default function KartuIuran({ onBuka }) {
           <dd className="font-display text-xl font-bold text-pramuka-800">{rupiah(ring.total)}</dd>
         </div>
         <div>
-          <dt className="text-xs text-pramuka-500">Jumat terakhir</dt>
+          <dt className="text-xs text-pramuka-500">Latihan terakhir</dt>
           <dd className="font-semibold text-pramuka-900">{terakhir ? rupiah(ring.perTanggal[terakhir.tanggal].jumlah) : '-'}</dd>
           {terakhir && <dd className="text-[11px] text-pramuka-500">{fmtTanggal(terakhir.tanggal)}</dd>}
         </div>
@@ -81,7 +81,7 @@ export default function KartuIuran({ onBuka }) {
               <dd className={`font-semibold ${dibawah || kasBelum ? 'text-red-700' : 'text-emerald-800'}`}>
                 {dibawah} di bawah {ambang}%
               </dd>
-              <dd className="text-[11px] text-pramuka-500">{kasBelum} Jumat belum tutup kas</dd>
+              <dd className="text-[11px] text-pramuka-500">{kasBelum} latihan belum tutup kas</dd>
             </div>
           </>
         )}
@@ -92,7 +92,7 @@ export default function KartuIuran({ onBuka }) {
           <ProgressBar persen={Math.min(100, saya.persen)} label="Iuran rutin saya" />
           <p className={`mt-1 text-xs ${saya.persen < ambang ? 'font-semibold text-red-700' : 'text-pramuka-500'}`}>
             {saya.persen < ambang
-              ? `Di bawah batas rutin ${ambang}%. Beriuranlah setiap Jumat; ini menjadi dasar penilaian SKU tentang iuran.`
+              ? `Di bawah batas rutin ${ambang}%. Beriuranlah setiap latihan; ini menjadi dasar penilaian SKU tentang iuran.`
               : `Memenuhi batas rutin ${ambang}%. Pertahankan.`}
           </p>
         </div>

@@ -88,7 +88,7 @@ export default function PanelFaq() {
       <form className="min-w-0 space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
         <h3 className="text-base font-bold text-pramuka-900">{id !== null ? 'Ubah pertanyaan' : 'Tambah pertanyaan'}</h3>
         <Field label="Pertanyaan" htmlFor="faq-t">
-          <input id="faq-t" className={`input ${galat.pertanyaan ? 'border-red-500' : ''}`} value={form.pertanyaan} placeholder="Tulis seperti pertanyaan calon Penegak atau orang tua" onChange={(e) => setForm((f) => ({ ...f, pertanyaan: e.target.value }))} />
+          <input id="faq-t" className={`input ${galat.pertanyaan ? 'border-red-500' : ''}`} value={form.pertanyaan} placeholder="Tulis seperti pertanyaan calon anggota Siaga atau orang tua" onChange={(e) => setForm((f) => ({ ...f, pertanyaan: e.target.value }))} />
           {galat.pertanyaan && <p role="alert" className="mt-1 text-xs font-medium text-red-700">{galat.pertanyaan}</p>}
         </Field>
         <Field label="Jawaban" htmlFor="faq-j">

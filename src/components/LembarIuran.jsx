@@ -61,14 +61,14 @@ export default function LembarIuran() {
       {valid && !belumTiba && !adaSesi && (
         <Kosong judul="Sesi absensi tanggal ini belum dibuat" teks="Iuran dicatat pada sesi latihan. Buka absensi tanggal ini lebih dulu di menu Absensi, lalu kembali ke sini." />
       )}
-      {adaSesi && !siap && <div role="status" aria-live="polite"><Kosong judul="Memuat daftar..." teks="Mengambil daftar Penegak dan iuran hari ini." /></div>}
+      {adaSesi && !siap && <div role="status" aria-live="polite"><Kosong judul="Memuat daftar..." teks="Mengambil daftar anggota dan iuran hari ini." /></div>}
       {adaSesi && siap && s.galat && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-900 ring-1 ring-red-300">{s.galat}</p>}
 
       {adaSesi && siap && !s.galat && (
         <>
           <section className="panel mb-4 p-4">
             <p className="text-sm text-pramuka-700">
-              Iuran bumbung hari ini: <b className="text-amber-800">{rupiah(jumlah)}</b> dari {beriuran} Penegak
+              Iuran bumbung hari ini: <b className="text-amber-800">{rupiah(jumlah)}</b> dari {beriuran} anggota
               {daftar.length > 0 && <>, {daftar.length - beriuran} belum beriuran</>}.
             </p>
             <p className="mt-1 text-xs text-pramuka-500">
@@ -113,7 +113,7 @@ export default function LembarIuran() {
               ))}
             </ul>
           )}
-          {!pengelolaIuran && <p className="mt-3 text-xs text-pramuka-500">Anda mencatat sebagai asisten bendahara. Iuran Anda sendiri dicatat oleh Dewan Ambalan.</p>}
+          {!pengelolaIuran && <p className="mt-3 text-xs text-pramuka-500">Anda mencatat sebagai asisten bendahara. Iuran Anda sendiri dicatat oleh Pembina.</p>}
         </>
       )}
     </div>

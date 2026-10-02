@@ -446,7 +446,7 @@ export function AppProvider({ children }) {
   }, [sesiBerakhir]);
   /** Penilai memutuskan satu pra-uji: hasil 'lulus' atau 'belum' (catatan wajib bila belum). */
   const catatPraUji = (id, hasil, catatan) =>
-    aksi(api().catatPraUji(id, hasil, catatan), { sukses: hasil === 'lulus' ? 'Pra-uji lulus; pengajuan diteruskan.' : 'Pra-uji belum lulus; catatan dikirim ke Penegak.' });
+    aksi(api().catatPraUji(id, hasil, catatan), { sukses: hasil === 'lulus' ? 'Pra-uji lulus; pengajuan diteruskan.' : 'Pra-uji belum lulus; catatan dikirim ke anggota.' });
   /** Pembina atau Admin melewati tahap pra-uji yang macet. */
   const lewatiPraUji = (id, alasan) =>
     pembinaAtauAdmin(user)
@@ -477,7 +477,7 @@ export function AppProvider({ children }) {
    * diperbarui (fungsi lama mengabaikan rincian), sehingga hasilnya tidak boleh dianggap tercatat lewat instrumen.
    */
   const catatHasil = ({ pin, pesertaId, ...data }) => {
-    if (user?.role !== 'penguji') return Promise.resolve(ditolak(notify, 'Hanya Pembina atau Dewan Ambalan yang dapat mencatat hasil.'));
+    if (user?.role !== 'penguji') return Promise.resolve(ditolak(notify, 'Hanya Pembina yang dapat mencatat hasil.'));
     const pesanBerhasil = {
       lulus: 'Poin dinyatakan lulus dan terverifikasi.',
       ulang: 'Poin ditandai perlu diulang.',
@@ -538,7 +538,7 @@ export function AppProvider({ children }) {
       : Promise.resolve(ditolak(notify, MSG_INSTRUMEN));
 
   /* ------------------ Sesi ujian dan QR Surat Tanda Lulus ------------------ */
-  const MSG_SESI = 'Hanya Dewan Ambalan, Pembina, dan Admin Gudep yang dapat mengelola sesi ujian.';
+  const MSG_SESI = 'Hanya Pembina dan Admin Gudep yang dapat mengelola sesi ujian.';
   const pengurus = user?.role === 'penguji' || user?.role === 'admin';
   const bolehHapusSesi = pembinaAtauAdmin(user);
 
@@ -617,7 +617,7 @@ export function AppProvider({ children }) {
   const pengelolaIuran = dewanAmbalan || pembinaSaya; // Pembina ikut (cermin sigarda.pencatat_iuran): gugus depan Siaga tidak punya Dewan Ambalan
   const pencatatIuran = pengelolaIuran || asistenSaya;
   const penunjukAsisten = dewanAmbalan || pembinaSaya;
-  const MSG_IURAN = 'Hanya Pembina, Dewan Ambalan, atau asisten bendahara yang dapat mencatat iuran.';
+  const MSG_IURAN = 'Hanya Pembina atau asisten bendahara yang dapat mencatat iuran.';
   const naikkanIuran = () => setVersiIuran((v) => v + 1); // hook rekap dan lembar memuat ulang bila angka ini berubah
 
   /** Membaca data iuran (rekap, kas, lembar, riwayat) tanpa toast; sesi berakhir ditangani di sini. */
@@ -634,18 +634,18 @@ export function AppProvider({ children }) {
   const aturIuranBanyak = async (tanggal, pesertaIds, jumlah, hanyaKosong = true) => {
     if (!pencatatIuran) return ditolak(notify, MSG_IURAN);
     const r = await aksi(api().aturIuranBanyak(tanggal, pesertaIds, jumlah, hanyaKosong), { sesudah: naikkanIuran });
-    if (r.ok) notify(r.data > 0 ? `Iuran ${r.data} Penegak dicatat.` : 'Tidak ada iuran yang perlu diisi.');
+    if (r.ok) notify(r.data > 0 ? `Iuran ${r.data} anggota dicatat.` : 'Tidak ada iuran yang perlu diisi.');
     return r;
   };
 
   const simpanKas = (tanggal, total, catatan = '') =>
     pengelolaIuran
       ? aksi(api().simpanKas(tanggal, total, catatan), { sukses: total == null ? 'Tutup kas dihapus.' : 'Tutup kas tersimpan.', sesudah: naikkanIuran })
-      : Promise.resolve(ditolak(notify, 'Hanya Pembina atau Dewan Ambalan yang dapat menutup kas.'));
+      : Promise.resolve(ditolak(notify, 'Hanya Pembina yang dapat menutup kas.'));
 
   /** Iuran susulan saat ujian (Dewan): menebus Jumat kosong terlama dulu. Mengembalikan { ok, data: jumlah Jumat yang terisi }. */
   const catatIuranSusulan = async (pesertaId, tanggal, jumlah, pertemuan) => {
-    if (!pengelolaIuran) return ditolak(notify, 'Hanya Pembina atau Dewan Ambalan yang dapat mencatat iuran susulan.');
+    if (!pengelolaIuran) return ditolak(notify, 'Hanya Pembina yang dapat mencatat iuran susulan.');
     const r = await aksi(api().catatIuranSusulan(pesertaId, tanggal, jumlah, pertemuan), { sesudah: naikkanIuran });
     if (r.ok) notify(`Iuran susulan untuk ${r.data} pertemuan dicatat.`);
     return r;
@@ -654,7 +654,7 @@ export function AppProvider({ children }) {
   const aturAsisten = (pesertaId, aktif) =>
     penunjukAsisten
       ? aksi(api().aturAsisten(pesertaId, aktif), { sukses: aktif ? 'Asisten bendahara ditunjuk.' : 'Penunjukan asisten dicabut.', sesudah: () => segarkan.asisten() })
-      : Promise.resolve(ditolak(notify, 'Hanya Dewan Ambalan atau Pembina yang dapat menunjuk asisten bendahara.'));
+      : Promise.resolve(ditolak(notify, 'Hanya Pembina yang dapat menunjuk asisten bendahara.'));
 
   /** Pengaturan iuran (standar, ambang rutin, batas nilai): hanya Pembina dan Admin. */
   const simpanPengaturanIuran = (nilai) =>
@@ -681,7 +681,7 @@ export function AppProvider({ children }) {
     setDb((d) => ({ ...d, absensi: { ...d.absensi, hadir: { ...d.absensi.hadir, [tanggal]: fn({ ...(d.absensi.hadir[tanggal] ?? {}) }) } } }));
 
   const buatSesiAbsen = async (tanggal) => {
-    if (!bolehKelolaAbsen) return ditolak(notify, 'Hanya Dewan Ambalan, Pembina, atau admin yang dapat mencatat absensi.');
+    if (!bolehKelolaAbsen) return ditolak(notify, 'Hanya Pembina atau admin yang dapat mencatat absensi.');
     if (!tanggalValid(tanggal)) return ditolak(notify, 'Tanggal tidak valid.');
     if (tanggal > hariIni()) return ditolak(notify, 'Sesi belum bisa dibuat untuk tanggal yang belum tiba.');
     if (db.absensi.sesi[tanggal]) return { ok: true };
@@ -733,7 +733,7 @@ export function AppProvider({ children }) {
   /* --------------- Sidang Dewan Kehormatan dan pengaturannya --------------- */
   const bolehSidang = user?.role === 'penguji' || user?.role === 'admin';
   const bolehHapusSidang = pembinaAtauAdmin(user);
-  const MSG_SIDANG = 'Hanya Dewan Ambalan, Pembina, atau Admin Gudep yang dapat mengelola sidang.';
+  const MSG_SIDANG = 'Hanya Pembina atau Admin Gudep yang dapat mengelola sidang.';
 
   /** Memuat catatan sidang dan pengaturan (dipanggil halaman Sidang saat dibuka). */
   const muatSidang = useCallback(async () => {
@@ -1024,14 +1024,14 @@ export function AppProvider({ children }) {
    * satu baris keliru. Mengembalikan { ok, data: jumlah }.
    */
   const perbaruiRombel = async (daftar) => {
-    if (user?.role !== 'admin') return ditolak(notify, 'Hanya Admin Gudep yang dapat memperbarui rombel Penegak.');
+    if (user?.role !== 'admin') return ditolak(notify, 'Hanya Admin Gudep yang dapat memperbarui rombel anggota.');
     const r = await api().perbaruiRombel(daftar);
     if (!r.ok) {
       if (r.sesiBerakhir) await sesiBerakhir();
       return { ok: false, pesan: r.pesan };
     }
     await segarkan.users();
-    notify(`Rombel ${r.data} Penegak diperbarui.`);
+    notify(`Rombel ${r.data} anggota diperbarui.`);
     return r;
   };
 
@@ -1061,7 +1061,7 @@ export function AppProvider({ children }) {
       return { ok: false, pesan: r.pesan };
     }
     await segarkan.users();
-    notify(`Kenaikan kelas dibatalkan: ${r.data} Penegak dikembalikan.`);
+    notify(`Kenaikan kelas dibatalkan: ${r.data} anggota dikembalikan.`);
     return r;
   };
   /** Status satu Penegak: 'aktif' (rombel wajib), 'nonaktif', 'alumni' (hanya Admin). Pembina dan Admin. */
@@ -1073,7 +1073,7 @@ export function AppProvider({ children }) {
       return { ok: false, pesan: r.pesan };
     }
     await Promise.all([segarkan.users(), segarkan.progress?.()].filter(Boolean));
-    notify(statusBaru === 'aktif' ? 'Penegak diaktifkan kembali.' : statusBaru === 'alumni' ? 'Penegak ditetapkan sebagai alumni.' : 'Penegak dinonaktifkan.');
+    notify(statusBaru === 'aktif' ? 'Anggota diaktifkan kembali.' : statusBaru === 'alumni' ? 'Anggota ditetapkan sebagai alumni.' : 'Anggota dinonaktifkan.');
     return r;
   };
   /* ---------------- Kepengurusan Dewan Ambalan (Pembina dan Admin; jabatan = atribut akun Penegak) ---------------- */
@@ -1350,7 +1350,7 @@ export function AppProvider({ children }) {
   /** Penugasan KHUSUS satu Penegak: daftar penguji lengkap tahun ajaran itu (kosong = kembali ke penugasan rombel), dengan alasan. */
   const aturPenugasanPeserta = (tahunAjaran, pesertaId, pengujiIds, alasan) =>
     bolehAturPenugasan
-      ? aksi(api().aturPenugasanPeserta(tahunAjaran, pesertaId, pengujiIds, alasan), { sukses: 'Penugasan khusus Penegak tersimpan.', sesudah: () => muatPenugasan(tahunAjaran) })
+      ? aksi(api().aturPenugasanPeserta(tahunAjaran, pesertaId, pengujiIds, alasan), { sukses: 'Penugasan khusus anggota tersimpan.', sesudah: () => muatPenugasan(tahunAjaran) })
       : Promise.resolve(ditolak(notify, MSG_PENUGASAN));
 
   const salinPenugasan = (dari, ke) =>

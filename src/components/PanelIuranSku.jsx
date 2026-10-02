@@ -33,7 +33,7 @@ export default function PanelIuranSku({ ringkas, galat, pesertaId, tanggalUji, t
 
   const terima = async () => {
     if (proses || pertemuanPakai < 1) return;
-    if (!window.confirm(`Terima iuran susulan ${rupiah(total)} (${pertemuanPakai} pertemuan x ${rupiah(nominalPakai)}) dari Penegak ini? Uangnya harus sudah diterima.`)) return;
+    if (!window.confirm(`Terima iuran susulan ${rupiah(total)} (${pertemuanPakai} pertemuan x ${rupiah(nominalPakai)}) dari anggota ini? Uangnya harus sudah diterima.`)) return;
     setProses(true);
     setPesan('');
     const hasil = await catatIuranSusulan(pesertaId, tanggalUji, nominalPakai, pertemuanPakai);
@@ -42,7 +42,7 @@ export default function PanelIuranSku({ ringkas, galat, pesertaId, tanggalUji, t
   };
 
   return (
-    <div className="mb-3 rounded-lg border border-amber-300 bg-amber-50/60 p-3 text-sm" aria-label="Iuran bumbung Penegak">
+    <div className="mb-3 rounded-lg border border-amber-300 bg-amber-50/60 p-3 text-sm" aria-label="Iuran bumbung anggota">
       <p className="text-xs font-bold uppercase tracking-wider text-amber-900">Iuran bumbung (dasar penilaian kriteria iuran)</p>
       {r.pertemuan === 0 ? (
         <p className="mt-1 text-pramuka-700">Belum ada pertemuan tercatat pada semester ini ({fmtTanggal(r.mulai)} s.d. {fmtTanggal(r.akhir)}), jadi belum ada saran iuran. Nilai kriteria diisi penguji.</p>
@@ -58,7 +58,7 @@ export default function PanelIuranSku({ ringkas, galat, pesertaId, tanggalUji, t
             <b>Saran nilai kriteria iuran: {r.saran} dari 5.</b> Penguji boleh mengubahnya dengan catatan alasan.
           </p>
           {susulanBanyak && (
-            <p className="mt-1 text-xs font-semibold text-amber-900">Lebih dari separuh iuran berasal dari susulan. Dorong Penegak beriuran setiap Jumat, bukan menumpuknya menjelang ujian.</p>
+            <p className="mt-1 text-xs font-semibold text-amber-900">Lebih dari separuh iuran berasal dari susulan. Dorong anggota beriuran setiap latihan, bukan menumpuknya menjelang ujian.</p>
           )}
         </>
       )}

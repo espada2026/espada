@@ -288,7 +288,7 @@ export default function AdminAnggota() {
                 <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-pramuka-500">
                   {u.role === 'peserta' && (
                     <>
-                      NIS {u.nis || '-'}, {ketJk(u.jenisKelamin)}, rombel {u.kelas}, {u.sangga}, {u.agama}{u.nta ? `, NTA ${u.nta}` : ''} <BadgePeran peran={u.peran} singkat />{u.jabatanDewan && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-900 ring-1 ring-inset ring-amber-300">Dewan: {u.jabatanDewan}</span>}{(u.status ?? 'aktif') !== 'aktif' && <BadgeStatus status={u.status} />}{u.status === 'alumni' && u.lulusTa ? ` lulus ${u.lulusTa}` : ''}
+                      NIS {u.nis || '-'}, {ketJk(u.jenisKelamin)}, rombel {u.kelas}, {u.barung || u.sangga}, {u.agama}{u.nta ? `, NTA ${u.nta}` : ''} <BadgePeran peran={u.peran} singkat />{u.jabatanDewan && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-900 ring-1 ring-inset ring-amber-300">Dewan: {u.jabatanDewan}</span>}{(u.status ?? 'aktif') !== 'aktif' && <BadgeStatus status={u.status} />}{u.status === 'alumni' && u.lulusTa ? ` lulus ${u.lulusTa}` : ''}
                     </>
                   )}
                   {u.role === 'penguji' && <>{u.jabatan === 'Dewan Ambalan' ? 'Akun Dewan lama' : u.jabatan}{u.jabatanDewan ? ` (${u.jabatanDewan})` : ''}, {ketJk(u.jenisKelamin)}{u.jabatan === 'Pembina' ? `, agama ${u.agama ?? 'belum diisi'}` : ''}{u.jabatan === 'Dewan Ambalan' && u.nta ? `, NTA ${u.nta}` : ''}, pengguna <span className="font-mono">{u.username}</span></>}

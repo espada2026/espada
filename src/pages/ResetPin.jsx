@@ -85,9 +85,9 @@ export default function ResetPin() {
   };
 
   const aturan = {
-    admin: 'Sebagai Admin Gudep, Anda dapat mereset PIN penegak, Dewan Ambalan, dan Pembina.',
-    Pembina: 'Sebagai Pembina, Anda dapat mereset PIN penegak dan Dewan Ambalan.',
-    'Dewan Ambalan': 'Sebagai Dewan Ambalan, Anda dapat mereset PIN penegak.',
+    admin: 'Sebagai Admin Gudep, Anda dapat mereset PIN anggota dan Pembina.',
+    Pembina: 'Sebagai Pembina, Anda dapat mereset PIN anggota.',
+    'Dewan Ambalan': 'Anda dapat mereset PIN anggota.',
   }[user.role === 'admin' ? 'admin' : user.jabatan];
 
   return (
@@ -143,7 +143,7 @@ export default function ResetPin() {
                 <div className="min-w-0">
                   <p className="truncate font-semibold">{u.nama}</p>
                   <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-pramuka-500">
-                    {u.role === 'peserta' ? <>Kelas {u.kelas}, {u.sangga} <BadgePeran peran={u.peran} singkat /></> : u.jabatan}
+                    {u.role === 'peserta' ? <>Kelas {u.kelas}, {u.barung || u.sangga} <BadgePeran peran={u.peran} singkat /></> : u.jabatan}
                   </p>
                   <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-pramuka-600">
                     {u.wajibGantiPin ? (

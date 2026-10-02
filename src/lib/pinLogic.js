@@ -74,7 +74,7 @@ export function bolehResetPin(aktor, target) {
 
 /** Siapa yang dapat mereset PIN pengguna ini (untuk teks bantuan). */
 export function siapaBisaReset(user) {
-  if (user.role === 'peserta') return 'Dewan Ambalan, Pembina, atau Admin Gudep';
+  if (user.role === 'peserta') return 'Pembina atau Admin Gudep';
   if (user.role === 'penguji' && user.jabatan === 'Dewan Ambalan') return 'Pembina atau Admin Gudep';
   if (user.role === 'penguji') return 'Admin Gudep';
   return null;

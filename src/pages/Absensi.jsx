@@ -140,7 +140,7 @@ function InputAbsensi() {
   for (const u of berhak) hitung[catatan[u.id]?.status ?? 'B'] += 1;
 
   const hapus = () => {
-    if (window.confirm(`Hapus sesi ${fmtHariTanggal(tanggal)} beserta seluruh catatan absensinya? (Sesi yang memiliki catatan iuran atau tutup kas tidak dapat dihapus sebelum dikosongkan oleh Dewan Ambalan.)`)) hapusSesiAbsen(tanggal);
+    if (window.confirm(`Hapus sesi ${fmtHariTanggal(tanggal)} beserta seluruh catatan absensinya? (Sesi yang memiliki catatan iuran atau tutup kas tidak dapat dihapus sebelum dikosongkan oleh Pembina.)`)) hapusSesiAbsen(tanggal);
   };
   const idTersaring = tersaring.map((u) => u.id);
 
@@ -231,7 +231,7 @@ function InputAbsensi() {
                   <span>Sakit <b className="text-amber-700">{hitung.S}</b></span>
                   <span>Alpa <b className="text-red-700">{hitung.A}</b></span>
                   <span>Belum dicatat <b>{hitung.B}</b></span>
-                  {tampilIuran && <span>Iuran bumbung <b className="text-amber-800">{rupiah(jumlahIuran)}</b> ({Object.keys(iur.baris).length} Penegak)</span>}
+                  {tampilIuran && <span>Iuran bumbung <b className="text-amber-800">{rupiah(jumlahIuran)}</b> ({Object.keys(iur.baris).length} anggota)</span>}
                 </p>
               </div>
               <button className="btn btn-outline btn-sm text-red-700" onClick={hapus}>
@@ -280,7 +280,7 @@ function InputAbsensi() {
                         <div className="min-w-0">
                           <p className="truncate font-semibold">{u.nama}</p>
                           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-pramuka-500">
-                            Kelas {u.kelas}, {u.sangga} <BadgePeran peran={u.peran} singkat />
+                            Kelas {u.kelas}, {u.barung || u.sangga} <BadgePeran peran={u.peran} singkat />
                           </p>
                         </div>
                       </div>

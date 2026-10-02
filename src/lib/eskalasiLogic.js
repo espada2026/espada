@@ -36,7 +36,7 @@ export function waLink(nomor, teks = '') {
 export function teksWaSiap({ nama, jenis, hari, tanpaAkun }) {
   const soal = jenis === 'sku' ? 'belum ada aktivitas SKU' : jenis === 'absensi' ? 'tidak hadir latihan tanpa keterangan' : 'iuran belum tercatat';
   if (tanpaAkun) return `Selamat pagi Bapak/Ibu, ini dari Pembina Pramuka. Ananda ${nama} sudah ${hari} hari ${soal}. Apakah ada kendala? Kabari kami ya, supaya bisa dibantu bersama.`;
-  return `Halo ${nama}, ini dari Pembina/Dewan Ambalan. Sudah ${hari} hari ${soal}. Ada kendala? Kabari kami ya, biar bisa dibantu.`;
+  return `Halo ${nama}, ini dari Pembina. Sudah ${hari} hari ${soal}. Ada kendala? Kabari kami ya, biar bisa dibantu.`;
 }
 
 /** Pesan siap-kirim untuk mengingatkan satu anggota yang belum mengaktifkan notifikasi di HP-nya (tanpa menyebut hasil lulus/ulang). */
