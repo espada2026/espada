@@ -153,13 +153,13 @@ export default function DataGudep() {
       </div>
 
       <section className="panel space-y-1 p-4" aria-labelledby="gudep-identitas">
-        <h2 id="gudep-identitas" className="mb-2 text-base font-bold text-pramuka-900">Identitas Gugus Depan dan Ambalan</h2>
+        <h2 id="gudep-identitas" className="mb-2 text-base font-bold text-pramuka-900">Identitas Gugus Depan dan Perindukan</h2>
         <div className="grid gap-x-4 sm:grid-cols-2">
-          {isian('nama', { label: 'Nama gugus depan', maks: 120, bantuan: 'Contoh: Gugus Depan SMAN 1 Bukateja' })}
-          {isian('singkat', { label: 'Nama ambalan', maks: 120, bantuan: 'Contoh: Ambalan Gajah Mada/Christina M.T' })}
-          {isian('sekolah', { label: 'Nama sekolah', maks: 120, bantuan: 'Contoh: SMA Negeri 1 Bukateja' })}
+          {isian('nama', { label: 'Nama gugus depan', maks: 120, bantuan: 'Contoh: Gugus Depan SD Negeri 1 Contoh' })}
+          {isian('singkat', { label: 'Nama perindukan', maks: 120, bantuan: 'Contoh: Perindukan Melati (kata Perindukan ditambahkan sendiri bila belum ada)' })}
+          {isian('sekolah', { label: 'Nama sekolah', maks: 120, bantuan: 'Contoh: SD Negeri 1 Contoh' })}
           {isian('nomorGudep', { label: 'Nomor gudep', maks: 40, bantuan: 'Contoh: 10.701/10.702 (putra/putri)' })}
-          {isian('kodeSurat', { label: 'Kode surat', maks: 30, bantuan: 'Awalan nomor Surat Tanda Lulus, mis. GD-SMAN1-BKT' })}
+          {isian('kodeSurat', { label: 'Kode surat', maks: 30, bantuan: 'Awalan nomor Surat Tanda Lulus, mis. GD-SDN1-CTH' })}
         </div>
       </section>
 
@@ -167,11 +167,11 @@ export default function DataGudep() {
         <h2 id="gudep-alamat" className="mb-2 text-base font-bold text-pramuka-900">Alamat, kontak, dan kwartir</h2>
         <div className="grid gap-x-4 sm:grid-cols-2">
           <div className="sm:col-span-2">{isian('alamat', { label: 'Alamat', maks: 200, bantuan: 'Tercetak pada kop surat.' })}</div>
-          {isian('kota', { label: 'Kota (tempat surat)', maks: 60, bantuan: 'Mis. "Bukateja, 21 September 2026" pada tanda tangan.' })}
+          {isian('kota', { label: 'Kota (tempat surat)', maks: 60, bantuan: 'Mis. "Purbalingga, 21 September 2026" pada tanda tangan.' })}
           {isian('telepon', { label: 'Telepon (opsional)', maks: 40, jenis: 'tel' })}
           {isian('email', { label: 'Email (opsional)', maks: 100, jenis: 'email' })}
           <span className="hidden sm:block" aria-hidden="true" />
-          {isian('kwarran', { label: 'Kwartir ranting', maks: 80, bantuan: 'Contoh: Kwartir Ranting Bukateja' })}
+          {isian('kwarran', { label: 'Kwartir ranting', maks: 80, bantuan: 'Contoh: Kwartir Ranting Contoh' })}
           {isian('kwarcab', { label: 'Kwartir cabang', maks: 80, bantuan: 'Contoh: Kwartir Cabang Purbalingga' })}
         </div>
       </section>
@@ -179,8 +179,7 @@ export default function DataGudep() {
       <section aria-labelledby="gudep-pejabat">
         <h2 id="gudep-pejabat" className="mb-1 text-base font-bold text-pramuka-900">Pejabat dan NTA</h2>
         <p className="mb-2 text-xs text-pramuka-600">
-          Pradana dan Pradani tidak diketik di sini: atur di menu <b>Anggota</b> (ubah anggota Dewan Ambalan, isian Jabatan Dewan Ambalan). Namanya dan NTA-nya diambil
-          dari akun anggota itu, dan dipakai sebagai ketua sidang (Pradana) serta penanda tangan Surat Tanda Lulus.
+          Nama, jabatan, dan NTA di bawah ini dipakai sebagai penanda tangan Surat Tanda Lulus, piagam pelantikan, dan surat lain yang dicetak aplikasi.
         </p>
         <div className="grid gap-4 lg:grid-cols-2">
           {KOLOM_ORANG.map((o) => (

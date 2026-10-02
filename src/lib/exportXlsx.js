@@ -13,7 +13,7 @@
 export async function buatBufferXlsx(sheets) {
   const { default: ExcelJS } = await import('exceljs');
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'SIGASI - Gudep SMAN 1 Bukateja';
+  wb.creator = 'SIGASI - Sistem Informasi Gudep Siaga';
   wb.created = new Date();
 
   const garis = { style: 'thin', color: { argb: 'FFB48B5C' } };
