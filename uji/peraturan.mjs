@@ -83,15 +83,10 @@ console.log('--- Halaman memakai registri (tidak menulis nomor SK dan alamat sen
 
   // Komponen dipasang di halaman utama yang bersandar pada peraturan.
   const wajib = {
-    'src/pages/Kepengurusan.jsx': 'gudep-05-2026',
-    'src/pages/Sidang.jsx': 'gudep-05-2026',
     'src/pages/Iuran.jsx': 'iuran-049-1987',
     'src/pages/DataGudep.jsx': 'gudep-05-2026',
-    'src/pages/Portofolio.jsx': 'garuda-038-2017',
     'src/pages/PesertaSku.jsx': 'sku-penegak-2011',
     'src/pages/Absensi.jsx': 'admin-satuan-041-1995',
-    'src/pages/Sangga.jsx': 'polmekbin-176-2013',
-    'src/components/BeritaAcaraSidang.jsx': 'gudep-05-2026',
     'src/components/Footer.jsx': 'sku-siaga-2011',
     'src/components/PanelSuratAgama.jsx': 'agama-182-1979',
   };

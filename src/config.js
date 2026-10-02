@@ -6,10 +6,6 @@ export const APP = {
   versi: '0.1',
 };
 
-// Fase 0 rencana Pramuka Siaga: menu modul Penegak yang DIBUANG dari aplikasi Siaga. Baru DISEMBUNYIKAN (kode, SQL, dan uji masih ada; dihapus bertahap
-// di fase berikut). `buatNav` (App.jsx) menyaring id ini dari semua peran.
-export const MENU_TIDAK_DIPAKAI = ['pra-uji', 'sangga', 'kepengurusan', 'sidang', 'spg', 'kelayakan', 'portofolio', 'naikkelas', 'raport'];
-
 // Identitas Gugus Depan BAWAAN. Admin Gudep mengubahnya di menu "Data Gudep" (disimpan di basis data, pengaturan gudep.data); nilai di sini
 // hanya dipakai selama belum ada data tersimpan atau bila sebuah isian dikosongkan. Bacalah lewat useGudep() / ambilGudep() (src/lib/gudepStore.js),
 // jangan mengimpor konstanta ini langsung pada halaman.

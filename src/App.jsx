@@ -1,7 +1,7 @@
 import { lazy, useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import Layout from './components/Layout';
-import { APP, MENU_TIDAK_DIPAKAI } from './config';
+import { APP } from './config';
 import Login from './components/Login';
 import PesertaBeranda from './pages/PesertaBeranda';
 import GantiPinWajib from './pages/GantiPinWajib';
@@ -11,8 +11,7 @@ import FormWhatsapp from './components/FormWhatsapp';
 import { Modal } from './components/ui';
 import { pembinaAtauAdmin } from './lib/hakLogic';
 import { parameterKelola, petunjukDari, simpanPetunjuk } from './lib/suntingLogic';
-import { menuSanggaTampil } from './lib/sanggaLogic';
-import { menuPraUjiTampil, ujiResmiTampil } from './lib/praUjiLogic';
+import { ujiResmiTampil } from './lib/praUjiLogic';
 import { bolehKelolaMateri } from './lib/materiLogic';
 import { kelasSd } from './lib/rombelLogic';
 import LogoMark from './components/LogoMark';
@@ -32,38 +31,29 @@ const PesertaSku = lazy(() => import('./pages/PesertaSku'));
 const SiagaBeranda = lazy(() => import('./pages/SiagaBeranda'));
 const SiagaSkuSaya = lazy(() => import('./pages/SiagaSkuSaya'));
 const SiagaSku = lazy(() => import('./pages/SiagaSku'));
-const PraUji = lazy(() => import('./pages/PraUji'));
 const Pelantikan = lazy(() => import('./pages/Pelantikan'));
 const Tkk = lazy(() => import('./pages/Tkk'));
-const Spg = lazy(() => import('./pages/Spg'));
 const Perlindungan = lazy(() => import('./pages/Perlindungan'));
 const Siaga = lazy(() => import('./pages/Siaga'));
 const AjakanIsian = lazy(() => import('./components/AjakanIsian')); // ajakan mengisi data diri Penegak sesudah masuk (Tahap 3, H1)
-const Kelayakan = lazy(() => import('./pages/Kelayakan'));
 const PesertaDetail = lazy(() => import('./pages/PesertaDetail'));
 const AdminAnggota = lazy(() => import('./pages/AdminAnggota'));
 const AbsensiPeserta = lazy(() => import('./pages/Absensi').then((m) => ({ default: m.AbsensiPeserta })));
 const AbsensiPengurus = lazy(() => import('./pages/Absensi').then((m) => ({ default: m.AbsensiPengurus })));
-const PortofolioPengurus = lazy(() => import('./pages/Portofolio'));
 const CetakDokumen = lazy(() => import('./pages/CetakDokumen'));
 const Akun = lazy(() => import('./pages/Akun'));
 const ResetPin = lazy(() => import('./pages/ResetPin'));
 const Materi = lazy(() => import('./pages/Materi'));
 const KelolaMateri = lazy(() => import('./pages/KelolaMateri'));
-const Sidang = lazy(() => import('./pages/Sidang'));
-const Raport = lazy(() => import('./pages/Raport'));
 const KelolaInstrumen = lazy(() => import('./pages/KelolaInstrumen'));
 const Penugasan = lazy(() => import('./pages/Penugasan'));
 const DataGudep = lazy(() => import('./pages/DataGudep'));
-const NaikKelas = lazy(() => import('./pages/NaikKelas'));
-const Kepengurusan = lazy(() => import('./pages/Kepengurusan'));
 const SesiUjian = lazy(() => import('./pages/SesiUjian'));
 const Iuran = lazy(() => import('./pages/Iuran'));
 const Notifikasi = lazy(() => import('./pages/Notifikasi'));
 const PemeriksaanData = lazy(() => import('./pages/PemeriksaanData'));
 const TindakLanjut = lazy(() => import('./pages/TindakLanjut'));
 const Agenda = lazy(() => import('./pages/Agenda'));
-const Sangga = lazy(() => import('./pages/Sangga'));
 const Laporan = lazy(() => import('./pages/Laporan'));
 const Bantuan = lazy(() => import('./pages/Bantuan'));
 const KelolaBeranda = lazy(() => import('./pages/KelolaBeranda')); // isi halaman muka publik (Fase 1 landing page)
@@ -79,40 +69,24 @@ const KelolaBeranda = lazy(() => import('./pages/KelolaBeranda')); // isi halama
  * Dewan Ambalan = jabatan pada akun Penegak: pemegangnya memilih tampilan Penegak atau Dewan (user.role berubah menjadi 'penguji' pada tampilan Dewan).
  * Akun saya dan Reset PIN anggota (pengurus) tidak ada di daftar ini: keduanya di menu akun (nama pengguna di menu samping atau header).
  */
-/** Menu untuk aplikasi Siaga: menu lengkap dikurangi modul Penegak yang dibuang (config.MENU_TIDAK_DIPAKAI). */
-function buatNav(...args) {
-  return buatNavLengkap(...args)
-    .map((g) => ({ ...g, item: g.item.filter((i) => !MENU_TIDAK_DIPAKAI.includes(i.id)) }))
-    .filter((g) => g.item.length > 0);
-}
-function buatNavLengkap(user, peran, belumDibaca = 0, pendampingan = null, praUjiAktif = false) {
+function buatNav(user, peran, belumDibaca = 0, pendampingan = null, praUjiAktif = false) {
   const materi = { id: 'materi', label: 'Materi', ikon: 'buku' };
   const kelola = { id: 'kelolamateri', label: 'Kelola Materi', ikon: 'pustaka' };
-  const raport = { id: 'raport', label: 'Raport', ikon: 'raport' };
   const laporan = { id: 'laporan', label: 'Laporan', ikon: 'grafik' };
   const instrumen = { id: 'instrumen', label: 'Instrumen', ikon: 'instrumen' };
   const absensi = { id: 'absensi', label: 'Absensi', ikon: 'absensi' };
   const iuran = { id: 'iuran', label: 'Iuran', ikon: 'iuran' };
-  const portofolio = { id: 'portofolio', label: 'Portofolio', ikon: 'portofolio' };
-  const sidang = { id: 'sidang', label: 'Sidang', ikon: 'sidang' };
   const sesi = { id: 'sesi', label: 'Sesi ujian', ikon: 'sesi' };
   const cetak = { id: 'cetak', label: 'Cetak', ikon: 'cetak' };
   const penugasan = { id: 'penugasan', label: 'Penugasan', ikon: 'penugasan' };
-  const kepengurusan = { id: 'kepengurusan', label: 'Pengurus', ikon: 'perisai' };
   const pemeriksaan = { id: 'pemeriksaan', label: 'Periksa Data', ikon: 'cari' };
   const tindakLanjut = { id: 'tindaklanjut', label: 'Tindak Lanjut', ikon: 'lonceng' };
   const agenda = { id: 'agenda', label: 'Agenda', ikon: 'kalender' };
   const kelolaBeranda = { id: 'kelolaberanda', label: 'Kelola Beranda', ikon: 'beranda' }; // pengurus: Pembina, Admin, Dewan Ambalan (tampilan Dewan)
-  const sangga = { id: 'sangga', label: 'Sangga', ikon: 'anggota' };
-  const adaSangga = menuSanggaTampil(user, pendampingan);
-  const praUji = { id: 'pra-uji', label: 'Pra-uji', ikon: 'cek' };
   const pelantikan = { id: 'pelantikan', label: 'Pelantikan', ikon: 'lencana' };
   const tkk = { id: 'tkk', label: 'TKK', ikon: 'bintang' };
-  const spg = { id: 'spg', label: 'SPG', ikon: 'cek' };
-  const kelayakan = { id: 'kelayakan', label: 'Kelayakan', ikon: 'perisai' };
   const perlindungan = { id: 'perlindungan', label: 'Perlindungan', ikon: 'perisai' }; // Safe From Harm (Tahap 4; Pembina dan Admin)
   const siaga = { id: 'siaga', label: 'Anggota Siaga', ikon: 'anggota' }; // anak Siaga tanpa akun (Pembina dan Admin)
-  const adaPraUji = menuPraUjiTampil(user, pendampingan, praUjiAktif);
   const ujiResmi = ujiResmiTampil(user, praUjiAktif); // pra-uji hidup: uji resmi hanya Pembina, jadi Antrian dan Sesi ujian tidak untuk Dewan Ambalan
   const kelolaBoleh = bolehKelolaMateri(user);
   const notifikasi = { id: 'notifikasi', label: 'Notifikasi', ikon: 'lonceng', lencana: belumDibaca };
@@ -121,25 +95,25 @@ function buatNavLengkap(user, peran, belumDibaca = 0, pendampingan = null, praUj
   if (user.role === 'peserta') {
     return [
       { judul: 'Utama', item: [peran === 'calon-garuda' ? { id: 'beranda', label: 'Garuda', ikon: 'bintang' } : { id: 'beranda', label: 'Beranda', ikon: 'beranda' }, notifikasi, bantuan] },
-      { judul: 'Pengujian SKU', item: [{ id: 'sku', label: 'Poin SKU', ikon: 'daftar' }, ...(adaPraUji ? [praUji] : []), tkk, ...(peran === 'calon-garuda' ? [spg] : []), cetak] },
-      { judul: 'Kegiatan Ambalan', item: [absensi, iuran, agenda, ...(adaSangga ? [sangga] : [])] },
+      { judul: 'Pengujian SKU', item: [{ id: 'sku', label: 'Poin SKU', ikon: 'daftar' }, tkk, cetak] },
+      { judul: 'Kegiatan Ambalan', item: [absensi, iuran, agenda] },
       { judul: 'Materi', item: [materi] },
     ];
   }
   if (user.role === 'penguji') {
     return [
       { judul: 'Utama', item: [{ id: 'dashboard', label: 'Dashboard', ikon: 'dashboard' }, notifikasi, bantuan] },
-      { judul: 'Pengujian SKU', item: [...(ujiResmi ? [{ id: 'antrian', label: 'Antrian', ikon: 'jam' }] : []), ...(adaPraUji ? [praUji] : []), { id: 'peserta', label: 'Peserta', ikon: 'anggota' }, ...(ujiResmi ? [sesi] : []), ...(kelolaBoleh ? [instrumen, penugasan, kepengurusan, pelantikan, perlindungan] : []), tkk, spg, kelayakan, pemeriksaan, sidang, cetak] },
-      { judul: 'Kegiatan Ambalan', item: [...(kelolaBoleh ? [siaga] : []), absensi, iuran, portofolio, tindakLanjut, agenda, sangga, ...(kelolaBoleh ? [raport, laporan] : []), kelolaBeranda] },
+      { judul: 'Pengujian SKU', item: [...(ujiResmi ? [{ id: 'antrian', label: 'Antrian', ikon: 'jam' }] : []), { id: 'peserta', label: 'Peserta', ikon: 'anggota' }, ...(ujiResmi ? [sesi] : []), ...(kelolaBoleh ? [instrumen, penugasan, pelantikan, perlindungan] : []), tkk, pemeriksaan, cetak] },
+      { judul: 'Kegiatan Ambalan', item: [...(kelolaBoleh ? [siaga] : []), absensi, iuran, tindakLanjut, agenda, ...(kelolaBoleh ? [laporan] : []), kelolaBeranda] },
       { judul: 'Materi', item: [materi, ...(kelolaBoleh ? [kelola] : [])] },
     ];
   }
   return [
     { judul: 'Utama', item: [{ id: 'rekap', label: 'Dashboard', ikon: 'dashboard' }, notifikasi, bantuan] },
-    { judul: 'Pengujian SKU', item: [praUji, sesi, instrumen, pelantikan, tkk, spg, kelayakan, sidang, cetak] },
-    { judul: 'Kegiatan Ambalan', item: [absensi, iuran, portofolio, tindakLanjut, agenda, sangga, raport, laporan] },
+    { judul: 'Pengujian SKU', item: [sesi, instrumen, pelantikan, tkk, cetak] },
+    { judul: 'Kegiatan Ambalan', item: [absensi, iuran, tindakLanjut, agenda, laporan] },
     { judul: 'Materi', item: [materi, kelola] },
-    { judul: 'Pengelolaan', item: [{ id: 'anggota', label: 'Anggota', ikon: 'anggota' }, siaga, kepengurusan, { id: 'naikkelas', label: 'Naik Kelas', ikon: 'naikkelas' }, { id: 'gudep', label: 'Data Gudep', ikon: 'perisai' }, kelolaBeranda, perlindungan, pemeriksaan] },
+    { judul: 'Pengelolaan', item: [{ id: 'anggota', label: 'Anggota', ikon: 'anggota' }, siaga, { id: 'gudep', label: 'Data Gudep', ikon: 'perisai' }, kelolaBeranda, perlindungan, pemeriksaan] },
   ];
 }
 function Toast() {
@@ -312,14 +286,10 @@ function Shell() {
     isi = <Notifikasi idMenu={nav.map((n) => n.id)} onNav={pindah} />;
   } else if (tabAktif === 'bantuan') {
     isi = <Bantuan />;
-  } else if (tabAktif === 'sidang' && user.role !== 'peserta') {
-    isi = <Sidang />;
   } else if (tabAktif === 'iuran') {
     isi = <Iuran />;
   } else if (tabAktif === 'sesi' && user.role !== 'peserta') {
     isi = <SesiUjian />;
-  } else if (tabAktif === 'raport' && bolehKelolaMateri(user)) {
-    isi = <Raport />;
   } else if (tabAktif === 'laporan' && bolehKelolaMateri(user)) {
     isi = <Laporan />;
   } else if (tabAktif === 'instrumen' && bolehKelolaMateri(user)) {
@@ -328,12 +298,8 @@ function Shell() {
     isi = <DataGudep />;
   } else if (tabAktif === 'kelolaberanda' && user.role !== 'peserta') {
     isi = <KelolaBeranda tabAwal={tabKelolaBeranda} />;
-  } else if (tabAktif === 'naikkelas' && user.role === 'admin') {
-    isi = <NaikKelas />;
   } else if (tabAktif === 'penugasan' && user.role === 'penguji' && user.jabatan === 'Pembina') {
     isi = <Penugasan />;
-  } else if (tabAktif === 'kepengurusan' && pembinaAtauAdmin(user)) {
-    isi = <Kepengurusan />;
   } else if (tabAktif === 'siaga' && pembinaAtauAdmin(user)) {
     isi = <Siaga />;
   } else if (tabAktif === 'perlindungan' && pembinaAtauAdmin(user)) {
@@ -344,18 +310,10 @@ function Shell() {
     isi = <TindakLanjut onNav={(id) => pindah(user.role === 'penguji' ? 'peserta' : 'rekap', id)} />;
   } else if (tabAktif === 'agenda') {
     isi = <Agenda />;
-  } else if (tabAktif === 'sangga') {
-    isi = <Sangga />;
   } else if (tabAktif === 'tkk') {
     isi = <Tkk />;
-  } else if (tabAktif === 'spg') {
-    isi = <Spg />;
-  } else if (tabAktif === 'kelayakan' && user.role !== 'peserta') {
-    isi = <Kelayakan />;
   } else if (tabAktif === 'pelantikan' && bolehKelolaMateri(user)) {
     isi = <Pelantikan />;
-  } else if (tabAktif === 'pra-uji' && menuPraUjiTampil(user, pendampingan, praUjiAktif)) {
-    isi = <PraUji />;
   } else if (tabAktif === 'materi') {
     isi = <Materi key={materiButir ?? 'semua'} butirAwal={materiButir} onKelola={bukaKelola} />;
   } else if (tabAktif === 'kelolamateri') {
@@ -377,15 +335,6 @@ function Shell() {
     else isi = <PesertaBeranda setTab={pilihTab} setTingkat={setTingkat} />;
   } else if (tabAktif === 'absensi') {
     isi = <AbsensiPengurus />;
-  } else if (tabAktif === 'portofolio') {
-    isi = (
-      <PortofolioPengurus
-        fokusId={fokusId}
-        onBuka={setFokusId}
-        onKembali={() => setFokusId(null)}
-        onBukaSku={(id) => pindah(user.role === 'penguji' ? 'peserta' : 'rekap', id)}
-      />
-    );
   } else if (fokusId && kelasSd(daftarPesertaSemua.find((u) => u.id === fokusId)?.kelas)) {
     isi = <SiagaSku pesertaId={fokusId} onKembali={() => setFokusId(null)} />;
   } else if (fokusId) {
@@ -394,7 +343,6 @@ function Shell() {
         pesertaId={fokusId}
         onKembali={() => setFokusId(null)}
         onCetak={bukaCetak}
-        onBukaPortofolio={(id) => pindah('portofolio', id)}
         onBukaMateri={bukaMateri}
       />
     );

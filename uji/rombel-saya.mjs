@@ -102,11 +102,11 @@ console.log('--- progresPerRombel ---');
 
 console.log('--- Pemasangan di halaman ---');
 {
-  for (const [f, hook] of [['src/pages/PengujiDashboard.jsx', 'useFilterRombel'], ['src/pages/Portofolio.jsx', 'useFilterRombel'], ['src/pages/Raport.jsx', 'useFilterRombel']]) {
+  for (const [f, hook] of [['src/pages/PengujiDashboard.jsx', 'useFilterRombel']]) {
     const s = sumber(f);
     ok(s.includes(`{ ${hook} }`) && s.includes('efektif') && s.includes('rombelSaya={rombelSaya}'), `${f}: memakai ${hook}, memfilter dengan filter efektif, dan meneruskan rombel ke FilterBar`);
   }
-  ok(!/useState\(FILTER_AWAL\)/.test(sumber('src/pages/Portofolio.jsx') + sumber('src/pages/Raport.jsx') + sumber('src/pages/PengujiDashboard.jsx')), 'tidak ada lagi filter Peserta/Portofolio/Raport yang bermula tanpa rombel saya');
+  ok(!/useState\(FILTER_AWAL\)/.test(sumber('src/pages/PengujiDashboard.jsx')), 'tidak ada lagi filter Peserta/Portofolio/Raport yang bermula tanpa rombel saya');
   ok(/import useRombelSaya/.test(sumber('src/pages/SesiUjian.jsx')) && sumber('src/pages/SesiUjian.jsx').includes('Hanya rombel saya'), 'Sesi ujian: pemilih peserta dan papan memakai rombel saya');
   ok(/<DasborSiaga /.test(sumber('src/pages/PengujiDashboard.jsx')), 'Dashboard Pembina memuat ringkasan gugus depan Siaga (kartu progres per rombel Penegak diganti Fase 7)');
   const ex = sumber('src/lib/exportLaporan.js');

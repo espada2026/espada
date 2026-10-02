@@ -13,7 +13,7 @@ import { pembinaAtauAdmin } from '../lib/hakLogic';
 import { Avatar, BadgePeran, BadgeStatus, Icon, Kosong, ProgressBar } from '../components/ui';
 
 /** Halaman rincian satu peserta. Pembina/Dewan Ambalan dapat menilai, admin hanya melihat. */
-export default function PesertaDetail({ pesertaId, onKembali, onCetak, onBukaPortofolio, onBukaMateri }) {
+export default function PesertaDetail({ pesertaId, onKembali, onCetak, onBukaMateri }) {
   const { daftarPesertaSemua, progress, user, users, dokumen, muatDokumen, bolehSurat, praUjiAktif } = useApp();
   const konteks = useKonteksMenilai();
   useEffect(() => { if (user.role !== 'peserta') muatDokumen(); }, [user.role, muatDokumen]); // surat pengantar agama memengaruhi siapa yang boleh menilai butir agama
@@ -74,11 +74,6 @@ export default function PesertaDetail({ pesertaId, onKembali, onCetak, onBukaPor
           <p className="mt-1 flex flex-wrap items-center gap-1.5"><BadgePeran peran={peserta.peran} />{!aktif && <BadgeStatus status={statusAnggota(peserta)} />}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {peserta.peran === 'calon-garuda' && (
-            <button className="btn btn-outline btn-sm" onClick={() => onBukaPortofolio(peserta.id)}>
-              <Icon nama="portofolio" className="h-4 w-4" /> Portofolio Garuda
-            </button>
-          )}
           {bisaUbahStatus && (
             <button className="btn btn-outline btn-sm" onClick={() => setUbahStatus(true)}>Status: {statusAnggota(peserta) === 'aktif' ? 'Aktif' : statusAnggota(peserta) === 'nonaktif' ? 'Nonaktif' : 'Alumni'}</button>
           )}
