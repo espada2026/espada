@@ -270,11 +270,11 @@ console.log('\n--- Import Excel: rombel baku dan agama Pembina ---');
   const wbD = new ExcelJS.Workbook(); await wbD.xlsx.load(await buatTemplateAnggota('dewan'));
   ok(wbD.getWorksheet('Anggota').getRow(1).values.slice(1).every((h) => !/agama/i.test(h)), 'template Dewan Ambalan: tanpa kolom Agama');
   let galatDewan = ''; try { await bacaExcelAnggota(await wbP.xlsx.writeBuffer(), 'dewan'); } catch (e) { galatDewan = e.message; }
-  ok(/template Penegak/.test(galatDewan), 'berkas berkolom Agama ditolak sebagai impor Dewan Ambalan');
+  ok(/template anggota Siaga/.test(galatDewan), 'berkas berkolom Agama ditolak sebagai impor Dewan Ambalan');
   // template Penegak: kolom Rombel berdaftar pilihan, dan template lama ("Kelas") tetap terbaca
   const wbS = new ExcelJS.Workbook(); await wbS.xlsx.load(await buatTemplateAnggota('peserta'));
   const wsS = wbS.getWorksheet('Anggota');
-  ok(wsS.getCell(2, 4).dataValidation?.type === 'list' && String(wsS.getCell(2, 4).dataValidation.formulae[0]).includes('XII-10'), 'template Penegak: kolom Rombel berdaftar 30 rombel');
+  ok(wsS.getCell(2, 4).numFmt === '@' && !wsS.getCell(2, 4).dataValidation, 'template anggota Siaga berakun: kolom Rombel berformat teks (kelas SD, tanpa daftar rombel SMA)');
   ['Budi', 'Laki-laki', '70010', 'XI-07', 'Sangga Elang', 'Islam'].forEach((v, i) => { wsS.getCell(2, i + 1).value = v; });
   const bs = await bacaExcelAnggota(await wbS.xlsx.writeBuffer(), 'peserta');
   ok(bs.length === 1 && bs[0].kelas === 'XI-07' && bs[0].nis === '70010', 'bacaExcelAnggota Penegak membaca kolom Rombel');
