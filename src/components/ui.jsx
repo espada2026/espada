@@ -159,16 +159,16 @@ export function Lencana({ persen, ukuran = 104 }) {
   const keliling = 2 * Math.PI * r;
   return (
     <svg width={ukuran} height={ukuran} viewBox="0 0 100 100" role="img" aria-label={`Progres ${persen} persen`}>
-      <circle cx="50" cy="50" r="48" fill="#2e1b10" stroke="#c99a1d" strokeWidth="1.5" strokeDasharray="3 3" />
-      <circle cx="50" cy="50" r={r} fill="none" stroke="#5c3d22" strokeWidth="8" />
+      <circle cx="50" cy="50" r="48" fill="rgb(var(--pramuka-900))" stroke="rgb(var(--emas))" strokeWidth="1.5" strokeDasharray="3 3" />
+      <circle cx="50" cy="50" r={r} fill="none" stroke="rgb(var(--pramuka-700))" strokeWidth="8" />
       <circle
-        cx="50" cy="50" r={r} fill="none" stroke="#e2b84a" strokeWidth="8" strokeLinecap="round"
+        cx="50" cy="50" r={r} fill="none" stroke="rgb(var(--emas-light))" strokeWidth="8" strokeLinecap="round"
         strokeDasharray={keliling}
         strokeDashoffset={keliling * (1 - persen / 100)}
         transform="rotate(-90 50 50)"
         style={{ transition: 'stroke-dashoffset .6s ease' }}
       />
-      <text x="50" y="56" textAnchor="middle" fontSize="22" fontWeight="700" fill="#f8f2e4" fontFamily="Bitter, Georgia, serif">
+      <text x="50" y="56" textAnchor="middle" fontSize="22" fontWeight="700" fill="rgb(var(--pramuka-50))" fontFamily="var(--font-display)">
         {persen}%
       </text>
     </svg>

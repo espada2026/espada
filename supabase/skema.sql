@@ -5234,15 +5234,30 @@ begin
   on conflict (kunci) do update set nilai = excluded.nilai, diubah_oleh = excluded.diubah_oleh, diubah_pada = excluded.diubah_pada;
 end $$;
 
--- Identitas gudep yang boleh dilihat tanpa login (halaman masuk dan halaman verifikasi): hanya nama gudep, ambalan, sekolah, dan kota.
--- Nama pejabat, NTA, alamat, dan kontak TIDAK dikeluarkan. Belum ada data = objek kosong (aplikasi memakai nilai bawaan).
+-- Identitas gudep yang boleh dilihat tanpa login (halaman masuk dan halaman verifikasi): hanya nama gudep, ambalan, sekolah, dan kota, ditambah tema tampilan
+-- (pengaturan tampilan.tema; belum diatur = kunci tema tidak ada dan aplikasi memakai tema bawaan Siaga). Nama pejabat, NTA, alamat, dan kontak TIDAK dikeluarkan.
+-- Belum ada data = objek kosong (aplikasi memakai nilai bawaan).
+-- ===== Tema tampilan: fungsi =====
 create function public.sg_gudep_publik() returns jsonb
 language sql stable security definer set search_path = public as
 $$
   select coalesce(
     (select jsonb_strip_nulls(jsonb_build_object('nama', p.nilai -> 'nama', 'singkat', p.nilai -> 'singkat', 'sekolah', p.nilai -> 'sekolah', 'kota', p.nilai -> 'kota'))
      from public.pengaturan p where p.kunci = 'gudep.data'), '{}'::jsonb)
+  || coalesce((select jsonb_build_object('tema', t.nilai #>> '{}') from public.pengaturan t where t.kunci = 'tampilan.tema' and t.nilai #>> '{}' in ('siaga', 'asli')), '{}'::jsonb)
 $$;
+
+-- Tema tampilan seluruh gudep: 'siaga' (bawaan) atau 'asli' (cokelat-emas). Hanya Admin Gudep. Daftar tema sama dengan DAFTAR_TEMA di src/lib/temaStore.js (dijaga pengujian).
+create function public.sg_tema_simpan(p_tema text) returns void
+language plpgsql security definer set search_path = public as
+$$
+begin
+  perform sigarda.wajib_admin('Hanya Admin Gudep yang dapat mengubah tema tampilan.');
+  if p_tema is null or p_tema not in ('siaga', 'asli') then raise exception 'Tema tidak dikenal.'; end if;
+  insert into public.pengaturan (kunci, nilai, diubah_oleh, diubah_pada) values ('tampilan.tema', to_jsonb(p_tema), auth.uid(), now())
+  on conflict (kunci) do update set nilai = excluded.nilai, diubah_oleh = excluded.diubah_oleh, diubah_pada = excluded.diubah_pada;
+end $$;
+-- ===== akhir fungsi tema tampilan =====
 -- ===== Ketua sidang (Fase A): fungsi =====
 -- Ketua sidang untuk berita acara = anggota Dewan Ambalan berjabatan PEMANGKU ADAT (sebutan "Pemangku Adat Dewan Ambalan"): Dewan Kehormatan Penegak diketuai
 -- Pemangku Adat (Jukran Kwarnas 05/2026 Pasal 24 ayat (15), yang menggantikan SK 231/2007; SK Kwarnas 176/2013 butir 7 c). Bila belum ada Pemangku Adat, dipakai Pradana ("Pradana Dewan Ambalan").
@@ -8041,7 +8056,7 @@ grant execute on function
   public.sg_guru_agama_simpan(bigint, text, text, text), public.sg_guru_agama_hapus(bigint),
   public.sg_penguji_pilihan(text, uuid), public.sg_sku_alihkan(uuid, text, uuid, text),
   public.sg_dokumen_surat_agama_terbit(uuid, text[], bigint, text, date, text, text, text, text, text), public.sg_dokumen_cabut(bigint, text),
-  public.sg_gudep_simpan(jsonb), public.sg_beranda_kontak_simpan(jsonb),
+  public.sg_gudep_simpan(jsonb), public.sg_tema_simpan(text), public.sg_beranda_kontak_simpan(jsonb),
   public.sg_naik_kelas(text, jsonb, boolean), public.sg_naik_kelas_batalkan(bigint), public.sg_anggota_status_atur(uuid, text, text, text),
   public.sg_notifikasi_tandai(bigint[]), public.sg_push_kunci(), public.sg_push_simpan(text, text, text, text), public.sg_push_hapus(text), public.sg_push_ringkasan(), public.sg_notifikasi_tes(),
   public.sg_penugasan_peserta_atur(text, uuid, uuid[], text), public.sg_kepengurusan_terapkan(jsonb, boolean, boolean), public.sg_pengukuhan_dewan_simpan(text, text, date, text, date, text), public.sg_pengukuhan_dewan_hapus(text), public.sg_dewan_lama_arsipkan(uuid[], boolean),

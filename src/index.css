@@ -2,6 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== TEMA TAMPILAN (diatur Admin; pengaturan tampilan.tema, atribut data-tema pada <html> dipasang src/lib/temaStore.js) =====
+   Nilai warna berupa tiga angka RGB (dipakai Tailwind sebagai rgb(var(--x) / <alpha>)). :root = tema Siaga (bawaan); [data-tema='asli'] = tema asli cokelat-emas. */
+:root {
+  --pramuka-50: 241 248 255; --pramuka-100: 223 240 255; --pramuka-200: 191 223 252; --pramuka-300: 140 195 242; --pramuka-400: 84 162 228;
+  --pramuka-500: 44 128 207; --pramuka-600: 29 100 174; --pramuka-700: 24 79 138; --pramuka-800: 20 60 107; --pramuka-900: 12 37 71;
+  --emas: 245 184 28; --emas-light: 255 210 77; --emas-dark: 185 125 0;
+  --hasduk: 214 47 47; --hasduk-light: 255 107 107; --hasduk-dark: 159 31 31;
+  /* warna ilustrasi halaman muka di luar palet utama */
+  --il-1: 6 18 42; --il-2: 8 26 56; --il-3: 14 47 92; --il-4: 201 42 42; --il-5: 201 138 0;
+  --il-6: 169 205 240; --il-7: 207 230 251; --il-8: 255 229 138; --il-9: 255 217 102; --il-10: 255 241 184;
+  --font-display: 'Baloo 2', 'Trebuchet MS', sans-serif;
+  --font-sans: Nunito, system-ui, sans-serif;
+  --r: 0.5rem; --r-md: 0.75rem; --r-lg: 1rem; --r-xl: 1.25rem; --r-2xl: 1.75rem;
+  --panel-r: 1.25rem; --panel-border: 2px; --panel-shadow: 0 3px 0 0 rgb(44 128 207 / 0.12);
+  --btn-bg: var(--pramuka-600); --btn-bg-hover: var(--pramuka-700); --btn-teks: 255 255 255; --outline-teks: var(--pramuka-700);
+  --btn-r: 9999px; --btn-px: 1.25rem; --btn-weight: 700; --btn-lift: 3px;
+  --input-r: 0.75rem; --input-border: 2px; --input-border-warna: var(--pramuka-200);
+  --pola: radial-gradient(circle at 1px 1px, rgb(44 128 207 / 0.09) 1.5px, transparent 0);
+}
+:root[data-tema='asli'] {
+  --pramuka-50: 248 242 228; --pramuka-100: 240 229 204; --pramuka-200: 226 207 168; --pramuka-300: 207 174 127; --pramuka-400: 180 139 92;
+  --pramuka-500: 150 105 61; --pramuka-600: 119 80 46; --pramuka-700: 92 61 34; --pramuka-800: 69 41 26; --pramuka-900: 46 27 16;
+  --emas: 201 154 29; --emas-light: 226 184 74; --emas-dark: 143 107 14;
+  --hasduk: 185 28 28; --hasduk-light: 239 68 68; --hasduk-dark: 153 27 27;
+  --il-1: 21 11 5; --il-2: 26 14 7; --il-3: 58 34 20; --il-4: 143 42 30; --il-5: 166 124 18;
+  --il-6: 200 178 131; --il-7: 230 212 172; --il-8: 247 220 132; --il-9: 255 207 107; --il-10: 247 230 179;
+  --font-display: Bitter, Georgia, serif;
+  --font-sans: 'Public Sans', system-ui, sans-serif;
+  --r: 0.25rem; --r-md: 0.375rem; --r-lg: 0.5rem; --r-xl: 0.75rem; --r-2xl: 1rem;
+  --panel-r: 0.5rem; --panel-border: 1px; --panel-shadow: none;
+  --btn-bg: var(--pramuka-800); --btn-bg-hover: var(--pramuka-900); --btn-teks: var(--pramuka-50); --outline-teks: var(--pramuka-800);
+  --btn-r: 0.5rem; --btn-px: 1rem; --btn-weight: 600; --btn-lift: 0px;
+  --input-r: 0.5rem; --input-border: 1px; --input-border-warna: var(--pramuka-300);
+  --pola: none;
+}
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
@@ -12,6 +48,8 @@
   }
   body {
     @apply bg-pramuka-50 font-sans text-pramuka-900 antialiased;
+    background-image: var(--pola);
+    background-size: 26px 26px;
     overflow-x: clip;
   }
   h1,
@@ -30,35 +68,51 @@
     position: relative;
   }
   .panel {
-    @apply rounded-lg border border-pramuka-200 bg-white;
+    @apply border-pramuka-200 bg-white;
+    border-radius: var(--panel-r);
+    border-width: var(--panel-border);
+    box-shadow: var(--panel-shadow);
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emas focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 px-[var(--btn-px)] py-2.5 text-sm transition-all active:translate-y-px focus:outline-none focus-visible:ring-2 focus-visible:ring-emas focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn {
+    border-radius: var(--btn-r);
+    font-weight: var(--btn-weight);
   }
   .btn-sm {
     @apply px-3 py-1.5 text-xs;
   }
   .btn-primary {
-    @apply bg-pramuka-800 text-pramuka-50 hover:bg-pramuka-900;
+    background-color: rgb(var(--btn-bg));
+    color: rgb(var(--btn-teks));
+    @apply shadow-[0_var(--btn-lift)_0_0_rgb(var(--pramuka-800))];
+  }
+  .btn-primary:hover {
+    background-color: rgb(var(--btn-bg-hover));
   }
   .btn-gold {
-    @apply bg-emas text-pramuka-900 hover:bg-emas-light;
+    @apply bg-emas text-pramuka-900 shadow-[0_var(--btn-lift)_0_0_rgb(var(--emas-dark))] hover:bg-emas-light;
   }
   .btn-outline {
-    @apply border border-pramuka-300 bg-white text-pramuka-800 hover:bg-pramuka-100;
+    @apply border-2 border-pramuka-300 bg-white hover:bg-pramuka-100;
+    color: rgb(var(--outline-teks));
+    border-width: var(--input-border);
   }
   .btn-danger {
-    @apply bg-red-700 text-white hover:bg-red-800;
+    @apply bg-hasduk text-white shadow-[0_var(--btn-lift)_0_0_rgb(var(--hasduk-dark))] hover:bg-hasduk-dark;
   }
   .input {
-    @apply w-full rounded-lg border border-pramuka-300 bg-white px-3.5 py-2.5 text-sm placeholder:text-pramuka-400 focus:border-emas focus:outline-none focus:ring-2 focus:ring-emas/40;
+    @apply w-full border-pramuka-300 bg-white px-3.5 py-2.5 text-sm placeholder:text-pramuka-400 focus:border-emas focus:outline-none focus:ring-2 focus:ring-emas/40;
+    border-radius: var(--input-r);
+    border-width: var(--input-border);
   }
   .label {
     @apply mb-1 block text-sm font-semibold text-pramuka-700;
   }
   /* Garis jahitan emas: motif jahitan seragam Pramuka */
   .jahitan {
-    @apply border border-dashed border-emas/70;
+    @apply border-2 border-dashed border-emas/80;
   }
 }
 
@@ -70,10 +124,10 @@
 @keyframes denyut-panah {
   0%,
   100% {
-    box-shadow: 0 0 5px 1px rgba(226, 184, 74, 0.35), 0 0 12px 2px rgba(226, 184, 74, 0.15);
+    box-shadow: 0 0 5px 1px rgb(var(--emas-light) / 0.35), 0 0 12px 2px rgb(var(--emas-light) / 0.15);
   }
   50% {
-    box-shadow: 0 0 10px 2px rgba(226, 184, 74, 0.8), 0 0 20px 5px rgba(226, 184, 74, 0.35);
+    box-shadow: 0 0 10px 2px rgb(var(--emas-light) / 0.8), 0 0 20px 5px rgb(var(--emas-light) / 0.35);
   }
 }
 @keyframes dorong-kanan {
@@ -107,19 +161,19 @@
   animation: denyut-panah 2.2s ease-in-out infinite;
 }
 .glow-emas-tetap {
-  box-shadow: 0 0 10px 2px rgba(226, 184, 74, 0.8), 0 0 20px 5px rgba(226, 184, 74, 0.35);
+  box-shadow: 0 0 10px 2px rgb(var(--emas-light) / 0.8), 0 0 20px 5px rgb(var(--emas-light) / 0.35);
 }
 @keyframes denyut-ikon {
   0%,
   100% {
-    box-shadow: 0 0 5px 1px rgba(226, 184, 74, 0.6), 0 0 9px 1px rgba(226, 184, 74, 0.3);
+    box-shadow: 0 0 5px 1px rgb(var(--emas-light) / 0.6), 0 0 9px 1px rgb(var(--emas-light) / 0.3);
   }
   50% {
-    box-shadow: 0 0 8px 2px rgba(226, 184, 74, 0.95), 0 0 13px 3px rgba(226, 184, 74, 0.5);
+    box-shadow: 0 0 8px 2px rgb(var(--emas-light) / 0.95), 0 0 13px 3px rgb(var(--emas-light) / 0.5);
   }
 }
 .ikon-aktif {
-  background: radial-gradient(closest-side, rgba(226, 184, 74, 0.85), rgba(226, 184, 74, 0.5) 60%, rgba(226, 184, 74, 0.25));
+  background: radial-gradient(closest-side, rgb(var(--emas-light) / 0.85), rgb(var(--emas-light) / 0.5) 60%, rgb(var(--emas-light) / 0.25));
   animation: denyut-ikon 2.2s ease-in-out infinite;
 }
 
@@ -131,7 +185,7 @@
   .glow-emas,
   .ikon-aktif {
     animation: none;
-    box-shadow: 0 0 8px 1px rgba(226, 184, 74, 0.6);
+    box-shadow: 0 0 8px 1px rgb(var(--emas-light) / 0.6);
   }
 }
 

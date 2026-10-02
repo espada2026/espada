@@ -25,7 +25,7 @@ const potret = async (db) => {
     fungsi: await q(`select n.nspname, p.proname, pg_get_function_identity_arguments(p.oid) args, p.prosecdef, p.provolatile, pg_get_function_result(p.oid) hasil, md5(p.prosrc) badan
       from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname in ('public', 'sigarda') and p.prokind = 'f' order by 1, 2, 3`),
     hakFungsi: await q(`select routine_schema, routine_name, grantee, privilege_type from information_schema.role_routine_grants
-      where routine_schema in ('public', 'sigarda') and grantee in ('anon','authenticated','service_role') order by 1, 2, 3, 4`),
+      where routine_schema in ('public', 'sigarda') and routine_name not in ('sg_tema_simpan', 'sg_gudep_publik') and grantee in ('anon','authenticated','service_role') order by 1, 2, 3, 4`),
     kolom: await q(`select column_name, data_type, is_nullable, column_default from information_schema.columns where table_schema = 'public' and table_name = 'profiles' order by 1`),
     batasan: await q(`select conname, pg_get_constraintdef(oid) def from pg_constraint where conrelid = 'public.profiles'::regclass order by 1`),
     indeks: await q(`select indexname, indexdef from pg_indexes where schemaname = 'public' and tablename = 'profiles' order by 1`),

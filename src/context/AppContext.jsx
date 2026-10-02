@@ -14,6 +14,7 @@ import { pembinaAtauAdmin } from '../lib/hakLogic';
 import { bolehKelolaMateri, validasiMateri } from '../lib/materiLogic';
 import { hariIni } from '../lib/format';
 import { resetGudep, setGudep, tambahGudep } from '../lib/gudepStore';
+import { pasangTema } from '../lib/temaStore';
 import { PENGATURAN_IURAN_BAWAAN, gabungPengaturanIuran } from '../lib/iuranLogic';
 import { jumlahBelumDibaca, tandaiLokal } from '../lib/notifikasiLogic';
 import { berhentiPushPerangkat, pulihkanPush } from '../lib/pushClient';
@@ -1292,6 +1293,12 @@ export function AppProvider({ children }) {
       })
       : Promise.resolve(ditolak(notify, 'Hanya Admin Gudep yang dapat mengubah data gudep.'));
 
+  /** Mengganti tema tampilan seluruh gudep (Admin Gudep); tema langsung dipasang di perambah ini. */
+  const simpanTema = (tema) =>
+    user?.role === 'admin'
+      ? aksi(api().simpanTema(tema), { sukses: 'Tema tampilan tersimpan untuk seluruh gudep.', sesudah: async () => { pasangTema(tema); } })
+      : Promise.resolve(ditolak(notify, 'Hanya Admin Gudep yang dapat mengubah tema tampilan.'));
+
   /* ---------------- Nomor WhatsApp milik sendiri (tahap L5) ---------------- */
   const simpanWhatsapp = (nomor) =>
     aksi(api().simpanWhatsapp(nomor), {
@@ -1410,7 +1417,7 @@ export function AppProvider({ children }) {
     buatSesiAbsen, setStatusAbsen, tandaiBanyakAbsen, hapusSesiAbsen, semesterSiap, pastikanAbsensi,
     gantiPin, resetPin,
     simpanAnggota, imporAnggota, hapusAnggota, perbaruiRombel, lengkapiJenisKelamin,
-    simpanGudep, simpanWhatsapp, simpanIsianSaya, muatEskalasi,
+    simpanGudep, simpanTema, simpanWhatsapp, simpanIsianSaya, muatEskalasi,
     dokumen: db.dokumen, muatDokumen, terbitkanSuratAgama, cabutDokumen, bolehSurat,
     penugasan: db.penugasan, penugasanPeserta: db.penugasanPeserta, guruAgama: db.guruAgama, muatPenugasan, muatLogPenugasan, aturPenugasan, aturPenugasanPeserta, salinPenugasan, simpanGuruAgama, hapusGuruAgama, bolehAturPenugasan,
     praUjiAktif, pastikanPraUji, praUjiPeserta, muatAntrianPraUji, muatPraUjiMenunggu, catatPraUji, lewatiPraUji, aturSakelarPraUji,

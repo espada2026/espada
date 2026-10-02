@@ -8,6 +8,64 @@ import { waktuRelatif } from '../lib/notifikasiLogic';
 import { KopSurat } from '../components/DokumenSku';
 import { Field } from '../components/ui';
 import SumberPeraturan from '../components/SumberPeraturan';
+import { DAFTAR_TEMA, temaAktif } from '../lib/temaStore';
+
+/** Warna contoh pada kartu pilihan tema (tetap, tidak ikut tema yang sedang aktif). */
+const CONTOH_TEMA = {
+  siaga: { latar: '#f1f8ff', tepi: '#bfdffc', utama: '#1d64ae', sorot: '#f5b81c', aksen: '#d62f2f', huruf: '"Baloo 2", "Trebuchet MS", sans-serif', bulat: '9999px', sudut: '14px' },
+  asli: { latar: '#f8f2e4', tepi: '#e2cfa8', utama: '#45291a', sorot: '#c99a1d', aksen: '#b91c1c', huruf: 'Bitter, Georgia, serif', bulat: '8px', sudut: '6px' },
+};
+
+/** Panel "Tema tampilan" (Admin Gudep): memilih tema untuk seluruh gudep (Siaga atau asli cokelat-emas). */
+function TemaTampilan() {
+  const { simpanTema } = useApp();
+  const [aktif, setAktif] = useState(temaAktif);
+  const [sibuk, setSibuk] = useState(false);
+  const pilih = async (id) => {
+    if (id === aktif || sibuk) return;
+    setSibuk(true);
+    const r = await simpanTema(id);
+    if (r?.ok !== false) setAktif(id);
+    setSibuk(false);
+  };
+  return (
+    <section className="panel space-y-3 p-4" aria-labelledby="gudep-tema">
+      <h2 id="gudep-tema" className="text-base font-bold text-pramuka-900">Tema tampilan</h2>
+      <p className="text-xs text-pramuka-600">
+        Warna, huruf, dan bentuk tombol aplikasi. Pilihan berlaku untuk <b>seluruh gudep</b> (semua pengguna dan halaman muka) dan langsung berubah
+        sesudah dipilih; dapat dikembalikan kapan saja. Logo kecil di tab peramban dan gambar pratinjau tautan WhatsApp tidak ikut berganti.
+      </p>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Tema tampilan">
+        {DAFTAR_TEMA.map((t) => {
+          const c = CONTOH_TEMA[t.id];
+          const dipilih = aktif === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              role="radio"
+              aria-checked={dipilih}
+              disabled={sibuk}
+              onClick={() => pilih(t.id)}
+              className={`min-w-0 rounded-xl border-2 p-3 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emas disabled:opacity-60 ${dipilih ? 'border-emas bg-pramuka-50' : 'border-pramuka-200 bg-white hover:border-pramuka-400'}`}
+            >
+              <div className="rounded-lg p-3" style={{ background: c.latar, border: `1px solid ${c.tepi}` }} aria-hidden="true">
+                <div style={{ fontFamily: c.huruf, fontWeight: 700, color: c.utama, fontSize: '1rem' }}>Gugus Depan Siaga</div>
+                <div className="mt-2 flex items-center gap-2">
+                  <span style={{ background: c.utama, color: '#fff', borderRadius: c.bulat, padding: '3px 12px', fontSize: '0.7rem', fontWeight: 700 }}>Tombol</span>
+                  <span style={{ background: c.sorot, borderRadius: c.bulat, padding: '3px 12px', fontSize: '0.7rem', fontWeight: 700, color: '#222' }}>Sorot</span>
+                  <span style={{ background: c.aksen, borderRadius: c.sudut, width: 18, height: 18, display: 'inline-block' }} />
+                </div>
+              </div>
+              <p className="mt-2 text-sm font-bold text-pramuka-900">{t.nama}{dipilih && <span className="ml-2 text-xs font-semibold text-pramuka-600">(dipakai sekarang)</span>}</p>
+              <p className="text-xs text-pramuka-600">{t.keterangan}</p>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 /** Panel "Cadangan data" (Admin Gudep): status cadangan terakhir dan tombol unduh (tahap L4). */
 function CadanganData() {
@@ -211,6 +269,8 @@ export default function DataGudep() {
         {dicoba && adaGalat && <p role="alert" className="text-sm font-medium text-red-700">Ada isian yang perlu diperbaiki (tanda merah).</p>}
       </div>
       </form>
+
+      <TemaTampilan />
 
       <CadanganData />
     </div>
