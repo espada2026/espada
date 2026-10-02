@@ -8,7 +8,7 @@ import { Icon } from './ui';
 
 /** Pintasan menu yang paling sering dipakai Pembina Siaga. */
 const PINTASAN = [
-  { id: 'siaga', label: 'Anggota Siaga', ikon: 'anggota', teks: 'Data anak, perindukan, barung, dan SKU' },
+  { id: 'siaga', label: 'Anggota', ikon: 'anggota', teks: 'Data anak, perindukan, barung, dan SKU' },
   { id: 'pelantikan', label: 'Pelantikan', ikon: 'lencana', teks: 'Catat kenaikan tingkat sesudah upacara' },
   { id: 'absensi', label: 'Absensi', ikon: 'absensi', teks: 'Kehadiran latihan perindukan' },
   { id: 'iuran', label: 'Iuran', ikon: 'iuran', teks: 'Iuran dan pemeriksaan buku tabungan' },
