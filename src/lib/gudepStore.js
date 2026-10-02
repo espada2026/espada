@@ -8,6 +8,7 @@
  */
 import { createContext, useContext, useSyncExternalStore } from 'react';
 import { GUDEP_BAWAAN, gabungGudep } from './gudepLogic';
+import { pasangTema } from './temaStore';
 
 let sekarang = GUDEP_BAWAAN;
 let tersimpan = false; // sudah pernah disimpan Admin? (belum = nilai bawaan dari kode)
@@ -33,6 +34,7 @@ export function setGudep(data) {
 
 /** Menimpa sebagian isian (identitas publik sebelum login) tanpa menghapus isian lain yang sudah dimuat. */
 export function tambahGudep(sebagian) {
+  if (sebagian && typeof sebagian.tema === 'string') pasangTema(sebagian.tema); // tema tampilan ikut jawaban sg_gudep_publik
   sekarang = gabungGudep(sekarang, sebagian);
   umumkan();
 }

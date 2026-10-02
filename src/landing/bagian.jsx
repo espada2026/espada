@@ -106,7 +106,7 @@ export function NavBeranda({ G, sesi = false, ada = {} }) {
 export function Hero({ G, agendaTerdekat = null }) {
   const t = agendaTerdekat ? pecahTanggal(agendaTerdekat.tanggal) : null;
   return (
-    <section id="atas" className="relative overflow-hidden bg-gradient-to-b from-[#1a0e07] via-pramuka-900 to-pramuka-600 text-pramuka-50">
+    <section id="atas" className="relative overflow-hidden bg-gradient-to-b from-[rgb(var(--il-2))] via-pramuka-900 to-pramuka-600 text-pramuka-50">
       <div className={`${wrap} relative z-10 grid gap-10 pb-52 pt-14 sm:pb-64 sm:pt-20 lg:grid-cols-[1.35fr_.8fr] lg:items-end lg:pb-72`}>
         <div>
           <p className="mb-5 flex flex-wrap gap-x-4 gap-y-1 text-[13px] tracking-wide text-pramuka-200">
@@ -151,7 +151,7 @@ export function Tentang({ G, kontak, pembina, kamabigus, sunting = '' }) {
     { teks: pecahParagraf(kontak.sambutanKepsek), orang: kamabigus, bawaan: 'Kepala Sekolah' },
   ].filter((s) => s.teks.length);
   return (
-    <section id="tentang" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#2e1b10]">
+    <section id="tentang" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:rgb(var(--pramuka-900))]">
       <div className={`${wrap} tentang-grid`}>
         <div className="tentang-cerita">
           <KepalaBagian label="Tentang kami" judul="Berlatih bersama, bertumbuh sepanjang tahun" sunting={sunting} tab="kontak" />
@@ -200,7 +200,7 @@ export function Tentang({ G, kontak, pembina, kamabigus, sunting = '' }) {
 
 export function Program() {
   return (
-    <section id="program" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:#f8f2e4]">
+    <section id="program" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:rgb(var(--pramuka-50))]">
       <div className={wrap}>
         <KepalaBagian label="Program" judul="Lima jalan untuk tumbuh di gudep ini" isi="Setiap program punya catatan di SIGASI, dari kehadiran sampai berkas akhir." />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
@@ -219,14 +219,14 @@ export function Program() {
 
 export function Perjalanan() {
   return (
-    <section id="perjalanan" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:#f0e5cc]">
+    <section id="perjalanan" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:rgb(var(--pramuka-100))]">
       <div className={wrap}>
         <KepalaBagian gelap label="Perjalanan Siaga" judul="Empat pos dari pertama kali berlatih sampai Siaga Garuda" isi="Setiap anak melewati pos yang sama. Kecepatannya berbeda, tujuannya sama." />
         <ol className="relative grid gap-8 md:grid-cols-4 md:gap-0">
           <span aria-hidden="true" className="absolute left-[12.5%] right-[12.5%] top-10 hidden border-t-2 border-dashed border-emas/55 md:block" />
           {PERJALANAN.map((p) => (
             <li key={p.id} className="relative flex items-center gap-5 md:flex-col md:px-4 md:text-center">
-              <span className={`relative z-10 flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-emas ${p.puncak ? 'bg-gradient-to-br from-emas-light to-emas text-pramuka-900 shadow-[0_0_34px_rgba(226,184,74,.45)]' : 'bg-pramuka-900 text-emas-light'}`}>
+              <span className={`relative z-10 flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-emas ${p.puncak ? 'bg-gradient-to-br from-emas-light to-emas text-pramuka-900 shadow-[0_0_34px_rgba(255,210,77,.45)]' : 'bg-pramuka-900 text-emas-light'}`}>
                 <IkonBeranda nama={p.ikon} ukuran={32} />
               </span>
               <div className="md:mt-1">
@@ -301,7 +301,7 @@ function MuatLagi({ lagi, jumlah, nama, gelap = false }) {
 /** Berita terbit dari Kelola Beranda (Fase 2). */
 export function Berita({ berita = [], memuat = false, sunting = '', halaman = {}, adaLagi = false, memuatLagi = false, galatLagi = false, onMuatLagi = null }) {
   return (
-    <section id="berita" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#45291a]">
+    <section id="berita" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:rgb(var(--pramuka-800))]">
       <div className={wrap}>
         <KepalaBagian label="Kabar gudep" judul="Yang sedang terjadi di gudep" isi="Ditulis oleh Pembina dan Admin Gudep lewat Kelola Beranda." sunting={sunting} tab="berita" />
         {berita.length === 0 ? (
@@ -327,7 +327,7 @@ export function Berita({ berita = [], memuat = false, sunting = '', halaman = {}
 /** Prestasi terbit dari Kelola Beranda. Nama regu/tim/gudep saja (bukan nama perorangan tanpa izin). */
 export function Prestasi({ prestasi = [], memuat = false, sunting = '', lagi = null }) {
   return (
-    <section id="prestasi" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:#f8f2e4]">
+    <section id="prestasi" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:rgb(var(--pramuka-50))]">
       <div className={wrap}>
         <KepalaBagian gelap label="Prestasi" judul="Kerja keras yang membawa pulang penghargaan" sunting={sunting} tab="prestasi" />
         {prestasi.length === 0 ? (
@@ -355,7 +355,7 @@ export function Prestasi({ prestasi = [], memuat = false, sunting = '', lagi = n
 /** Album galeri (tautan Google Drive atau Photos) dari Kelola Beranda. */
 export function Galeri({ galeri = [], memuat = false, sunting = '', lagi = null }) {
   return (
-    <section id="galeri" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:#45291a]">
+    <section id="galeri" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:rgb(var(--pramuka-800))]">
       <div className={wrap}>
         <KepalaBagian label="Galeri" judul="Momen dari lapangan" isi="Album lengkap ada di Google Drive atau Google Photos gudep." sunting={sunting} tab="galeri" />
         {galeri.length === 0 ? (
@@ -390,7 +390,7 @@ export function Galeri({ galeri = [], memuat = false, sunting = '', lagi = null 
 /** Agenda mendatang dari menu Agenda (hanya judul, jenis, dan tanggal). `memuat` = jawaban server belum datang. */
 export function KabarAgenda({ agenda = [], memuat = false }) {
   return (
-    <section id="kabar" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#f0e5cc]">
+    <section id="kabar" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:rgb(var(--pramuka-100))]">
       <div className={`${wrap} grid gap-12 lg:grid-cols-[1fr_1.2fr]`}>
         <KepalaBagian label="Agenda" judul="Yang akan datang di gudep" isi="Diambil otomatis dari agenda gudep." />
         <div>
@@ -479,7 +479,7 @@ function KartuSosial({ s }) {
 export function MediaSosial({ sosial = [], sunting = '', lagi = null }) {
   if (sosial.length === 0) return null;
   return (
-    <section id="sosial" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:#f8f2e4]">
+    <section id="sosial" className="tepi-tenda scroll-mt-16 bg-pramuka-800 py-16 text-pramuka-50 sm:py-24 [--atas:rgb(var(--pramuka-50))]">
       <div className={wrap}>
         <KepalaBagian gelap label="Media sosial" judul="Ikuti kabar terbaru kami" sunting={sunting} tab="sosial" />
         <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -495,7 +495,7 @@ export function MediaSosial({ sosial = [], sunting = '', lagi = null }) {
 export function TanyaJawab({ faq = [], sunting = '' }) {
   const daftar = faq.length ? faq.map((f) => ({ t: f.pertanyaan, j: f.jawaban })) : TANYA_JAWAB;
   return (
-    <section id="tanya" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:#45291a]">
+    <section id="tanya" className="tepi-tenda scroll-mt-16 bg-pramuka-100 py-16 sm:py-24 [--atas:rgb(var(--pramuka-800))]">
       <div className={`${wrap} grid gap-12 lg:grid-cols-[1fr_1.4fr]`}>
         <KepalaBagian label="Tanya jawab" judul="Sebelum Anda bergabung" isi="Jawaban singkat untuk calon anggota Siaga dan orang tua. Tidak menemukan jawabannya? Hubungi kami lewat bagian Kontak." sunting={sunting} tab="faq" />
         <div className="border-t border-pramuka-200">
@@ -518,7 +518,7 @@ export function TanyaJawab({ faq = [], sunting = '' }) {
 /** Cek keaslian dokumen: formulir GET biasa ke halaman verifikasi (?v=KODE), sehingga bekerja tanpa JavaScript dan memakai fungsi server yang sudah ada. */
 export function CekDokumen({ alamat = './' }) {
   return (
-    <section id="cek" className="tepi-tenda scroll-mt-16 bg-pramuka-900 py-16 text-pramuka-50 sm:py-20 [--atas:#f8f2e4]">
+    <section id="cek" className="tepi-tenda scroll-mt-16 bg-pramuka-900 py-16 text-pramuka-50 sm:py-20 [--atas:rgb(var(--pramuka-50))]">
       <div className={`${wrap} grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]`}>
         <KepalaBagian gelap label="Cek keaslian dokumen" judul="Punya surat atau sertifikat dari gudep?" isi="Masukkan kode yang tercetak di dokumen, atau pindai kode QR-nya. Hasilnya menunjukkan apakah dokumen itu benar diterbitkan gudep ini." />
         <form method="get" action={alamat} className="rounded-2xl border border-emas/35 bg-pramuka-50/10 p-5 sm:p-6">
@@ -540,7 +540,7 @@ export function Kontak({ G, kontak, sunting = '' }) {
   const sosial = jaringanSosial(kontak);
   const peta = tautanPeta(kontak) || tautanPencarianPeta(G.sekolah, G.kota);
   return (
-    <section id="kontak" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:#f0e5cc]">
+    <section id="kontak" className="tepi-tenda scroll-mt-16 bg-pramuka-50 py-16 sm:py-24 [--atas:rgb(var(--pramuka-100))]">
       <div className={`${wrap} grid gap-10 lg:grid-cols-[1fr_1.1fr]`}>
         <div>
           <KepalaBagian label="Kontak" judul="Datang, bertanya, atau bergabung" sunting={sunting} tab="kontak" />
@@ -575,7 +575,7 @@ export function Kontak({ G, kontak, sunting = '' }) {
 
 export function Kaki({ G }) {
   return (
-    <footer className="bg-[#150b05] py-11 text-sm text-pramuka-200">
+    <footer className="bg-[rgb(var(--il-1))] py-11 text-sm text-pramuka-200">
       <div className={`${wrap} grid gap-8 md:grid-cols-[1.4fr_1fr_1fr]`}>
         <div>
           <p className="font-display text-lg font-bold text-pramuka-50">Gugus Depan {G.sekolah}</p>

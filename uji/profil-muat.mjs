@@ -49,7 +49,7 @@ console.log('\n--- perkirakanSiap ---');
 
 console.log('\n--- berkas awal (dibaca dari index.html) ---');
 {
-  const html = '<head><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Bitter" rel="stylesheet">' +
+  const html = '<head><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Baloo+2" rel="stylesheet">' +
     '<script type="module" crossorigin src="/assets/index-AAA.js"></script><link rel="modulepreload" crossorigin href="/assets/vendor-BBB.js"><link rel="stylesheet" crossorigin href="/assets/index-CCC.css"></head>';
   const h = berkasAwalDariHtml(html);
   ok(h.js.join() === 'assets/index-AAA.js,assets/vendor-BBB.js', `skrip modul + modulepreload dihitung sebagai JS awal (${h.js.join()})`);

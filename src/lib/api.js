@@ -625,6 +625,8 @@ export function buatApi(klien) {
     muatGudepPublik: () => rpc('sg_gudep_publik'),
     /** Menyimpan data gudep (Admin Gudep). */
     simpanGudep: (nilai) => rpc('sg_gudep_simpan', { p_nilai: nilai }),
+    /** Menyimpan tema tampilan seluruh gudep (Admin Gudep): 'siaga' atau 'asli'. */
+    simpanTema: (tema) => rpc('sg_tema_simpan', { p_tema: tema }),
     /** Dokumen terbit (surat pengantar guru agama): pengurus melihat semua, Penegak hanya miliknya (RLS). */
     muatDokumen: () => muat(async () => susunDokumen(await ambilSemua('dokumen_terbit', { urut: ['id'] }))),
     /**

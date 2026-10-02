@@ -62,6 +62,8 @@ export default function useBerandaPublik(panggil = panggilRpcPublik, ambilIndeks
         if (Object.keys(d.gudep).length) tambahGudep(d.gudep);
       }
       setMemuat(false);
+      // tema tampilan gudep (hanya sg_gudep_publik yang memuatnya); gagal = tema tersimpan di perambah tetap dipakai
+      Promise.resolve(panggil('sg_gudep_publik')).then((t) => { if (!batal && t?.ok) tambahGudep(t.data); }).catch(() => {});
     })();
     return () => { batal = true; };
   }, [panggil, ambilIndeks]);

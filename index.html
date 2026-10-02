@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#45291a" />
+    <meta name="theme-color" content="#143c6b" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -58,11 +58,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Bitter:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <!-- Halaman muka hasil prarender (di dalam #root, data-pra) disembunyikan bagi yang akan langsung masuk ke aplikasi: aturannya sama dengan src/lib/ruteLogic.js (dijaga uji/rute.mjs). -->
     <style>html.app [data-pra]{display:none}</style>
+    <!-- Tema tampilan terakhir yang diketahui (src/lib/temaStore.js; KUNCI_TEMA sama): dipasang sebelum halaman tergambar supaya tidak berkedip. -->
+    <script id="pilih-tema">
+      (function () {
+        try {
+          var t = localStorage.getItem('sigarda_tema');
+          if (t === 'asli' || t === 'siaga') document.documentElement.setAttribute('data-tema', t);
+        } catch (e) {}
+      })();
+    </script>
     <script id="pilih-rute">
       (function () {
         try {
