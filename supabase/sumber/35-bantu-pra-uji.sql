@@ -67,7 +67,7 @@ declare v_tahap text := sigarda.pra_uji_tahap_berikut(p_peserta, p_sku, p_setela
 begin
   if v_tahap = 'pembina' then
     if not exists (select 1 from sigarda.penguji_sah(p_peserta, p_sku)) then
-      raise exception 'Belum ada Pembina yang dapat menguji butir ini untuk rombel Penegak tersebut. Hubungi Admin Gudep.';
+      raise exception 'Belum ada Pembina yang dapat menguji butir ini untuk rombel anggota tersebut. Hubungi Admin Gudep.';
     end if;
     insert into public.sku_progress (peserta_id, sku_id, status, jadwal, penguji_id, catatan_peserta, diubah)
     values (p_peserta, p_sku, 'diajukan', p_jadwal, null, p_catatan_peserta, now())

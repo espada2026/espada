@@ -163,7 +163,7 @@ const rabu = (await satu(`select ($1::date - 2)::text d`, [jumat])).d;
 ok(!galat(await sesi(kDewan, rabu)), 'hari bukan Jumat kini diterima (latihan Siaga hari apa pun)');
 ok(!galat(await kDewan.rpc('sg_absen_hapus_sesi', { p_tanggal: rabu })), 'sesi hari Rabu dihapus lagi (menjaga hitungan di bawah)');
 ok(cocok(await sesi(kDewan, '1999-12-31'), /tidak valid/), 'tanggal di luar 2000-2100 ditolak');
-ok(cocok(await sesi(kP1, jumat), /Hanya Dewan Ambalan, Pembina, atau admin/), 'Penegak tidak bisa membuat sesi');
+ok(cocok(await sesi(kP1, jumat), /Hanya Pembina atau admin/), 'Penegak tidak bisa membuat sesi');
 ok(!galat(await sesi(kAdmin, (await satu(`select ($1::date - 7)::text d`, [jumat])).d)), 'Admin membuat sesi Jumat sebelumnya');
 const set = (k, pid, st, t = jumat) => k.rpc('sg_absen_set', { p_tanggal: t, p_peserta_id: pid, p_status: st });
 ok(!galat(await set(kDewan, p1, 'H')) && !galat(await set(kDewan, p2, 'A')), 'mencatat hadir dan alpa');

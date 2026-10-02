@@ -192,7 +192,7 @@ begin
       v_id := (v_e ->> 'id')::uuid;
       v_ke_status := v_e ->> 'ke_status';
       if v_ke_status <> 'aktif' then
-        v_teks := case when v_ke_status = 'alumni' then 'Pengajuan dibatalkan: Penegak menjadi alumni' else 'Pengajuan dibatalkan: Penegak tidak melanjutkan Pramuka' end;
+        v_teks := case when v_ke_status = 'alumni' then 'Pengajuan dibatalkan: anggota menjadi alumni' else 'Pengajuan dibatalkan: anggota tidak melanjutkan Pramuka' end;
         v_batal := v_batal + sigarda.batalkan_pengajuan_berjalan(v_id, v_teks);
         perform sigarda.jabatan_dewan_lepas(v_id, case when v_ke_status = 'alumni' then 'Penegak menjadi alumni' else 'Penegak tidak melanjutkan Pramuka' end);
       end if;
@@ -251,7 +251,7 @@ begin
   if char_length(v_cat) > 200 then raise exception 'Catatan maksimal 200 karakter.'; end if;
   select * into v_t from public.profiles where id = p_id and role = 'peserta';
   if not found then raise exception 'Penegak tidak ditemukan.'; end if;
-  if v_t.status = p_status then raise exception 'Penegak ini sudah berstatus %.', p_status; end if;
+  if v_t.status = p_status then raise exception 'Anggota ini sudah berstatus %.', p_status; end if;
   if p_status = 'nonaktif' and v_t.status = 'alumni' then raise exception 'Alumni tidak dapat dinonaktifkan. Aktifkan kembali lebih dulu bila perlu.'; end if;
   v_kelas := v_t.kelas;
   if p_status = 'aktif' then
@@ -259,7 +259,7 @@ begin
     v_kelas := v_rombel; v_aksi := 'aktifkan';
   else
     if p_status = 'alumni' then v_aksi := 'lulus'; else v_aksi := 'nonaktifkan'; end if;
-    v_teks := case when p_status = 'alumni' then 'Pengajuan dibatalkan: Penegak menjadi alumni' else 'Pengajuan dibatalkan: Penegak tidak melanjutkan Pramuka' end;
+    v_teks := case when p_status = 'alumni' then 'Pengajuan dibatalkan: anggota menjadi alumni' else 'Pengajuan dibatalkan: anggota tidak melanjutkan Pramuka' end;
     perform sigarda.batalkan_pengajuan_berjalan(p_id, v_teks);
     perform sigarda.jabatan_dewan_lepas(p_id, case when p_status = 'alumni' then 'Penegak menjadi alumni' else 'Penegak tidak melanjutkan Pramuka' end);
   end if;

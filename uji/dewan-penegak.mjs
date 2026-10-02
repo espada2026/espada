@@ -38,7 +38,7 @@ console.log('--- Sebelum jabatan: Penegak biasa ---');
 {
   const prog = (await N['10008'].a.muatProgress()).data;
   ok(Object.keys(prog).length === 1 && prog[nadia], 'Penegak tanpa jabatan hanya membaca progresnya sendiri (RLS)');
-  ok(cocok(await catat(N['10008'], { pesertaId: ahmad, skuId: 'BAN-12', hasil: 'proses' }), /Hanya Pembina atau Dewan Ambalan/), 'Penegak tanpa jabatan tidak dapat mencatat hasil uji');
+  ok(cocok(await catat(N['10008'], { pesertaId: ahmad, skuId: 'BAN-12', hasil: 'proses' }), /Hanya Pembina/), 'Penegak tanpa jabatan tidak dapat mencatat hasil uji');
   ok(cocok(await N['10008'].a.aturPenugasan(ta, pembinaId, ['X-05'], true), /Hanya Pembina dan Admin/), 'Penegak tidak dapat mengatur penugasan');
 }
 
@@ -153,7 +153,7 @@ ok((await progress(rizky, 'BAN-15')).penguji_id === nadia, 'pengujian yang sedan
   const pl = await q(`select tindakan, catatan from public.penugasan_log where penguji_id = $1 order by id desc limit 1`, [nadia]);
   ok(pl[0].tindakan === 'hapus' && pl[0].catatan === 'Jabatan Dewan berakhir', 'penugasan_log mencatat penghapusan penugasan');
 }
-ok(cocok(await catat(N['10008'], { pesertaId: siti, skuId: 'BAN-12', hasil: 'proses' }), /(Hanya Pembina atau Dewan Ambalan|berstatus nonaktif)/), 'Penegak nonaktif tidak lagi dapat menguji');
+ok(cocok(await catat(N['10008'], { pesertaId: siti, skuId: 'BAN-12', hasil: 'proses' }), /(Hanya Pembina|berstatus nonaktif)/), 'Penegak nonaktif tidak lagi dapat menguji');
 r = await K.admin.a.aturStatusAnggota(nadia, 'aktif', 'XII-01', 'Aktif kembali');
 ok(r.ok && (await jabatan('10008')) === null, 'diaktifkan kembali: jabatan tidak otomatis kembali');
 await q(`delete from public.sku_progress where peserta_id = $1 and sku_id in ('BAN-14', 'BAN-15')`, [rizky]);
@@ -216,7 +216,7 @@ ok(cocok(await K.admin.a.arsipkanDewanLama([ahmad]), /Akun Dewan Ambalan lama ti
 r = await K.admin.a.arsipkanDewanLama([dewanId]);
 ok(r.ok && r.data === 1 && (await q('select status from public.profiles where id = $1', [dewanId]))[0].status === 'nonaktif', 'Admin mengarsipkan akun Dewan lama (status nonaktif)');
 ok((await q('select count(*)::int n from public.penugasan_rombel where penguji_id = $1', [dewanId]))[0].n === 0 && (await progress(rizky, 'BAN-11')).penguji_id === null, 'penugasan akun lama dihapus dan pengajuan yang menunggunya kembali ke antrian');
-ok(cocok(await catat(K.dewan, { pin: PIN_DEMO.dewan, pesertaId: siti, skuId: 'BAN-12', hasil: 'proses' }), /Hanya Pembina atau Dewan Ambalan/), 'akun Dewan lama yang diarsipkan tidak lagi dapat mencatat hasil');
+ok(cocok(await catat(K.dewan, { pin: PIN_DEMO.dewan, pesertaId: siti, skuId: 'BAN-12', hasil: 'proses' }), /Hanya Pembina/), 'akun Dewan lama yang diarsipkan tidak lagi dapat mencatat hasil');
 ok(Object.keys((await K.dewan.a.muatProgress()).data).length === 0, 'akun Dewan lama yang diarsipkan tidak lagi membaca data Penegak (bukan pengurus)');
 ok(cocok(await K.admin.a.aturPenugasan(ta, dewanId, ['X-05'], true), /Penguji tidak ditemukan/), 'akun yang diarsipkan tidak dapat ditugaskan');
 r = await sebagai(siti, `select public.sg_penguji_pilihan('BAN-05') d`);

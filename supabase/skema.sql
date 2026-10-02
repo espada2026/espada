@@ -2303,7 +2303,7 @@ declare v_tahap text := sigarda.pra_uji_tahap_berikut(p_peserta, p_sku, p_setela
 begin
   if v_tahap = 'pembina' then
     if not exists (select 1 from sigarda.penguji_sah(p_peserta, p_sku)) then
-      raise exception 'Belum ada Pembina yang dapat menguji butir ini untuk rombel Penegak tersebut. Hubungi Admin Gudep.';
+      raise exception 'Belum ada Pembina yang dapat menguji butir ini untuk rombel anggota tersebut. Hubungi Admin Gudep.';
     end if;
     insert into public.sku_progress (peserta_id, sku_id, status, jadwal, penguji_id, catatan_peserta, diubah)
     values (p_peserta, p_sku, 'diajukan', p_jadwal, null, p_catatan_peserta, now())
@@ -2807,7 +2807,7 @@ begin
   perform sigarda.wajib_aktif();
   if exists (select 1 from public.profiles where id = v_uid and role = 'peserta') then v_peserta := v_uid;
   elsif sigarda.pembina_atau_admin() then v_peserta := p_peserta_id;
-  else raise exception 'Daftar penguji hanya untuk Penegak, Pembina, dan Admin Gudep.';
+  else raise exception 'Daftar penguji hanya untuk anggota, Pembina, dan Admin Gudep.';
   end if;
   select * into v_p from public.profiles where id = v_peserta and role = 'peserta';
   if not found then raise exception 'Peserta tidak ditemukan.'; end if;
@@ -2846,10 +2846,10 @@ begin
     raise exception 'Pengujian yang sedang berjalan harus dialihkan ke penguji tertentu.';
   end if;
   if p_penguji_id is not null and not sigarda.penguji_boleh(p_peserta_id, p_penguji_id, p_sku_id) then
-    raise exception 'Penguji tujuan tidak dapat menguji butir ini untuk rombel Penegak tersebut.';
+    raise exception 'Penguji tujuan tidak dapat menguji butir ini untuk rombel anggota tersebut.';
   end if;
   if p_penguji_id is null and not exists (select 1 from sigarda.penguji_sah(p_peserta_id, p_sku_id)) then
-    raise exception 'Belum ada penguji yang dapat menguji butir ini untuk rombel Penegak tersebut.';
+    raise exception 'Belum ada penguji yang dapat menguji butir ini untuk rombel anggota tersebut.';
   end if;
   if p_penguji_id is not distinct from v_pr.penguji_id then raise exception 'Penguji tujuan sama dengan penguji saat ini.'; end if;
   select coalesce(nama, 'antrian rombel') into v_dari from public.profiles where id = v_pr.penguji_id;
@@ -2869,7 +2869,7 @@ $$
 declare v_p public.profiles; v_kode text; v_cat text := btrim(coalesce(p_catatan, '')); v_lama public.sku_progress; v_ganti text := ''; v_luar text; v_pra text;
 begin
   if not sigarda.bisa_menguji(p_oleh) then
-    raise exception '%', case when sigarda.pra_uji_aktif() then 'Hanya Pembina yang dapat mencatat hasil uji resmi.' else 'Hanya Pembina atau Dewan Ambalan yang dapat mencatat hasil.' end;
+    raise exception '%', case when sigarda.pra_uji_aktif() then 'Hanya Pembina yang dapat mencatat hasil uji resmi.' else 'Hanya Pembina yang dapat mencatat hasil.' end;
   end if;
   if p_oleh = p_peserta_id then raise exception 'Anda tidak dapat menilai diri sendiri.'; end if;
   select * into v_p from public.profiles where id = p_peserta_id and role = 'peserta';
@@ -2884,7 +2884,7 @@ begin
   -- itu, untuk semua hasil (mulai uji, lulus, perlu diulang, dikembalikan). Aturan ini sama dengan pemilihan penguji (sigarda.penguji_peran_ok).
   if not sigarda.penguji_peran_ok(p_peserta_id, p_oleh, p_sku_id) then
     if exists (select 1 from public.sku_unit where id = p_sku_id and agama is not null) then
-      raise exception 'Butir agama hanya dapat dinilai oleh Pembina yang seagama dengan Penegak.';
+      raise exception 'Butir agama hanya dapat dinilai oleh Pembina yang seagama dengan anggota.';
     end if;
     raise exception 'Butir Laksana hanya dapat dinilai oleh Pembina atau penguji yang ditugaskan untuk Penegak ini.';
   end if;
@@ -2973,7 +2973,7 @@ declare
   v_p public.profiles; v_cat text := btrim(coalesce(p_catatan, '')); v_h record; v_diganti boolean; v_rinci jsonb; v_saran_iuran int; v_beda_iuran boolean := false;
 begin
   if not sigarda.bisa_menguji(p_oleh) then
-    raise exception '%', case when sigarda.pra_uji_aktif() then 'Hanya Pembina yang dapat mencatat hasil uji resmi.' else 'Hanya Pembina atau Dewan Ambalan yang dapat mencatat hasil.' end;
+    raise exception '%', case when sigarda.pra_uji_aktif() then 'Hanya Pembina yang dapat mencatat hasil uji resmi.' else 'Hanya Pembina yang dapat mencatat hasil.' end;
   end if;
   if p_oleh = p_peserta_id then raise exception 'Anda tidak dapat menilai diri sendiri.'; end if;
   select * into v_p from public.profiles where id = p_peserta_id and role = 'peserta';
@@ -3115,7 +3115,7 @@ language plpgsql security definer set search_path = public as
 $$
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya Dewan Ambalan, Pembina, atau admin yang dapat mencatat absensi.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya Pembina atau admin yang dapat mencatat absensi.'; end if;
   if p_tanggal is null or p_tanggal < date '2000-01-01' or p_tanggal > date '2100-12-31' then raise exception 'Tanggal tidak valid.'; end if;
   if p_tanggal > sigarda.hari_ini() then raise exception 'Sesi belum bisa dibuat untuk tanggal yang belum tiba.'; end if;
   insert into public.absensi_sesi (tanggal, dibuat_oleh) values (p_tanggal, auth.uid()) on conflict (tanggal) do nothing;
@@ -3162,7 +3162,7 @@ begin
   if not sigarda.pengurus() then raise exception 'Tidak diizinkan.'; end if;
   -- Catatan uang tidak boleh hilang diam-diam bersama sesi: iuran dan tutup kas harus dikosongkan lebih dulu oleh Dewan Ambalan
   if exists (select 1 from public.iuran where tanggal = p_tanggal) or exists (select 1 from public.iuran_kas where tanggal = p_tanggal) then
-    raise exception 'Sesi ini memiliki catatan iuran atau tutup kas. Dewan Ambalan perlu mengosongkannya lebih dulu sebelum sesi dihapus.';
+    raise exception 'Sesi ini memiliki catatan iuran atau tutup kas. Pembina perlu mengosongkannya lebih dulu sebelum sesi dihapus.';
   end if;
   delete from public.absensi_sesi where tanggal = p_tanggal;   -- catatan kehadiran ikut terhapus (cascade)
 end $$;
@@ -3176,11 +3176,11 @@ $$
 declare v_baru int := nullif(p_jumlah, 0); v_lama int; v_jenis text;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pencatat_iuran() then raise exception 'Hanya Dewan Ambalan atau asisten bendahara yang dapat mencatat iuran.'; end if;
+  if not sigarda.pencatat_iuran() then raise exception 'Hanya Pembina atau asisten bendahara yang dapat mencatat iuran.'; end if;
   if v_baru is not null and (v_baru < 1 or v_baru > 1000000) then raise exception 'Jumlah iuran harus antara Rp 1 dan Rp 1.000.000.'; end if;
   if not exists (select 1 from public.absensi_sesi where tanggal = p_tanggal) then raise exception 'Sesi absensi belum dibuat.'; end if;
   if not exists (select 1 from public.profiles where id = p_peserta_id and role = 'peserta') then raise exception 'Peserta tidak ditemukan.'; end if;
-  if p_peserta_id = auth.uid() then raise exception 'Iuran Anda sendiri dicatat oleh Dewan Ambalan.'; end if;
+  if p_peserta_id = auth.uid() then raise exception 'Iuran Anda sendiri dicatat oleh Pembina.'; end if;
   select jumlah, jenis into v_lama, v_jenis from public.iuran where tanggal = p_tanggal and peserta_id = p_peserta_id;
   if v_lama is not distinct from v_baru then return; end if;
   if v_baru is null then
@@ -3200,7 +3200,7 @@ $$
 declare v_id uuid; v_lama int; v_jenis text; v_n int := 0;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pencatat_iuran() then raise exception 'Hanya Dewan Ambalan atau asisten bendahara yang dapat mencatat iuran.'; end if;
+  if not sigarda.pencatat_iuran() then raise exception 'Hanya Pembina atau asisten bendahara yang dapat mencatat iuran.'; end if;
   if p_jumlah is null or p_jumlah < 1 or p_jumlah > 1000000 then raise exception 'Jumlah iuran harus antara Rp 1 dan Rp 1.000.000.'; end if;
   if not exists (select 1 from public.absensi_sesi where tanggal = p_tanggal) then raise exception 'Sesi absensi belum dibuat.'; end if;
   if cardinality(coalesce(p_peserta_ids, '{}')) > 500 then raise exception 'Maksimal 500 peserta per permintaan.'; end if;
@@ -3224,7 +3224,7 @@ language plpgsql stable security definer set search_path = public as
 $$
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pencatat_iuran() then raise exception 'Hanya Dewan Ambalan atau asisten bendahara yang dapat membuka lembar iuran.'; end if;
+  if not sigarda.pencatat_iuran() then raise exception 'Hanya Pembina atau asisten bendahara yang dapat membuka lembar iuran.'; end if;
   return coalesce((
     select jsonb_agg(jsonb_build_object('id', p.id, 'nama', p.nama, 'kelas', p.kelas, 'sangga', p.sangga, 'status', h.status, 'jumlah', i.jumlah, 'jenis', i.jenis)
                      order by p.nama)
@@ -3271,7 +3271,7 @@ $$
 declare v_cat text := btrim(coalesce(p_catatan, ''));
 begin
   perform sigarda.wajib_aktif();
-  if not (sigarda.dewan() or sigarda.pembina_saja()) then raise exception 'Hanya Dewan Ambalan atau Pembina yang dapat menutup kas.'; end if;
+  if not (sigarda.dewan() or sigarda.pembina_saja()) then raise exception 'Hanya Pembina yang dapat menutup kas.'; end if;
   if not exists (select 1 from public.absensi_sesi where tanggal = p_tanggal) then raise exception 'Sesi absensi belum dibuat.'; end if;
   if p_total is null then
     delete from public.iuran_kas where tanggal = p_tanggal;
@@ -3291,7 +3291,7 @@ $$
 begin
   perform sigarda.wajib_aktif();
   if not (sigarda.dewan() or coalesce((select role = 'penguji' and jabatan = 'Pembina' from public.profiles where id = auth.uid()), false)) then
-    raise exception 'Hanya Dewan Ambalan atau Pembina yang dapat menunjuk asisten bendahara.';
+    raise exception 'Hanya Pembina yang dapat menunjuk asisten bendahara.';
   end if;
   if not exists (select 1 from public.profiles where id = p_peserta_id and role = 'peserta') then raise exception 'Peserta tidak ditemukan.'; end if;
   if p_aktif is true then
@@ -3348,7 +3348,7 @@ $$
 declare h record; v_kosong jsonb; v_membantu int;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus yang dapat melihat ringkasan iuran Penegak.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus yang dapat melihat ringkasan iuran anggota.'; end if;
   if p_tanggal is null then raise exception 'Tanggal uji wajib diisi.'; end if;
   if not exists (select 1 from public.profiles where id = p_peserta_id and role = 'peserta') then raise exception 'Peserta tidak ditemukan.'; end if;
   select * into h from sigarda.iuran_hitung(p_peserta_id, p_tanggal);
@@ -3372,7 +3372,7 @@ $$
 declare h record; v_t date; v_n int := 0;
 begin
   perform sigarda.wajib_aktif();
-  if not (sigarda.dewan() or sigarda.pembina_saja()) then raise exception 'Hanya Dewan Ambalan atau Pembina yang dapat mencatat iuran susulan.'; end if;
+  if not (sigarda.dewan() or sigarda.pembina_saja()) then raise exception 'Hanya Pembina yang dapat mencatat iuran susulan.'; end if;
   if p_tanggal is null then raise exception 'Tanggal uji wajib diisi.'; end if;
   if p_jumlah is null or p_jumlah < 1 or p_jumlah > 1000000 then raise exception 'Jumlah iuran harus antara Rp 1 dan Rp 1.000.000.'; end if;
   if p_pertemuan is null or p_pertemuan < 1 or p_pertemuan > 60 then raise exception 'Jumlah pertemuan susulan harus antara 1 dan 60.'; end if;
@@ -3546,7 +3546,7 @@ language plpgsql security definer set search_path = public as
 $$
 declare v_e jsonb; v_user text; v_r text; v_n int := 0; v_k int;
 begin
-  perform sigarda.wajib_admin('Hanya Admin Gudep yang dapat memperbarui rombel Penegak.');
+  perform sigarda.wajib_admin('Hanya Admin Gudep yang dapat memperbarui rombel anggota.');
   if p_data is null or jsonb_typeof(p_data) <> 'array' then raise exception 'Data rombel tidak valid.'; end if;
   if jsonb_array_length(p_data) > 500 then raise exception 'Maksimal 500 baris per permintaan.'; end if;
   for v_e in select * from jsonb_array_elements(p_data) loop
@@ -3559,7 +3559,7 @@ begin
     end if;
     update public.profiles set kelas = v_r where username = v_user and role = 'peserta';
     get diagnostics v_k = row_count;
-    if v_k = 0 then raise exception 'Baris %: Penegak dengan NIS "%" tidak ditemukan.', v_n, v_user; end if;
+    if v_k = 0 then raise exception 'Baris %: anggota dengan NIS "%" tidak ditemukan.', v_n, v_user; end if;
   end loop;
   return v_n;
 end $$;
@@ -4064,7 +4064,7 @@ begin
       v_id := (v_e ->> 'id')::uuid;
       v_ke_status := v_e ->> 'ke_status';
       if v_ke_status <> 'aktif' then
-        v_teks := case when v_ke_status = 'alumni' then 'Pengajuan dibatalkan: Penegak menjadi alumni' else 'Pengajuan dibatalkan: Penegak tidak melanjutkan Pramuka' end;
+        v_teks := case when v_ke_status = 'alumni' then 'Pengajuan dibatalkan: anggota menjadi alumni' else 'Pengajuan dibatalkan: anggota tidak melanjutkan Pramuka' end;
         v_batal := v_batal + sigarda.batalkan_pengajuan_berjalan(v_id, v_teks);
         perform sigarda.jabatan_dewan_lepas(v_id, case when v_ke_status = 'alumni' then 'Penegak menjadi alumni' else 'Penegak tidak melanjutkan Pramuka' end);
       end if;
@@ -4123,7 +4123,7 @@ begin
   if char_length(v_cat) > 200 then raise exception 'Catatan maksimal 200 karakter.'; end if;
   select * into v_t from public.profiles where id = p_id and role = 'peserta';
   if not found then raise exception 'Penegak tidak ditemukan.'; end if;
-  if v_t.status = p_status then raise exception 'Penegak ini sudah berstatus %.', p_status; end if;
+  if v_t.status = p_status then raise exception 'Anggota ini sudah berstatus %.', p_status; end if;
   if p_status = 'nonaktif' and v_t.status = 'alumni' then raise exception 'Alumni tidak dapat dinonaktifkan. Aktifkan kembali lebih dulu bila perlu.'; end if;
   v_kelas := v_t.kelas;
   if p_status = 'aktif' then
@@ -4131,7 +4131,7 @@ begin
     v_kelas := v_rombel; v_aksi := 'aktifkan';
   else
     if p_status = 'alumni' then v_aksi := 'lulus'; else v_aksi := 'nonaktifkan'; end if;
-    v_teks := case when p_status = 'alumni' then 'Pengajuan dibatalkan: Penegak menjadi alumni' else 'Pengajuan dibatalkan: Penegak tidak melanjutkan Pramuka' end;
+    v_teks := case when p_status = 'alumni' then 'Pengajuan dibatalkan: anggota menjadi alumni' else 'Pengajuan dibatalkan: anggota tidak melanjutkan Pramuka' end;
     perform sigarda.batalkan_pengajuan_berjalan(p_id, v_teks);
     perform sigarda.jabatan_dewan_lepas(p_id, case when p_status = 'alumni' then 'Penegak menjadi alumni' else 'Penegak tidak melanjutkan Pramuka' end);
   end if;
@@ -5306,7 +5306,7 @@ declare
   v_baru jsonb := '{}'::jsonb; v_k text; v_v text;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Admin Gudep, dan Dewan Ambalan) yang dapat mengubah isi beranda.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat mengubah isi beranda.'; end if;
   if p_nilai is null or jsonb_typeof(p_nilai) <> 'object' then raise exception 'Isian beranda tidak sah.'; end if;
   for v_k in select jsonb_object_keys(p_nilai) loop
     if not (v_k = any (v_teks) or v_k = any (v_para)) then raise exception 'Isian "%" tidak dikenal.', v_k; end if;
@@ -5404,7 +5404,7 @@ declare
   v_sampul text := sigarda.rapikan(p_sampul_url); v_status text := coalesce(p_status, 'draf'); v_lama public.beranda_berita; v_id bigint;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Admin Gudep, dan Dewan Ambalan) yang dapat menulis berita.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat menulis berita.'; end if;
   if p_kategori not in ('kegiatan', 'pengumuman', 'lainnya') then raise exception 'Kategori berita tidak dikenal.'; end if;
   if char_length(v_judul) < 1 or char_length(v_judul) > 150 then raise exception 'Judul berita wajib diisi, maksimal 150 karakter.'; end if;
   if char_length(v_ringkasan) > 200 then raise exception 'Ringkasan berita maksimal 200 karakter.'; end if;
@@ -5474,7 +5474,7 @@ declare
   v_foto text := sigarda.rapikan(p_foto_url); v_status text := coalesce(p_status, 'draf'); v_lama public.beranda_prestasi; v_id bigint;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Admin Gudep, dan Dewan Ambalan) yang dapat menambah prestasi.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat menambah prestasi.'; end if;
   if p_tingkat not in ('gudep', 'ranting', 'cabang', 'provinsi', 'nasional') then raise exception 'Tingkat prestasi tidak dikenal.'; end if;
   if char_length(v_judul) < 1 or char_length(v_judul) > 150 then raise exception 'Nama lomba atau penghargaan wajib diisi, maksimal 150 karakter.'; end if;
   if char_length(v_peringkat) < 1 or char_length(v_peringkat) > 60 then raise exception 'Peringkat wajib diisi, maksimal 60 karakter.'; end if;
@@ -5539,7 +5539,7 @@ declare
   v_status text := coalesce(p_status, 'draf'); v_lama public.beranda_galeri; v_id bigint;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Admin Gudep, dan Dewan Ambalan) yang dapat menambah album galeri.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat menambah album galeri.'; end if;
   if char_length(v_judul) < 1 or char_length(v_judul) > 100 then raise exception 'Nama album wajib diisi, maksimal 100 karakter.'; end if;
   if v_tautan !~ '^https://[A-Za-z0-9.-]+\.[A-Za-z]{2,}([/?#][^ ]*)?$' then raise exception 'Tautan album harus diawali https:// dan berupa alamat yang sah.'; end if;
   if v_sampul <> '' and v_sampul !~ '^https://[A-Za-z0-9.-]+\.[A-Za-z]{2,}([/?#][^ ]*)?$' then raise exception 'Sampul album harus diawali https:// dan berupa alamat yang sah.'; end if;
@@ -5603,7 +5603,7 @@ declare
   v_lama public.beranda_sosial; v_id bigint;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Admin Gudep, dan Dewan Ambalan) yang dapat menempel kiriman media sosial.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat menempel kiriman media sosial.'; end if;
   if p_platform not in ('instagram', 'youtube', 'facebook', 'tiktok') then raise exception 'Platform tidak dikenal.'; end if;
   if v_tautan !~ '^https://[A-Za-z0-9.-]+\.[A-Za-z]{2,}([/?#][^ ]*)?$' then raise exception 'Tautan kiriman harus diawali https:// dan berupa alamat yang sah.'; end if;
   if char_length(v_ket) > 200 then raise exception 'Keterangan maksimal 200 karakter.'; end if;
@@ -5976,7 +5976,7 @@ create function public.sg_push_ringkasan() returns jsonb language plpgsql stable
 $$
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Dewan Ambalan, dan Admin Gudep) yang dapat melihat ringkasan perangkat.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat melihat ringkasan perangkat.'; end if;
   return (
     with a as (
       select p.id, p.nama, p.role, p.jabatan, p.kelas, exists (select 1 from public.push_langganan l where l.penerima_id = p.id) as ada
@@ -6006,7 +6006,7 @@ $$
 declare v_ta text := sigarda.tahun_ajaran_kini(); v_hasil jsonb;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Dewan Ambalan, dan Admin Gudep) yang dapat melihat pemeriksaan data.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat melihat pemeriksaan data.'; end if;
   v_hasil := jsonb_build_object(
     'praUjiAktif', sigarda.pra_uji_aktif(),
     'kelasLama', coalesce((
@@ -6322,13 +6322,13 @@ $$
   select case p_jenis || p_tingkat
     when 'sku1' then 'Belum ada pengajuan atau hasil baru sejak ' || to_char(p_mulai - 7, 'DD-MM-YYYY') || '.'
     when 'sku2' then 'Sudah beberapa hari tidak ada aktivitas SKU. Sempatkan mengajukan butir berikutnya.'
-    when 'sku3' then 'Sudah lama tidak ada aktivitas SKU. Hubungi Pembina atau Dewan bila ada kendala.'
+    when 'sku3' then 'Sudah lama tidak ada aktivitas SKU. Hubungi Pembina bila ada kendala.'
     when 'absensi1' then 'Tidak hadir latihan terakhir tanpa keterangan.'
     when 'absensi2' then 'Sudah 2 kali berturut-turut tidak hadir latihan tanpa keterangan.'
-    when 'absensi3' then 'Sudah lama tidak hadir latihan tanpa keterangan. Hubungi Pembina atau Dewan bila ada kendala.'
+    when 'absensi3' then 'Sudah lama tidak hadir latihan tanpa keterangan. Hubungi Pembina bila ada kendala.'
     when 'iuran1' then 'Iuran latihan terakhir belum tercatat.'
     when 'iuran2' then 'Sudah 2 kali berturut-turut iuran belum tercatat.'
-    when 'iuran3' then 'Sudah lama iuran belum tercatat. Hubungi Dewan atau asisten bendahara bila ada kendala.'
+    when 'iuran3' then 'Sudah lama iuran belum tercatat. Hubungi Pembina atau asisten bendahara bila ada kendala.'
   end
 $$;
 -- Tab tujuan notifikasi milik Penegak sendiri per jenis kejadian (menu yang relevan di navigasinya).
@@ -6383,7 +6383,7 @@ $$
 declare v_hari date := sigarda.hari_ini(); v_hasil jsonb := '[]'::jsonb; r record; v_mulai date; v_elapsed int; v_jenis text;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya Pembina, Dewan Ambalan, dan Admin Gudep yang dapat melihat daftar ini.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya Pembina dan Admin Gudep yang dapat melihat daftar ini.'; end if;
   for r in select id, nama, kelas, sangga, whatsapp, tanpa_akun from public.profiles where role = 'peserta' and status = 'aktif' loop
     -- Anak Siaga tanpa akun: hanya kejadian absensi (lihat sigarda.eskalasi_proses).
     foreach v_jenis in array case when r.tanpa_akun then array['absensi'] else array['sku','absensi','iuran'] end loop
@@ -6447,10 +6447,10 @@ begin
   end if;
 
   v_ids := coalesce((select array_agg(distinct x) from unnest(p_peserta_terkait) x), '{}');
-  if cardinality(v_ids) > 500 then raise exception 'Maksimal 500 Penegak terkait.'; end if;
+  if cardinality(v_ids) > 500 then raise exception 'Maksimal 500 anggota terkait.'; end if;
   foreach v_id in array v_ids loop
     if not exists (select 1 from public.profiles where id = v_id and role = 'peserta' and status = 'aktif') then
-      raise exception 'Salah satu Penegak terkait tidak ditemukan atau tidak aktif.';
+      raise exception 'Salah satu anggota terkait tidak ditemukan atau tidak aktif.';
     end if;
   end loop;
 
@@ -6706,7 +6706,7 @@ declare
   v_butir text[]; v_peserta uuid[]; v_id int;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya Dewan Ambalan, Pembina, atau Admin Gudep yang dapat mengelola sesi ujian.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya Pembina atau Admin Gudep yang dapat mengelola sesi ujian.'; end if;
   if v_nama = '' or char_length(v_nama) > 120 then raise exception 'Nama sesi wajib diisi (maksimal 120 karakter).'; end if;
   if p_tanggal is null or p_tanggal < date '2000-01-01' or p_tanggal > date '2100-12-31' then raise exception 'Tanggal sesi tidak valid.'; end if;
   if char_length(v_tempat) > 120 then raise exception 'Tempat maksimal 120 karakter.'; end if;
@@ -6740,7 +6740,7 @@ language plpgsql security definer set search_path = public as
 $$
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya Dewan Ambalan, Pembina, atau Admin Gudep yang dapat mengelola sesi ujian.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya Pembina atau Admin Gudep yang dapat mengelola sesi ujian.'; end if;
   if p_status is null or p_status not in ('terjadwal', 'berlangsung', 'selesai') then raise exception 'Status sesi tidak dikenal.'; end if;
   update public.sesi_ujian set status = p_status where id = p_id;
   if not found then raise exception 'Sesi tidak ditemukan.'; end if;

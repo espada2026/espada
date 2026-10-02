@@ -117,7 +117,7 @@ await q(`update public.profiles set wajib_ganti_pin = false where username = '10
 console.log('\n--- Sesi ujian ---');
 const butirBan = (await q(`select id from public.sku_butir where tingkat = 'Bantara' order by no limit 4`)).map((x) => x.id);
 const arg = (o = {}) => ({ p_id: null, p_nama: '  Ujian   Massal 1 ', p_tanggal: '2026-09-25', p_tempat: 'Lapangan', p_catatan: 'Uji perdana', p_status: 'terjadwal', p_butir: butirBan.slice(0, 3), p_peserta: [ahmad, kevin, bagas], ...o });
-for (const who of ['ahmad']) { r = await rpc(K[who].k, 'sg_sesi_simpan', arg()); ok(/Hanya Dewan Ambalan, Pembina, atau Admin/.test(r.err ?? ''), `${who} (Penegak) tidak boleh membuat sesi`); }
+for (const who of ['ahmad']) { r = await rpc(K[who].k, 'sg_sesi_simpan', arg()); ok(/Hanya Pembina atau Admin/.test(r.err ?? ''), `${who} (Penegak) tidak boleh membuat sesi`); }
 for (const [nama, o, re] of [
   ['nama kosong', { p_nama: '   ' }, /Nama sesi wajib/], ['nama panjang', { p_nama: 'x'.repeat(121) }, /maksimal 120/], ['tanggal kosong', { p_tanggal: null }, /Tanggal sesi tidak valid/],
   ['tanggal tak wajar', { p_tanggal: '1999-01-01' }, /Tanggal sesi tidak valid/], ['tempat panjang', { p_tempat: 'x'.repeat(121) }, /Tempat maksimal/], ['catatan panjang', { p_catatan: 'x'.repeat(501) }, /Catatan maksimal/],
@@ -138,7 +138,7 @@ ok((await q('select status, nama from public.sesi_ujian where id = $1', [idSesi]
 r = await rpc(K.dewan.k, 'sg_sesi_status', { p_id: idSesi, p_status: 'selesai' }); ok(!r.err && (await q('select status from public.sesi_ujian where id = $1', [idSesi]))[0].status === 'selesai', 'ubah status oleh Dewan');
 r = await rpc(K.dewan.k, 'sg_sesi_status', { p_id: idSesi, p_status: 'batal' }); ok(/Status sesi tidak dikenal/.test(r.err ?? ''), 'status tidak dikenal ditolak');
 r = await rpc(K.dewan.k, 'sg_sesi_status', { p_id: 9999, p_status: 'selesai' }); ok(/Sesi tidak ditemukan/.test(r.err ?? ''), 'sesi tidak ada ditolak');
-r = await rpc(K.ahmad.k, 'sg_sesi_status', { p_id: idSesi, p_status: 'selesai' }); ok(/Hanya Dewan Ambalan, Pembina, atau Admin/.test(r.err ?? ''), 'Penegak tidak boleh mengubah status');
+r = await rpc(K.ahmad.k, 'sg_sesi_status', { p_id: idSesi, p_status: 'selesai' }); ok(/Hanya Pembina atau Admin/.test(r.err ?? ''), 'Penegak tidak boleh mengubah status');
 const idSesi2 = (await rpc(K.pembina.k, 'sg_sesi_simpan', arg({ p_nama: 'Sesi kedua', p_peserta: [bagas], p_butir: [butirBan[1]] }))).data;
 // RLS baca
 ok((await K.dewan.k.from('sesi_ujian').select('*')).data.length === 2 && (await K.pembina.k.from('sesi_ujian_peserta').select('*')).data.length === 3, 'pengurus melihat semua sesi dan peserta sesi');

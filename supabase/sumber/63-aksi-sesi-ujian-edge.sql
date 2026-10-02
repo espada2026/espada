@@ -9,7 +9,7 @@ declare
   v_butir text[]; v_peserta uuid[]; v_id int;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya Dewan Ambalan, Pembina, atau Admin Gudep yang dapat mengelola sesi ujian.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya Pembina atau Admin Gudep yang dapat mengelola sesi ujian.'; end if;
   if v_nama = '' or char_length(v_nama) > 120 then raise exception 'Nama sesi wajib diisi (maksimal 120 karakter).'; end if;
   if p_tanggal is null or p_tanggal < date '2000-01-01' or p_tanggal > date '2100-12-31' then raise exception 'Tanggal sesi tidak valid.'; end if;
   if char_length(v_tempat) > 120 then raise exception 'Tempat maksimal 120 karakter.'; end if;
@@ -43,7 +43,7 @@ language plpgsql security definer set search_path = public as
 $$
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya Dewan Ambalan, Pembina, atau Admin Gudep yang dapat mengelola sesi ujian.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya Pembina atau Admin Gudep yang dapat mengelola sesi ujian.'; end if;
   if p_status is null or p_status not in ('terjadwal', 'berlangsung', 'selesai') then raise exception 'Status sesi tidak dikenal.'; end if;
   update public.sesi_ujian set status = p_status where id = p_id;
   if not found then raise exception 'Sesi tidak ditemukan.'; end if;

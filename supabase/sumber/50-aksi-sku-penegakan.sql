@@ -95,7 +95,7 @@ begin
   perform sigarda.wajib_aktif();
   if exists (select 1 from public.profiles where id = v_uid and role = 'peserta') then v_peserta := v_uid;
   elsif sigarda.pembina_atau_admin() then v_peserta := p_peserta_id;
-  else raise exception 'Daftar penguji hanya untuk Penegak, Pembina, dan Admin Gudep.';
+  else raise exception 'Daftar penguji hanya untuk anggota, Pembina, dan Admin Gudep.';
   end if;
   select * into v_p from public.profiles where id = v_peserta and role = 'peserta';
   if not found then raise exception 'Peserta tidak ditemukan.'; end if;
@@ -134,10 +134,10 @@ begin
     raise exception 'Pengujian yang sedang berjalan harus dialihkan ke penguji tertentu.';
   end if;
   if p_penguji_id is not null and not sigarda.penguji_boleh(p_peserta_id, p_penguji_id, p_sku_id) then
-    raise exception 'Penguji tujuan tidak dapat menguji butir ini untuk rombel Penegak tersebut.';
+    raise exception 'Penguji tujuan tidak dapat menguji butir ini untuk rombel anggota tersebut.';
   end if;
   if p_penguji_id is null and not exists (select 1 from sigarda.penguji_sah(p_peserta_id, p_sku_id)) then
-    raise exception 'Belum ada penguji yang dapat menguji butir ini untuk rombel Penegak tersebut.';
+    raise exception 'Belum ada penguji yang dapat menguji butir ini untuk rombel anggota tersebut.';
   end if;
   if p_penguji_id is not distinct from v_pr.penguji_id then raise exception 'Penguji tujuan sama dengan penguji saat ini.'; end if;
   select coalesce(nama, 'antrian rombel') into v_dari from public.profiles where id = v_pr.penguji_id;
@@ -157,7 +157,7 @@ $$
 declare v_p public.profiles; v_kode text; v_cat text := btrim(coalesce(p_catatan, '')); v_lama public.sku_progress; v_ganti text := ''; v_luar text; v_pra text;
 begin
   if not sigarda.bisa_menguji(p_oleh) then
-    raise exception '%', case when sigarda.pra_uji_aktif() then 'Hanya Pembina yang dapat mencatat hasil uji resmi.' else 'Hanya Pembina atau Dewan Ambalan yang dapat mencatat hasil.' end;
+    raise exception '%', case when sigarda.pra_uji_aktif() then 'Hanya Pembina yang dapat mencatat hasil uji resmi.' else 'Hanya Pembina yang dapat mencatat hasil.' end;
   end if;
   if p_oleh = p_peserta_id then raise exception 'Anda tidak dapat menilai diri sendiri.'; end if;
   select * into v_p from public.profiles where id = p_peserta_id and role = 'peserta';
@@ -172,7 +172,7 @@ begin
   -- itu, untuk semua hasil (mulai uji, lulus, perlu diulang, dikembalikan). Aturan ini sama dengan pemilihan penguji (sigarda.penguji_peran_ok).
   if not sigarda.penguji_peran_ok(p_peserta_id, p_oleh, p_sku_id) then
     if exists (select 1 from public.sku_unit where id = p_sku_id and agama is not null) then
-      raise exception 'Butir agama hanya dapat dinilai oleh Pembina yang seagama dengan Penegak.';
+      raise exception 'Butir agama hanya dapat dinilai oleh Pembina yang seagama dengan anggota.';
     end if;
     raise exception 'Butir Laksana hanya dapat dinilai oleh Pembina atau penguji yang ditugaskan untuk Penegak ini.';
   end if;
@@ -261,7 +261,7 @@ declare
   v_p public.profiles; v_cat text := btrim(coalesce(p_catatan, '')); v_h record; v_diganti boolean; v_rinci jsonb; v_saran_iuran int; v_beda_iuran boolean := false;
 begin
   if not sigarda.bisa_menguji(p_oleh) then
-    raise exception '%', case when sigarda.pra_uji_aktif() then 'Hanya Pembina yang dapat mencatat hasil uji resmi.' else 'Hanya Pembina atau Dewan Ambalan yang dapat mencatat hasil.' end;
+    raise exception '%', case when sigarda.pra_uji_aktif() then 'Hanya Pembina yang dapat mencatat hasil uji resmi.' else 'Hanya Pembina yang dapat mencatat hasil.' end;
   end if;
   if p_oleh = p_peserta_id then raise exception 'Anda tidak dapat menilai diri sendiri.'; end if;
   select * into v_p from public.profiles where id = p_peserta_id and role = 'peserta';

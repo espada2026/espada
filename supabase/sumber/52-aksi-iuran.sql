@@ -7,11 +7,11 @@ $$
 declare v_baru int := nullif(p_jumlah, 0); v_lama int; v_jenis text;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pencatat_iuran() then raise exception 'Hanya Dewan Ambalan atau asisten bendahara yang dapat mencatat iuran.'; end if;
+  if not sigarda.pencatat_iuran() then raise exception 'Hanya Pembina atau asisten bendahara yang dapat mencatat iuran.'; end if;
   if v_baru is not null and (v_baru < 1 or v_baru > 1000000) then raise exception 'Jumlah iuran harus antara Rp 1 dan Rp 1.000.000.'; end if;
   if not exists (select 1 from public.absensi_sesi where tanggal = p_tanggal) then raise exception 'Sesi absensi belum dibuat.'; end if;
   if not exists (select 1 from public.profiles where id = p_peserta_id and role = 'peserta') then raise exception 'Peserta tidak ditemukan.'; end if;
-  if p_peserta_id = auth.uid() then raise exception 'Iuran Anda sendiri dicatat oleh Dewan Ambalan.'; end if;
+  if p_peserta_id = auth.uid() then raise exception 'Iuran Anda sendiri dicatat oleh Pembina.'; end if;
   select jumlah, jenis into v_lama, v_jenis from public.iuran where tanggal = p_tanggal and peserta_id = p_peserta_id;
   if v_lama is not distinct from v_baru then return; end if;
   if v_baru is null then
@@ -31,7 +31,7 @@ $$
 declare v_id uuid; v_lama int; v_jenis text; v_n int := 0;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pencatat_iuran() then raise exception 'Hanya Dewan Ambalan atau asisten bendahara yang dapat mencatat iuran.'; end if;
+  if not sigarda.pencatat_iuran() then raise exception 'Hanya Pembina atau asisten bendahara yang dapat mencatat iuran.'; end if;
   if p_jumlah is null or p_jumlah < 1 or p_jumlah > 1000000 then raise exception 'Jumlah iuran harus antara Rp 1 dan Rp 1.000.000.'; end if;
   if not exists (select 1 from public.absensi_sesi where tanggal = p_tanggal) then raise exception 'Sesi absensi belum dibuat.'; end if;
   if cardinality(coalesce(p_peserta_ids, '{}')) > 500 then raise exception 'Maksimal 500 peserta per permintaan.'; end if;
@@ -55,7 +55,7 @@ language plpgsql stable security definer set search_path = public as
 $$
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pencatat_iuran() then raise exception 'Hanya Dewan Ambalan atau asisten bendahara yang dapat membuka lembar iuran.'; end if;
+  if not sigarda.pencatat_iuran() then raise exception 'Hanya Pembina atau asisten bendahara yang dapat membuka lembar iuran.'; end if;
   return coalesce((
     select jsonb_agg(jsonb_build_object('id', p.id, 'nama', p.nama, 'kelas', p.kelas, 'sangga', p.sangga, 'status', h.status, 'jumlah', i.jumlah, 'jenis', i.jenis)
                      order by p.nama)
@@ -102,7 +102,7 @@ $$
 declare v_cat text := btrim(coalesce(p_catatan, ''));
 begin
   perform sigarda.wajib_aktif();
-  if not (sigarda.dewan() or sigarda.pembina_saja()) then raise exception 'Hanya Dewan Ambalan atau Pembina yang dapat menutup kas.'; end if;
+  if not (sigarda.dewan() or sigarda.pembina_saja()) then raise exception 'Hanya Pembina yang dapat menutup kas.'; end if;
   if not exists (select 1 from public.absensi_sesi where tanggal = p_tanggal) then raise exception 'Sesi absensi belum dibuat.'; end if;
   if p_total is null then
     delete from public.iuran_kas where tanggal = p_tanggal;
@@ -122,7 +122,7 @@ $$
 begin
   perform sigarda.wajib_aktif();
   if not (sigarda.dewan() or coalesce((select role = 'penguji' and jabatan = 'Pembina' from public.profiles where id = auth.uid()), false)) then
-    raise exception 'Hanya Dewan Ambalan atau Pembina yang dapat menunjuk asisten bendahara.';
+    raise exception 'Hanya Pembina yang dapat menunjuk asisten bendahara.';
   end if;
   if not exists (select 1 from public.profiles where id = p_peserta_id and role = 'peserta') then raise exception 'Peserta tidak ditemukan.'; end if;
   if p_aktif is true then
@@ -179,7 +179,7 @@ $$
 declare h record; v_kosong jsonb; v_membantu int;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus yang dapat melihat ringkasan iuran Penegak.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus yang dapat melihat ringkasan iuran anggota.'; end if;
   if p_tanggal is null then raise exception 'Tanggal uji wajib diisi.'; end if;
   if not exists (select 1 from public.profiles where id = p_peserta_id and role = 'peserta') then raise exception 'Peserta tidak ditemukan.'; end if;
   select * into h from sigarda.iuran_hitung(p_peserta_id, p_tanggal);
@@ -203,7 +203,7 @@ $$
 declare h record; v_t date; v_n int := 0;
 begin
   perform sigarda.wajib_aktif();
-  if not (sigarda.dewan() or sigarda.pembina_saja()) then raise exception 'Hanya Dewan Ambalan atau Pembina yang dapat mencatat iuran susulan.'; end if;
+  if not (sigarda.dewan() or sigarda.pembina_saja()) then raise exception 'Hanya Pembina yang dapat mencatat iuran susulan.'; end if;
   if p_tanggal is null then raise exception 'Tanggal uji wajib diisi.'; end if;
   if p_jumlah is null or p_jumlah < 1 or p_jumlah > 1000000 then raise exception 'Jumlah iuran harus antara Rp 1 dan Rp 1.000.000.'; end if;
   if p_pertemuan is null or p_pertemuan < 1 or p_pertemuan > 60 then raise exception 'Jumlah pertemuan susulan harus antara 1 dan 60.'; end if;

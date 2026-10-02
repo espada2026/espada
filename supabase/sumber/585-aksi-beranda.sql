@@ -26,7 +26,7 @@ declare
   v_baru jsonb := '{}'::jsonb; v_k text; v_v text;
 begin
   perform sigarda.wajib_aktif();
-  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina, Admin Gudep, dan Dewan Ambalan) yang dapat mengubah isi beranda.'; end if;
+  if not sigarda.pengurus() then raise exception 'Hanya pengurus (Pembina dan Admin Gudep) yang dapat mengubah isi beranda.'; end if;
   if p_nilai is null or jsonb_typeof(p_nilai) <> 'object' then raise exception 'Isian beranda tidak sah.'; end if;
   for v_k in select jsonb_object_keys(p_nilai) loop
     if not (v_k = any (v_teks) or v_k = any (v_para)) then raise exception 'Isian "%" tidak dikenal.', v_k; end if;
